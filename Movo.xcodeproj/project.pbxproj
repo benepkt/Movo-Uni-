@@ -6,7 +6,37 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4235039A2E9327DF00E01074 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4298A9EF2E43B72D00419E3D /* WidgetKit.framework */; };
+		4235039B2E9327DF00E01074 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4298A9F12E43B72D00419E3D /* SwiftUI.framework */; };
+		423503AC2E9327E100E01074 /* MovowidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 423503992E9327DE00E01074 /* MovowidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		423504D12E9329CF00E01074 /* SharedStepsStore1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 423503B22E93293F00E01074 /* SharedStepsStore1.swift */; };
+		423504D22E9329CF00E01074 /* SharedStepsStore1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 423503B22E93293F00E01074 /* SharedStepsStore1.swift */; };
+		42438DA12E9B005A002F6906 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 42438DA02E9B005A002F6906 /* FirebaseStorage */; };
+		42438E992E9EF0E2002F6906 /* SharedUnitPrefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42438E982E9EF0E2002F6906 /* SharedUnitPrefs.swift */; };
+		42438E9A2E9EF0E2002F6906 /* SharedUnitPrefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42438E982E9EF0E2002F6906 /* SharedUnitPrefs.swift */; };
+		42438F932E9EF243002F6906 /* SharedUnitPrefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42438E982E9EF0E2002F6906 /* SharedUnitPrefs.swift */; };
+		4244B9252EAACB2E00F087FC /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 4244B9242EAACB2E00F087FC /* GoogleSignIn */; };
+		4244B9272EAACB2E00F087FC /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 4244B9262EAACB2E00F087FC /* GoogleSignInSwift */; };
+		424BBC0F2E42524200E9DE69 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 424BBC0E2E42524200E9DE69 /* FirebaseAnalytics */; };
+		424BBC112E42524200E9DE69 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 424BBC102E42524200E9DE69 /* FirebaseAuth */; };
+		424BBC132E42524200E9DE69 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 424BBC122E42524200E9DE69 /* FirebaseDatabase */; };
+		4298AA4A2E43BB0D00419E3D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4298A9EF2E43B72D00419E3D /* WidgetKit.framework */; };
+		4298AA4B2E43BB0D00419E3D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4298A9F12E43B72D00419E3D /* SwiftUI.framework */; };
+		4298AA5C2E43BB1000419E3D /* MovoLiveActivityExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4298AA492E43BB0D00419E3D /* MovoLiveActivityExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		42C2CE522E97FCA8002DCFEB /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 42C2CE512E97FCA8002DCFEB /* FirebaseFirestore */; };
+		42C2D03E2E981854002DCFEB /* FirebaseFirestoreCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 42C2D03D2E981854002DCFEB /* FirebaseFirestoreCombine-Community */; };
+		42E6FB192E8C467D0079E384 /* DotLottie in Frameworks */ = {isa = PBXBuildFile; productRef = 42E6FB182E8C467D0079E384 /* DotLottie */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
+		423503AA2E9327E100E01074 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 429834212E3D700400FCD845 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 423503982E9327DE00E01074;
+			remoteInfo = MovowidgetsExtension;
+		};
 		429834372E3D700600FCD845 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 429834212E3D700400FCD845 /* Project object */;
@@ -21,17 +51,117 @@
 			remoteGlobalIDString = 429834282E3D700400FCD845;
 			remoteInfo = Movo;
 		};
+		4298AA5A2E43BB1000419E3D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 429834212E3D700400FCD845 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4298AA482E43BB0D00419E3D;
+			remoteInfo = MovoLiveActivityExtension;
+		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		4298AA082E43B72F00419E3D /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4298AA5C2E43BB1000419E3D /* MovoLiveActivityExtension.appex in Embed Foundation Extensions */,
+				423503AC2E9327E100E01074 /* MovowidgetsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		423503992E9327DE00E01074 /* MovowidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MovowidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		423503B12E9328BA00E01074 /* MovowidgetsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MovowidgetsExtension.entitlements; sourceTree = "<group>"; };
+		423503B22E93293F00E01074 /* SharedStepsStore1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedStepsStore1.swift; sourceTree = "<group>"; usesTabs = 0; };
+		42438E982E9EF0E2002F6906 /* SharedUnitPrefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedUnitPrefs.swift; sourceTree = "<group>"; };
 		429834292E3D700400FCD845 /* Movo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Movo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		429834362E3D700600FCD845 /* MovoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MovoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		429834402E3D700600FCD845 /* MovoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MovoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4298A9EF2E43B72D00419E3D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		4298A9F12E43B72D00419E3D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		4298AA492E43BB0D00419E3D /* MovoLiveActivityExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MovoLiveActivityExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4298AAC22E44181500419E3D /* MovoLiveActivityExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MovoLiveActivityExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		423503B02E9327E100E01074 /* Exceptions for "Movowidgets" folder in "MovowidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 423503982E9327DE00E01074 /* MovowidgetsExtension */;
+		};
+		4298AA5D2E43BB1000419E3D /* Exceptions for "MovoLiveActivity" folder in "MovoLiveActivityExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 4298AA482E43BB0D00419E3D /* MovoLiveActivityExtension */;
+		};
+		4298AA6A2E43BD1800419E3D /* Exceptions for "MovoLiveActivity" folder in "Movo" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				MovoLiveActivity.swift,
+				WorkoutActivityAttributes.swift,
+			);
+			target = 429834282E3D700400FCD845 /* Movo */;
+		};
+		4298AA6B2E43BD1800419E3D /* Exceptions for "MovoLiveActivity" folder in "MovoTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				WorkoutActivityAttributes.swift,
+			);
+			target = 429834352E3D700600FCD845 /* MovoTests */;
+		};
+		4298AA6C2E43BD1800419E3D /* Exceptions for "MovoLiveActivity" folder in "MovoUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				WorkoutActivityAttributes.swift,
+			);
+			target = 4298343F2E3D700600FCD845 /* MovoUITests */;
+		};
+		4298AA6E2E440F8C00419E3D /* Exceptions for "Movo" folder in "Movo" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ExerciseMedia.bundle,
+				Info.plist,
+				"TrainingEntry+RunningMetrics.swift",
+			);
+			target = 429834282E3D700400FCD845 /* Movo */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		428A78EE2E50A22500864287 /* Exceptions for "Movo" folder in "Copy Bundle Resources" phase from "Movo" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 429834272E3D700400FCD845 /* Resources */;
+			membershipExceptions = (
+				"TrainingEntry+RunningMetrics.swift",
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		4235039C2E9327DF00E01074 /* Movowidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				423503B02E9327E100E01074 /* Exceptions for "Movowidgets" folder in "MovowidgetsExtension" target */,
+			);
+			path = Movowidgets;
+			sourceTree = "<group>";
+		};
 		4298342B2E3D700400FCD845 /* Movo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4298AA6E2E440F8C00419E3D /* Exceptions for "Movo" folder in "Movo" target */,
+				428A78EE2E50A22500864287 /* Exceptions for "Movo" folder in "Copy Bundle Resources" phase from "Movo" target */,
+			);
 			path = Movo;
 			sourceTree = "<group>";
 		};
@@ -45,13 +175,42 @@
 			path = MovoUITests;
 			sourceTree = "<group>";
 		};
+		4298AA4C2E43BB0D00419E3D /* MovoLiveActivity */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4298AA6A2E43BD1800419E3D /* Exceptions for "MovoLiveActivity" folder in "Movo" target */,
+				4298AA6B2E43BD1800419E3D /* Exceptions for "MovoLiveActivity" folder in "MovoTests" target */,
+				4298AA6C2E43BD1800419E3D /* Exceptions for "MovoLiveActivity" folder in "MovoUITests" target */,
+				4298AA5D2E43BB1000419E3D /* Exceptions for "MovoLiveActivity" folder in "MovoLiveActivityExtension" target */,
+			);
+			path = MovoLiveActivity;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		423503962E9327DE00E01074 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4235039B2E9327DF00E01074 /* SwiftUI.framework in Frameworks */,
+				4235039A2E9327DF00E01074 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		429834262E3D700400FCD845 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4244B9272EAACB2E00F087FC /* GoogleSignInSwift in Frameworks */,
+				424BBC132E42524200E9DE69 /* FirebaseDatabase in Frameworks */,
+				4244B9252EAACB2E00F087FC /* GoogleSignIn in Frameworks */,
+				42E6FB192E8C467D0079E384 /* DotLottie in Frameworks */,
+				424BBC0F2E42524200E9DE69 /* FirebaseAnalytics in Frameworks */,
+				42C2D03E2E981854002DCFEB /* FirebaseFirestoreCombine-Community in Frameworks */,
+				42438DA12E9B005A002F6906 /* FirebaseStorage in Frameworks */,
+				42C2CE522E97FCA8002DCFEB /* FirebaseFirestore in Frameworks */,
+				424BBC112E42524200E9DE69 /* FirebaseAuth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -69,15 +228,40 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4298AA462E43BB0D00419E3D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4298AA4B2E43BB0D00419E3D /* SwiftUI.framework in Frameworks */,
+				4298AA4A2E43BB0D00419E3D /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		424BBC0D2E42524200E9DE69 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4298A9EF2E43B72D00419E3D /* WidgetKit.framework */,
+				4298A9F12E43B72D00419E3D /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		429834202E3D700400FCD845 = {
 			isa = PBXGroup;
 			children = (
+				423503B22E93293F00E01074 /* SharedStepsStore1.swift */,
+				42438E982E9EF0E2002F6906 /* SharedUnitPrefs.swift */,
+				423503B12E9328BA00E01074 /* MovowidgetsExtension.entitlements */,
+				4298AAC22E44181500419E3D /* MovoLiveActivityExtension.entitlements */,
 				4298342B2E3D700400FCD845 /* Movo */,
 				429834392E3D700600FCD845 /* MovoTests */,
 				429834432E3D700600FCD845 /* MovoUITests */,
+				4298AA4C2E43BB0D00419E3D /* MovoLiveActivity */,
+				4235039C2E9327DF00E01074 /* Movowidgets */,
+				424BBC0D2E42524200E9DE69 /* Frameworks */,
 				4298342A2E3D700400FCD845 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -88,6 +272,8 @@
 				429834292E3D700400FCD845 /* Movo.app */,
 				429834362E3D700600FCD845 /* MovoTests.xctest */,
 				429834402E3D700600FCD845 /* MovoUITests.xctest */,
+				4298AA492E43BB0D00419E3D /* MovoLiveActivityExtension.appex */,
+				423503992E9327DE00E01074 /* MovowidgetsExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,6 +281,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		423503982E9327DE00E01074 /* MovowidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 423503AF2E9327E100E01074 /* Build configuration list for PBXNativeTarget "MovowidgetsExtension" */;
+			buildPhases = (
+				423503952E9327DE00E01074 /* Sources */,
+				423503962E9327DE00E01074 /* Frameworks */,
+				423503972E9327DE00E01074 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4235039C2E9327DF00E01074 /* Movowidgets */,
+			);
+			name = MovowidgetsExtension;
+			packageProductDependencies = (
+			);
+			productName = MovowidgetsExtension;
+			productReference = 423503992E9327DE00E01074 /* MovowidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		429834282E3D700400FCD845 /* Movo */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4298344A2E3D700600FCD845 /* Build configuration list for PBXNativeTarget "Movo" */;
@@ -102,16 +310,28 @@
 				429834252E3D700400FCD845 /* Sources */,
 				429834262E3D700400FCD845 /* Frameworks */,
 				429834272E3D700400FCD845 /* Resources */,
+				4298AA082E43B72F00419E3D /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				4298AA5B2E43BB1000419E3D /* PBXTargetDependency */,
+				423503AB2E9327E100E01074 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				4298342B2E3D700400FCD845 /* Movo */,
 			);
 			name = Movo;
 			packageProductDependencies = (
+				424BBC0E2E42524200E9DE69 /* FirebaseAnalytics */,
+				424BBC102E42524200E9DE69 /* FirebaseAuth */,
+				424BBC122E42524200E9DE69 /* FirebaseDatabase */,
+				42E6FB182E8C467D0079E384 /* DotLottie */,
+				42C2CE512E97FCA8002DCFEB /* FirebaseFirestore */,
+				42C2D03D2E981854002DCFEB /* FirebaseFirestoreCombine-Community */,
+				42438DA02E9B005A002F6906 /* FirebaseStorage */,
+				4244B9242EAACB2E00F087FC /* GoogleSignIn */,
+				4244B9262EAACB2E00F087FC /* GoogleSignInSwift */,
 			);
 			productName = Movo;
 			productReference = 429834292E3D700400FCD845 /* Movo.app */;
@@ -163,6 +383,28 @@
 			productReference = 429834402E3D700600FCD845 /* MovoUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		4298AA482E43BB0D00419E3D /* MovoLiveActivityExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4298AA5E2E43BB1000419E3D /* Build configuration list for PBXNativeTarget "MovoLiveActivityExtension" */;
+			buildPhases = (
+				4298AA452E43BB0D00419E3D /* Sources */,
+				4298AA462E43BB0D00419E3D /* Frameworks */,
+				4298AA472E43BB0D00419E3D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4298AA4C2E43BB0D00419E3D /* MovoLiveActivity */,
+			);
+			name = MovoLiveActivityExtension;
+			packageProductDependencies = (
+			);
+			productName = MovoLiveActivityExtension;
+			productReference = 4298AA492E43BB0D00419E3D /* MovoLiveActivityExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -173,6 +415,9 @@
 				LastSwiftUpdateCheck = 1630;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
+					423503982E9327DE00E01074 = {
+						CreatedOnToolsVersion = 16.3;
+					};
 					429834282E3D700400FCD845 = {
 						CreatedOnToolsVersion = 16.3;
 					};
@@ -183,6 +428,9 @@
 					4298343F2E3D700600FCD845 = {
 						CreatedOnToolsVersion = 16.3;
 						TestTargetID = 429834282E3D700400FCD845;
+					};
+					4298AA482E43BB0D00419E3D = {
+						CreatedOnToolsVersion = 16.3;
 					};
 				};
 			};
@@ -195,6 +443,12 @@
 			);
 			mainGroup = 429834202E3D700400FCD845;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				424BBC0C2E42504F00E9DE69 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				42DE084D2E8C4283007DEC35 /* XCRemoteSwiftPackageReference "lottie-ios" */,
+				42E6FB172E8C467D0079E384 /* XCRemoteSwiftPackageReference "dotlottie-ios" */,
+				4244B9232EAACB2E00F087FC /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4298342A2E3D700400FCD845 /* Products */;
 			projectDirPath = "";
@@ -203,11 +457,20 @@
 				429834282E3D700400FCD845 /* Movo */,
 				429834352E3D700600FCD845 /* MovoTests */,
 				4298343F2E3D700600FCD845 /* MovoUITests */,
+				4298AA482E43BB0D00419E3D /* MovoLiveActivityExtension */,
+				423503982E9327DE00E01074 /* MovowidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		423503972E9327DE00E01074 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		429834272E3D700400FCD845 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -229,13 +492,31 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4298AA472E43BB0D00419E3D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		423503952E9327DE00E01074 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				42438E9A2E9EF0E2002F6906 /* SharedUnitPrefs.swift in Sources */,
+				423504D22E9329CF00E01074 /* SharedStepsStore1.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		429834252E3D700400FCD845 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				42438E992E9EF0E2002F6906 /* SharedUnitPrefs.swift in Sources */,
+				423504D12E9329CF00E01074 /* SharedStepsStore1.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -253,9 +534,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4298AA452E43BB0D00419E3D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				42438F932E9EF243002F6906 /* SharedUnitPrefs.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		423503AB2E9327E100E01074 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 423503982E9327DE00E01074 /* MovowidgetsExtension */;
+			targetProxy = 423503AA2E9327E100E01074 /* PBXContainerItemProxy */;
+		};
 		429834382E3D700600FCD845 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 429834282E3D700400FCD845 /* Movo */;
@@ -266,9 +560,82 @@
 			target = 429834282E3D700400FCD845 /* Movo */;
 			targetProxy = 429834412E3D700600FCD845 /* PBXContainerItemProxy */;
 		};
+		4298AA5B2E43BB1000419E3D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4298AA482E43BB0D00419E3D /* MovoLiveActivityExtension */;
+			targetProxy = 4298AA5A2E43BB1000419E3D /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		423503AD2E9327E100E01074 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MovowidgetsExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 99Q58AXFLW;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Movowidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Movowidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.Movowidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		423503AE2E9327E100E01074 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MovowidgetsExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 99Q58AXFLW;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Movowidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Movowidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.Movowidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 		429834482E3D700600FCD845 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -395,26 +762,39 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Movo/Movo.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4WYBPZF5Z8;
+				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Movo/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Deine Schritte werden angezeigt.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Dein Standort wird benötigt, um deine Joggingstrecke aufzuzeichnen.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -423,26 +803,39 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Movo/Movo.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4WYBPZF5Z8;
+				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Movo/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Deine Schritte werden angezeigt.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Dein Standort wird benötigt, um deine Joggingstrecke aufzuzeichnen.";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -452,15 +845,19 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4WYBPZF5Z8;
+				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.MovoTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Movo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Movo";
 			};
 			name = Debug;
@@ -471,15 +868,19 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4WYBPZF5Z8;
+				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.MovoTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Movo.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Movo";
 			};
 			name = Release;
@@ -489,14 +890,19 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4WYBPZF5Z8;
+				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.MovoUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = Movo;
 			};
 			name = Debug;
@@ -506,21 +912,101 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4WYBPZF5Z8;
+				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.MovoUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = Movo;
+			};
+			name = Release;
+		};
+		4298AA5F2E43BB1000419E3D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MovoLiveActivityExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 99Q58AXFLW;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MovoLiveActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MovoLiveActivity;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.MovoLiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		4298AA602E43BB1000419E3D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = MovoLiveActivityExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 99Q58AXFLW;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MovoLiveActivity/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MovoLiveActivity;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.MovoLiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		423503AF2E9327E100E01074 /* Build configuration list for PBXNativeTarget "MovowidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				423503AD2E9327E100E01074 /* Debug */,
+				423503AE2E9327E100E01074 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		429834242E3D700400FCD845 /* Build configuration list for PBXProject "Movo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -557,7 +1043,99 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		4298AA5E2E43BB1000419E3D /* Build configuration list for PBXNativeTarget "MovoLiveActivityExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4298AA5F2E43BB1000419E3D /* Debug */,
+				4298AA602E43BB1000419E3D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4244B9232EAACB2E00F087FC /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
+		424BBC0C2E42504F00E9DE69 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.1.0;
+			};
+		};
+		42DE084D2E8C4283007DEC35 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.2;
+			};
+		};
+		42E6FB172E8C467D0079E384 /* XCRemoteSwiftPackageReference "dotlottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/LottieFiles/dotlottie-ios";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		42438DA02E9B005A002F6906 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 424BBC0C2E42504F00E9DE69 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+		4244B9242EAACB2E00F087FC /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4244B9232EAACB2E00F087FC /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		4244B9262EAACB2E00F087FC /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4244B9232EAACB2E00F087FC /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
+		424BBC0E2E42524200E9DE69 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 424BBC0C2E42504F00E9DE69 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		424BBC102E42524200E9DE69 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 424BBC0C2E42504F00E9DE69 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		424BBC122E42524200E9DE69 /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 424BBC0C2E42504F00E9DE69 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+		42C2CE512E97FCA8002DCFEB /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 424BBC0C2E42504F00E9DE69 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		42C2D03D2E981854002DCFEB /* FirebaseFirestoreCombine-Community */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 424BBC0C2E42504F00E9DE69 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = "FirebaseFirestoreCombine-Community";
+		};
+		42E6FB182E8C467D0079E384 /* DotLottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 42E6FB172E8C467D0079E384 /* XCRemoteSwiftPackageReference "dotlottie-ios" */;
+			productName = DotLottie;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 429834212E3D700400FCD845 /* Project object */;
 }
