@@ -21,12 +21,33 @@
 		424BBC0F2E42524200E9DE69 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 424BBC0E2E42524200E9DE69 /* FirebaseAnalytics */; };
 		424BBC112E42524200E9DE69 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 424BBC102E42524200E9DE69 /* FirebaseAuth */; };
 		424BBC132E42524200E9DE69 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 424BBC122E42524200E9DE69 /* FirebaseDatabase */; };
+		42579C0D2F0956DF0038CF04 /* HeatmapShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42579C0C2F0956DF0038CF04 /* HeatmapShared.swift */; };
+		42579C122F095A650038CF04 /* HeatmapShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42579C0C2F0956DF0038CF04 /* HeatmapShared.swift */; };
+		426091EF2EFE0CE5000EAFB9 /* ActiveWorkoutPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 426091EE2EFE0CE5000EAFB9 /* ActiveWorkoutPayload.swift */; };
+		426093262EFE0FE9000EAFB9 /* ActiveWorkoutPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 426091EE2EFE0CE5000EAFB9 /* ActiveWorkoutPayload.swift */; };
+		428F81242F02DF2B0081CCAD /* WeightUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F81232F02DF2B0081CCAD /* WeightUnit.swift */; };
+		428F81252F02DF2B0081CCAD /* WeightUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F81232F02DF2B0081CCAD /* WeightUnit.swift */; };
+		428F81262F02DF2B0081CCAD /* WeightUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F81232F02DF2B0081CCAD /* WeightUnit.swift */; };
+		428F81282F02DF300081CCAD /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F81272F02DF300081CCAD /* DesignTokens.swift */; };
+		428F81292F02DF300081CCAD /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F81272F02DF300081CCAD /* DesignTokens.swift */; };
+		428F812A2F02DF300081CCAD /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F81272F02DF300081CCAD /* DesignTokens.swift */; };
+		428F812C2F02DF340081CCAD /* View+AppElevatedCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F812B2F02DF340081CCAD /* View+AppElevatedCard.swift */; };
+		428F812D2F02DF340081CCAD /* View+AppElevatedCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F812B2F02DF340081CCAD /* View+AppElevatedCard.swift */; };
+		428F812E2F02DF340081CCAD /* View+AppElevatedCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F812B2F02DF340081CCAD /* View+AppElevatedCard.swift */; };
+		428F81302F02DF350081CCAD /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F812F2F02DF350081CCAD /* Constants.swift */; };
+		428F81312F02DF350081CCAD /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F812F2F02DF350081CCAD /* Constants.swift */; };
+		428F81322F02DF350081CCAD /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F812F2F02DF350081CCAD /* Constants.swift */; };
+		428F81342F02DF360081CCAD /* ChallengeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F81332F02DF360081CCAD /* ChallengeStore.swift */; };
+		428F81352F02DF360081CCAD /* ChallengeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F81332F02DF360081CCAD /* ChallengeStore.swift */; };
+		428F81362F02DF360081CCAD /* ChallengeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F81332F02DF360081CCAD /* ChallengeStore.swift */; };
 		4298AA4A2E43BB0D00419E3D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4298A9EF2E43B72D00419E3D /* WidgetKit.framework */; };
 		4298AA4B2E43BB0D00419E3D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4298A9F12E43B72D00419E3D /* SwiftUI.framework */; };
 		4298AA5C2E43BB1000419E3D /* MovoLiveActivityExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4298AA492E43BB0D00419E3D /* MovoLiveActivityExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		42C2CE522E97FCA8002DCFEB /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 42C2CE512E97FCA8002DCFEB /* FirebaseFirestore */; };
 		42C2D03E2E981854002DCFEB /* FirebaseFirestoreCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 42C2D03D2E981854002DCFEB /* FirebaseFirestoreCombine-Community */; };
+		42CD1BAD2EF3524700DA1094 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 42CD1BAC2EF3524700DA1094 /* StoreKit.framework */; };
 		42E6FB192E8C467D0079E384 /* DotLottie in Frameworks */ = {isa = PBXBuildFile; productRef = 42E6FB182E8C467D0079E384 /* DotLottie */; };
+		42FB42B82EFDF6A70002B0B2 /* MovoWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 42FB42AE2EFDF6A50002B0B2 /* MovoWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +79,13 @@
 			remoteGlobalIDString = 4298AA482E43BB0D00419E3D;
 			remoteInfo = MovoLiveActivityExtension;
 		};
+		42FB42B62EFDF6A70002B0B2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 429834212E3D700400FCD845 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 42FB42AD2EFDF6A50002B0B2;
+			remoteInfo = "MovoWatch Watch App";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -73,6 +101,17 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		42FB42B92EFDF6A70002B0B2 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				42FB42B82EFDF6A70002B0B2 /* MovoWatch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -80,6 +119,13 @@
 		423503B12E9328BA00E01074 /* MovowidgetsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MovowidgetsExtension.entitlements; sourceTree = "<group>"; };
 		423503B22E93293F00E01074 /* SharedStepsStore1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedStepsStore1.swift; sourceTree = "<group>"; usesTabs = 0; };
 		42438E982E9EF0E2002F6906 /* SharedUnitPrefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedUnitPrefs.swift; sourceTree = "<group>"; };
+		42579C0C2F0956DF0038CF04 /* HeatmapShared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapShared.swift; sourceTree = "<group>"; };
+		426091EE2EFE0CE5000EAFB9 /* ActiveWorkoutPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutPayload.swift; sourceTree = "<group>"; };
+		428F81232F02DF2B0081CCAD /* WeightUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightUnit.swift; sourceTree = "<group>"; };
+		428F81272F02DF300081CCAD /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
+		428F812B2F02DF340081CCAD /* View+AppElevatedCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+AppElevatedCard.swift"; sourceTree = "<group>"; };
+		428F812F2F02DF350081CCAD /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		428F81332F02DF360081CCAD /* ChallengeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeStore.swift; sourceTree = "<group>"; };
 		429834292E3D700400FCD845 /* Movo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Movo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		429834362E3D700600FCD845 /* MovoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MovoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		429834402E3D700600FCD845 /* MovoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MovoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -87,6 +133,8 @@
 		4298A9F12E43B72D00419E3D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		4298AA492E43BB0D00419E3D /* MovoLiveActivityExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MovoLiveActivityExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		4298AAC22E44181500419E3D /* MovoLiveActivityExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MovoLiveActivityExtension.entitlements; sourceTree = "<group>"; };
+		42CD1BAC2EF3524700DA1094 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		42FB42AE2EFDF6A50002B0B2 /* MovoWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MovoWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -96,6 +144,13 @@
 				Info.plist,
 			);
 			target = 423503982E9327DE00E01074 /* MovowidgetsExtension */;
+		};
+		42776E6B2F04B82F00B0D960 /* Exceptions for "MovoWatch Watch App" folder in "MovoWatch Watch App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				info.plist,
+			);
+			target = 42FB42AD2EFDF6A50002B0B2 /* MovoWatch Watch App */;
 		};
 		4298AA5D2E43BB1000419E3D /* Exceptions for "MovoLiveActivity" folder in "MovoLiveActivityExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -135,6 +190,34 @@
 			);
 			target = 429834282E3D700400FCD845 /* Movo */;
 		};
+		42CD20552EF4B8B700DA1094 /* Exceptions for "Movo" folder in "MovoTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Movo - Gym Tracker & Planner.storekit",
+			);
+			target = 429834352E3D700600FCD845 /* MovoTests */;
+		};
+		42CD20562EF4B8B700DA1094 /* Exceptions for "Movo" folder in "MovoUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Movo - Gym Tracker & Planner.storekit",
+			);
+			target = 4298343F2E3D700600FCD845 /* MovoUITests */;
+		};
+		42CD20572EF4B8B700DA1094 /* Exceptions for "Movo" folder in "MovoLiveActivityExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Movo - Gym Tracker & Planner.storekit",
+			);
+			target = 4298AA482E43BB0D00419E3D /* MovoLiveActivityExtension */;
+		};
+		42CD20582EF4B8B700DA1094 /* Exceptions for "Movo" folder in "MovowidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Movo - Gym Tracker & Planner.storekit",
+			);
+			target = 423503982E9327DE00E01074 /* MovowidgetsExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
@@ -161,6 +244,10 @@
 			exceptions = (
 				4298AA6E2E440F8C00419E3D /* Exceptions for "Movo" folder in "Movo" target */,
 				428A78EE2E50A22500864287 /* Exceptions for "Movo" folder in "Copy Bundle Resources" phase from "Movo" target */,
+				42CD20552EF4B8B700DA1094 /* Exceptions for "Movo" folder in "MovoTests" target */,
+				42CD20562EF4B8B700DA1094 /* Exceptions for "Movo" folder in "MovoUITests" target */,
+				42CD20572EF4B8B700DA1094 /* Exceptions for "Movo" folder in "MovoLiveActivityExtension" target */,
+				42CD20582EF4B8B700DA1094 /* Exceptions for "Movo" folder in "MovowidgetsExtension" target */,
 			);
 			path = Movo;
 			sourceTree = "<group>";
@@ -186,6 +273,14 @@
 			path = MovoLiveActivity;
 			sourceTree = "<group>";
 		};
+		42FB42AF2EFDF6A50002B0B2 /* MovoWatch Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				42776E6B2F04B82F00B0D960 /* Exceptions for "MovoWatch Watch App" folder in "MovoWatch Watch App" target */,
+			);
+			path = "MovoWatch Watch App";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -209,6 +304,7 @@
 				424BBC0F2E42524200E9DE69 /* FirebaseAnalytics in Frameworks */,
 				42C2D03E2E981854002DCFEB /* FirebaseFirestoreCombine-Community in Frameworks */,
 				42438DA12E9B005A002F6906 /* FirebaseStorage in Frameworks */,
+				42CD1BAD2EF3524700DA1094 /* StoreKit.framework in Frameworks */,
 				42C2CE522E97FCA8002DCFEB /* FirebaseFirestore in Frameworks */,
 				424BBC112E42524200E9DE69 /* FirebaseAuth in Frameworks */,
 			);
@@ -237,12 +333,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		42FB42AB2EFDF6A50002B0B2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		424BBC0D2E42524200E9DE69 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				42CD1BAC2EF3524700DA1094 /* StoreKit.framework */,
 				4298A9EF2E43B72D00419E3D /* WidgetKit.framework */,
 				4298A9F12E43B72D00419E3D /* SwiftUI.framework */,
 			);
@@ -252,7 +356,9 @@
 		429834202E3D700400FCD845 = {
 			isa = PBXGroup;
 			children = (
+				42579C0C2F0956DF0038CF04 /* HeatmapShared.swift */,
 				423503B22E93293F00E01074 /* SharedStepsStore1.swift */,
+				426091EE2EFE0CE5000EAFB9 /* ActiveWorkoutPayload.swift */,
 				42438E982E9EF0E2002F6906 /* SharedUnitPrefs.swift */,
 				423503B12E9328BA00E01074 /* MovowidgetsExtension.entitlements */,
 				4298AAC22E44181500419E3D /* MovoLiveActivityExtension.entitlements */,
@@ -261,8 +367,14 @@
 				429834432E3D700600FCD845 /* MovoUITests */,
 				4298AA4C2E43BB0D00419E3D /* MovoLiveActivity */,
 				4235039C2E9327DF00E01074 /* Movowidgets */,
+				42FB42AF2EFDF6A50002B0B2 /* MovoWatch Watch App */,
 				424BBC0D2E42524200E9DE69 /* Frameworks */,
 				4298342A2E3D700400FCD845 /* Products */,
+				428F81232F02DF2B0081CCAD /* WeightUnit.swift */,
+				428F81272F02DF300081CCAD /* DesignTokens.swift */,
+				428F812B2F02DF340081CCAD /* View+AppElevatedCard.swift */,
+				428F812F2F02DF350081CCAD /* Constants.swift */,
+				428F81332F02DF360081CCAD /* ChallengeStore.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -274,6 +386,7 @@
 				429834402E3D700600FCD845 /* MovoUITests.xctest */,
 				4298AA492E43BB0D00419E3D /* MovoLiveActivityExtension.appex */,
 				423503992E9327DE00E01074 /* MovowidgetsExtension.appex */,
+				42FB42AE2EFDF6A50002B0B2 /* MovoWatch Watch App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -311,12 +424,14 @@
 				429834262E3D700400FCD845 /* Frameworks */,
 				429834272E3D700400FCD845 /* Resources */,
 				4298AA082E43B72F00419E3D /* Embed Foundation Extensions */,
+				42FB42B92EFDF6A70002B0B2 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				4298AA5B2E43BB1000419E3D /* PBXTargetDependency */,
 				423503AB2E9327E100E01074 /* PBXTargetDependency */,
+				42FB42B72EFDF6A70002B0B2 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				4298342B2E3D700400FCD845 /* Movo */,
@@ -405,6 +520,28 @@
 			productReference = 4298AA492E43BB0D00419E3D /* MovoLiveActivityExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		42FB42AD2EFDF6A50002B0B2 /* MovoWatch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 42FB42BC2EFDF6A70002B0B2 /* Build configuration list for PBXNativeTarget "MovoWatch Watch App" */;
+			buildPhases = (
+				42FB42AA2EFDF6A50002B0B2 /* Sources */,
+				42FB42AB2EFDF6A50002B0B2 /* Frameworks */,
+				42FB42AC2EFDF6A50002B0B2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				42FB42AF2EFDF6A50002B0B2 /* MovoWatch Watch App */,
+			);
+			name = "MovoWatch Watch App";
+			packageProductDependencies = (
+			);
+			productName = "MovoWatch Watch App";
+			productReference = 42FB42AE2EFDF6A50002B0B2 /* MovoWatch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -412,7 +549,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1630;
+				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
 					423503982E9327DE00E01074 = {
@@ -431,6 +568,9 @@
 					};
 					4298AA482E43BB0D00419E3D = {
 						CreatedOnToolsVersion = 16.3;
+					};
+					42FB42AD2EFDF6A50002B0B2 = {
+						CreatedOnToolsVersion = 26.0.1;
 					};
 				};
 			};
@@ -459,6 +599,7 @@
 				4298343F2E3D700600FCD845 /* MovoUITests */,
 				4298AA482E43BB0D00419E3D /* MovoLiveActivityExtension */,
 				423503982E9327DE00E01074 /* MovowidgetsExtension */,
+				42FB42AD2EFDF6A50002B0B2 /* MovoWatch Watch App */,
 			);
 		};
 /* End PBXProject section */
@@ -499,6 +640,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		42FB42AC2EFDF6A50002B0B2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -506,6 +654,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				428F81242F02DF2B0081CCAD /* WeightUnit.swift in Sources */,
+				428F81342F02DF360081CCAD /* ChallengeStore.swift in Sources */,
+				42579C122F095A650038CF04 /* HeatmapShared.swift in Sources */,
+				428F812A2F02DF300081CCAD /* DesignTokens.swift in Sources */,
+				428F81312F02DF350081CCAD /* Constants.swift in Sources */,
+				428F812C2F02DF340081CCAD /* View+AppElevatedCard.swift in Sources */,
 				42438E9A2E9EF0E2002F6906 /* SharedUnitPrefs.swift in Sources */,
 				423504D22E9329CF00E01074 /* SharedStepsStore1.swift in Sources */,
 			);
@@ -515,8 +669,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				428F81292F02DF300081CCAD /* DesignTokens.swift in Sources */,
+				428F81252F02DF2B0081CCAD /* WeightUnit.swift in Sources */,
+				428F812E2F02DF340081CCAD /* View+AppElevatedCard.swift in Sources */,
+				428F81322F02DF350081CCAD /* Constants.swift in Sources */,
+				428F81362F02DF360081CCAD /* ChallengeStore.swift in Sources */,
+				42579C0D2F0956DF0038CF04 /* HeatmapShared.swift in Sources */,
 				42438E992E9EF0E2002F6906 /* SharedUnitPrefs.swift in Sources */,
 				423504D12E9329CF00E01074 /* SharedStepsStore1.swift in Sources */,
+				426091EF2EFE0CE5000EAFB9 /* ActiveWorkoutPayload.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -539,6 +700,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				42438F932E9EF243002F6906 /* SharedUnitPrefs.swift in Sources */,
+				428F81302F02DF350081CCAD /* Constants.swift in Sources */,
+				428F81282F02DF300081CCAD /* DesignTokens.swift in Sources */,
+				428F81262F02DF2B0081CCAD /* WeightUnit.swift in Sources */,
+				428F81352F02DF360081CCAD /* ChallengeStore.swift in Sources */,
+				428F812D2F02DF340081CCAD /* View+AppElevatedCard.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		42FB42AA2EFDF6A50002B0B2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				426093262EFE0FE9000EAFB9 /* ActiveWorkoutPayload.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -565,6 +739,11 @@
 			target = 4298AA482E43BB0D00419E3D /* MovoLiveActivityExtension */;
 			targetProxy = 4298AA5A2E43BB1000419E3D /* PBXContainerItemProxy */;
 		};
+		42FB42B72EFDF6A70002B0B2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 42FB42AD2EFDF6A50002B0B2 /* MovoWatch Watch App */;
+			targetProxy = 42FB42B62EFDF6A70002B0B2 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -576,7 +755,7 @@
 				CODE_SIGN_ENTITLEMENTS = MovowidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Movowidgets/Info.plist;
@@ -588,8 +767,8 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.Movowidgets;
+				MARKETING_VERSION = 1.1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -610,7 +789,7 @@
 				CODE_SIGN_ENTITLEMENTS = MovowidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Movowidgets/Info.plist;
@@ -622,8 +801,8 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.Movowidgets;
+				MARKETING_VERSION = 1.1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -765,13 +944,14 @@
 				CODE_SIGN_ENTITLEMENTS = Movo/Movo.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Movo/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "Deine Schritte werden angezeigt.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Movo reads your step count, heart rate and workouts from Health to show goals, stats, and widgets.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Movo can write workout data to Apple Health if you enable it.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Dein Standort wird benötigt, um deine Joggingstrecke aufzuzeichnen.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -784,7 +964,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -806,13 +986,14 @@
 				CODE_SIGN_ENTITLEMENTS = Movo/Movo.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Movo/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "Deine Schritte werden angezeigt.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Movo reads your step count, heart rate and workouts from Health to show goals, stats, and widgets.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Movo can write workout data to Apple Health if you enable it.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Dein Standort wird benötigt, um deine Joggingstrecke aufzuzeichnen.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -825,7 +1006,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -849,7 +1030,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = benepkt.MovoTests;
+				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -872,7 +1053,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = benepkt.MovoTests;
+				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -894,7 +1075,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = benepkt.MovoUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -916,7 +1097,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = benepkt.MovoUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -936,7 +1117,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = MovoLiveActivityExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MovoLiveActivity/Info.plist;
@@ -948,7 +1129,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.MovoLiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -969,7 +1150,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = MovoLiveActivityExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MovoLiveActivity/Info.plist;
@@ -981,7 +1162,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.MovoLiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -992,6 +1173,72 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		42FB42BA2EFDF6A70002B0B2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "MovoWatch Watch App/MovoWatch Watch App.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 99Q58AXFLW;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_EXPAND_BUILD_SETTINGS = YES;
+				INFOPLIST_FILE = "MovoWatch Watch App/info.plist";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Movo reads your step count, heart rate and workouts from Health to show goals, stats, and widgets.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Movo can write workout data to Apple Health if you enable it.";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = benepkt.Movo;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.watch;
+				PRODUCT_NAME = "MovoWatch Watch App";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		42FB42BB2EFDF6A70002B0B2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "MovoWatch Watch App/MovoWatch Watch App.entitlements";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 99Q58AXFLW;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_EXPAND_BUILD_SETTINGS = YES;
+				INFOPLIST_FILE = "MovoWatch Watch App/info.plist";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Movo reads your step count, heart rate and workouts from Health to show goals, stats, and widgets.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Movo can write workout data to Apple Health if you enable it.";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = benepkt.Movo;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.watch;
+				PRODUCT_NAME = "MovoWatch Watch App";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
 		};
@@ -1048,6 +1295,15 @@
 			buildConfigurations = (
 				4298AA5F2E43BB1000419E3D /* Debug */,
 				4298AA602E43BB1000419E3D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		42FB42BC2EFDF6A70002B0B2 /* Build configuration list for PBXNativeTarget "MovoWatch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				42FB42BA2EFDF6A70002B0B2 /* Debug */,
+				42FB42BB2EFDF6A70002B0B2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

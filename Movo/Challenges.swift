@@ -124,6 +124,23 @@ final class NotificationManager {
     private init() {}
 
     private let dailyId = "dailyChallengeReminder"
+    
+    // Get user name for personalization
+    private func getUserName() -> String {
+        return UserDefaults.standard.string(forKey: "userName") ?? ""
+    }
+    
+    // Helper to personalize text
+    private func personalize(_ text: String) -> String {
+        let name = getUserName()
+        if !name.isEmpty {
+            return text.replacingOccurrences(of: "{name}", with: name)
+        } else {
+            return text.replacingOccurrences(of: "{name}, ", with: "")
+                      .replacingOccurrences(of: "{name} ", with: "")
+                      .replacingOccurrences(of: "{name}", with: "")
+        }
+    }
 
     // App-Start: nur Zustand prüfen & (de-)schedulen – KEIN Prompt
     func bootstrap(appSettings: AppSettings) {
@@ -221,15 +238,26 @@ final class NotificationManager {
     // Tägliche Erinnerung (20:00) – Sprache via AppSettings.language (String)
     func scheduleDailyReminder(language: String = "de", hour: Int = 20, minute: Int = 0) {
         let c = UNMutableNotificationContent()
-        let title = (language == "de")
-            ? LocalizedStrings.de["notifications.challengesTitle"]
-            : LocalizedStrings.en["notifications.challengesTitle"]
+        
+        // Variety of motivational messages
+        let titles_de = [
+            "{name}Challenges warten! 🎯",
+            "{name}Bereit für deine Ziele? 💪",
+            "{name}Zeit durchzustarten! 🔥"
+        ]
+        let titles_en = [
+            "{name}Challenges await! 🎯",
+            "{name}Ready for your goals? 💪",
+            "{name}Time to get going! 🔥"
+        ]
+        
+        let title = (language == "de") ? titles_de.randomElement()! : titles_en.randomElement()!
         let body  = (language == "de")
-            ? LocalizedStrings.de["notifications.challengesBody"]
-            : LocalizedStrings.en["notifications.challengesBody"]
+            ? LocalizedStrings.de["notifications.challengesBody"] ?? "Kleiner Reminder für heute. 💪"
+            : LocalizedStrings.en["notifications.challengesBody"] ?? "Quick reminder for today. 💪"
 
-        c.title = title ?? "Challenges"
-        c.body  = body  ?? "Kleiner Reminder für heute. 💪"
+        c.title = personalize(title)
+        c.body  = body
         c.sound = .default
 
         var dc = DateComponents(); dc.hour = hour; dc.minute = minute
@@ -237,6 +265,22 @@ final class NotificationManager {
 
         cancel(ids: [dailyId])
         UNUserNotificationCenter.current().add(.init(identifier: dailyId, content: c, trigger: trigger))
+    }
+
+    // MARK: - Convenience notifications used in ChallengeStore
+
+    func notifyStreakMilestone(days: Int) {
+        let title = LocalizedStrings.de["notifications.streakMilestone"] ?? personalize("{name}Streak-Meilenstein! 🔥")
+        let body = String(format: LocalizedStrings.de["notifications.streakMilestoneBody"] ?? "Du bist seit %d Tagen am Stück aktiv. Weiter so!", days)
+        scheduleNotification(title: title, body: body)
+    }
+
+    func notifyChallengeProgress(challengeName: String, progress: Int, goal: Int) {
+        let percent = Int((Double(progress) / Double(max(goal, 1))) * 100.0)
+        let title = LocalizedStrings.de["notifications.challengeProgress"] ?? personalize("{name}Fast geschafft! ⭐")
+        let bodyTemplate = LocalizedStrings.de["notifications.challengeProgressBody"] ?? "%@: %d%% erreicht."
+        let body = String(format: bodyTemplate, challengeName, percent)
+        scheduleNotification(title: title, body: body)
     }
 
     // MARK: - Helpers
@@ -464,9 +508,20 @@ final class ChallengeStore: ObservableObject {
             let prev = challenges[i].progress
             challenges[i].progress = thisWeek.count
             if thisWeek.count > prev {
-                let title = LocalizedStrings.de["notifications.workoutDone"] ?? "Workout erledigt!"
+                // More celebratory notifications
+                let emojis = ["🔥", "💪", "⭐", "🎉", "🏆"]
+                let emoji = emojis.randomElement()!
+                let userName = UserDefaults.standard.string(forKey: "userName") ?? ""
+                let namePrefix = userName.isEmpty ? "" : "\(userName), "
+                
+                let title = LocalizedStrings.de["notifications.workoutDone"] ?? "\(namePrefix)Workout erledigt! \(emoji)"
                 let body  = LocalizedStrings.de["notifications.workoutDoneBody"] ?? "Super! Du hast heute ein Workout abgeschlossen 💪"
                 NotificationManager.shared.scheduleNotification(title: title, body: body)
+                
+                // Check for streak milestone
+                if thisWeek.count >= 5 {
+                    NotificationManager.shared.notifyStreakMilestone(days: thisWeek.count)
+                }
             }
             saveActiveChallenges()
         }
@@ -532,9 +587,22 @@ final class ChallengeStore: ObservableObject {
                 challenges[i].progress = healthKit.todaySteps
             }
             if challenges[i].progress >= challenges[i].goal && prev < challenges[i].goal {
-                let title = LocalizedStrings.de["notifications.stepsDone"] ?? "Schrittziel erreicht!"
-                let fmt   = LocalizedStrings.de["notifications.stepsDoneBody"] ?? "Toll! Du hast dein Schrittziel erreicht 🚶‍♂️"
-                NotificationManager.shared.scheduleNotification(title: title, body: String(format: fmt, challenges[i].goal))
+                // More celebratory steps notification
+                let emojis = ["🚶", "🏃", "⭐", "🎯", "🏆"]
+                let emoji = emojis.randomElement()!
+                let userName = UserDefaults.standard.string(forKey: "userName") ?? ""
+                let namePrefix = userName.isEmpty ? "" : "\(userName), "
+                
+                let title = LocalizedStrings.de["notifications.stepsDone"] ?? "\(namePrefix)Schrittziel erreicht! \(emoji)"
+                let body = LocalizedStrings.de["notifications.stepsDoneBody"] ?? "Toll! Du hast \(challenges[i].goal) Schritte geschafft!"
+                NotificationManager.shared.scheduleNotification(title: title, body: body)
+                
+                // Notify challenge progress near completion
+                NotificationManager.shared.notifyChallengeProgress(
+                    challengeName: challenges[i].title,
+                    progress: challenges[i].progress,
+                    goal: challenges[i].goal
+                )
             }
         }
         saveActiveChallenges()

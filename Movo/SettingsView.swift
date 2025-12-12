@@ -1,9 +1,9 @@
-// SettingsView.swift – FINAL
 import SwiftUI
 import WidgetKit
-#if canImport(UIKit)
 import UIKit
-#endif
+import HealthKit
+import UserNotifications
+
 #if canImport(WebKit)
 import WebKit
 #endif
@@ -23,146 +23,38 @@ struct SettingsView: View {
     @State private var showLanguageSheet = false
     @State private var showUnitsSheet = false
 
-    // Logout
     @State private var confirmLogout = false
-
-    // Account löschen
     @State private var confirmDelete = false
+
     @State private var isDeletingAccount = false
     @State private var deleteErrorMessage: String?
 
-    // Persistente Einheit (global)
     @AppStorage("units.weight") private var weightUnit: WeightUnit = .kg
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
+                cloudSection
+                appearanceSection
+                integrationsSection
+                generalSection
+                aboutSection
+                legalSection
 
-                // MARK: Cloud-Sync
-                // MARK: Cloud
-                sectionHeader(appSettings.localized("settings.cloudSync"))
-                MovoCloudRow()   // <— statt der bisherigen Cloud-Karten hier nur noch die Nav-Zeile
-
-
-
-                // MARK: Erscheinung
-                sectionHeader(appSettings.localized("settings.appearance"))
-                SettingNavChip(
-                    title: appSettings.localized("settings.design.title"),
-                    subtitle: appSettings.localized("settings.design.subtitle"),
-                    systemImage: "paintbrush.pointed.fill"
-                ) { DesignSettingsView() }
-
-                // MARK: Allgemein
-                sectionHeader(appSettings.localized("settings.general"))
-                SettingToggleChip(
-                    title: appSettings.localized("settings.notifications"),
-                    systemImage: "bell.badge",
-                    isOn: $appSettings.notificationsEnabled
-                )
-                SettingValueChip(
-                    title: appSettings.localized("settings.language"),
-                    value: appSettings.language == "de" ? "Deutsch" : "English",
-                    systemImage: "globe"
-                ) { showLanguageSheet = true }
-
-                // Einheiten (kg/lb)
-                SettingValueChip(
-                    title: appSettings.localized("settings.units"),
-                    value: weightUnit.localizedShort,
-                    systemImage: "scalemass"
-                ) { showUnitsSheet = true }
-
-                // MARK: Über
-                sectionHeader(appSettings.localized("settings.about"))
-                SettingValueChip(
-                    title: appSettings.localized("settings.version"),
-                    value: Bundle.main.appVersionDisplay,
-                    systemImage: "info.circle"
-                ) { }
-
-                SettingNavChip(
-                    title: appSettings.localized("settings.aboutApp.title"),
-                    subtitle: appSettings.localized("settings.aboutApp.subtitle"),
-                    systemImage: "sparkles"
-                ) { AboutAppView() }
-
-                SettingNavChip(
-                    title: appSettings.localized("settings.support.title"),
-                    subtitle: appSettings.localized("settings.support.subtitle"),
-                    systemImage: "envelope"
-                ) { SupportView() }
-
-                // MARK: Rechtliches
-                sectionHeader(appSettings.localized("settings.legal"))
-
-                SettingLinkChip(
-                    title: appSettings.localized("settings.legal.imprint.title"),
-                    subtitle: appSettings.localized("settings.legal.imprint.subtitle"),
-                    systemImage: "doc.text.magnifyingglass",
-                    urlString: "https://movobpcontact-hash.github.io/movo-support./#rechtliches"
-                )
-
-                SettingLinkChip(
-                    title: "AGB",
-                    subtitle: appSettings.localized("settings.legal.imprint.subtitle"),
-                    systemImage: "doc.text",
-                    urlString: "https://movobpcontact-hash.github.io/movo-support./#rechtliches"
-                )
-
-                SettingLinkChip(
-                    title: appSettings.localized("settings.legal.privacy.title"),
-                    subtitle: appSettings.localized("settings.legal.privacy.subtitle"),
-                    systemImage: "hand.raised.fill",
-                    urlString: "https://movobpcontact-hash.github.io/movo-support./#rechtliches"
-                )
-
-                // Consent-Center weiterhin in der App (falls du das behalten willst)
-                SettingNavChip(
-                    title: appSettings.localized("settings.legal.consent.title"),
-                    subtitle: appSettings.localized("settings.legal.consent.subtitle"),
-                    systemImage: "switch.2"
-                ) { ConsentCenterView() }
-
-
-
-                // MARK: Konto (GANZ UNTEN)
                 if authService.user != nil {
-                    sectionHeader(appSettings.localized("settings.account"))
-
-                    // Logout (vorletzter Eintrag)
-                    SettingActionChip(
-                        title: appSettings.localized("settings.logout"),
-                        systemImage: "rectangle.portrait.and.arrow.right",
-                        role: .destructive
-                    ) { confirmLogout = true }
-
-                    // Konto löschen (letzter Eintrag)
-                    SettingActionChip(
-                        title: appSettings.localized("settings.account.delete"),
-                        systemImage: "trash",
-                        role: .destructive
-                    ) { confirmDelete = true }
-
+                    accountSection
                 }
             }
             .padding(16)
         }
         .navigationTitle(appSettings.localized("settings.title"))
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            if showsDoneButton {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(appSettings.localized("settings.done")) { dismiss() }
-                }
-            }
-        }
-        // Sprachauswahl
+        .toolbar { doneToolbar }
+
         .sheet(isPresented: $showLanguageSheet) {
             LanguagePickerSheet(language: $appSettings.language,
                                 title: appSettings.localized("settings.language"))
         }
-        // Einheiten-Auswahl
         .sheet(isPresented: $showUnitsSheet) {
             UnitsPickerSheet(
                 weightUnit: Binding(get: { weightUnit }, set: { weightUnit = $0 }),
@@ -170,13 +62,11 @@ struct SettingsView: View {
             )
         }
 
-        // 👉 Erstsynchronisation in App Group + Widgets neu laden
         .onAppear {
             syncLanguageAndUnitsToAppGroup()
             WidgetCenter.shared.reloadAllTimelines()
         }
 
-        // 👉 Sprache geändert
         .onChange(of: appSettings.language) { newCode in
             let code = normalizeLang(newCode)
             UserDefaults.standard.set(code, forKey: "app.language")
@@ -184,7 +74,6 @@ struct SettingsView: View {
             WidgetCenter.shared.reloadAllTimelines()
         }
 
-        // 👉 Einheit geändert
         .onChange(of: weightUnit) { newValue in
             UserDefaults.standard.set(newValue.rawValue, forKey: "units.weight")
             UserDefaults(suiteName: APP_GROUP_ID)?.set(newValue.rawValue, forKey: "units.weight")
@@ -194,9 +83,7 @@ struct SettingsView: View {
             WidgetCenter.shared.reloadAllTimelines()
         }
 
-        // Logout-Alert
-        .alert(appSettings.localized("settings.logout"),
-               isPresented: $confirmLogout) {
+        .alert(appSettings.localized("settings.logout"), isPresented: $confirmLogout) {
             Button(appSettings.localized("settings.logout"), role: .destructive) {
                 authService.signOut()
             }
@@ -205,9 +92,7 @@ struct SettingsView: View {
             Text(appSettings.localized("alert.logout.message"))
         }
 
-        // Konto löschen – Bestätigung
-        .alert(appSettings.localized("settings.account.delete"),
-               isPresented: $confirmDelete) {
+        .alert(appSettings.localized("settings.account.delete"), isPresented: $confirmDelete) {
             Button(appSettings.localized("settings.account.delete.confirm"), role: .destructive) {
                 deleteErrorMessage = nil
                 isDeletingAccount = true
@@ -215,8 +100,10 @@ struct SettingsView: View {
                     DispatchQueue.main.async {
                         isDeletingAccount = false
                         switch result {
-                        case .success: break
-                        case .failure(let err): deleteErrorMessage = err.localizedDescription
+                        case .success:
+                            break
+                        case .failure(let err):
+                            deleteErrorMessage = err.localizedDescription
                         }
                     }
                 }
@@ -226,15 +113,14 @@ struct SettingsView: View {
             Text(appSettings.localized("settings.account.delete.message"))
         }
 
-        // Fehler-Alert für Löschung
         .alert(appSettings.localized("settings.account.delete.failed"),
-               isPresented: .constant(deleteErrorMessage != nil)) {
+               isPresented: Binding(get: { deleteErrorMessage != nil },
+                                   set: { if !$0 { deleteErrorMessage = nil } })) {
             Button("OK", role: .cancel) { deleteErrorMessage = nil }
         } message: {
             Text(deleteErrorMessage ?? "")
         }
 
-        // Overlay bei laufender Löschung
         .overlay {
             if isDeletingAccount {
                 ZStack {
@@ -244,6 +130,150 @@ struct SettingsView: View {
                         .background(.ultraThinMaterial)
                         .cornerRadius(12)
                 }
+            }
+        }
+    }
+
+    // MARK: - Sections
+
+    @ViewBuilder private var cloudSection: some View {
+        sectionHeader(appSettings.localized("settings.cloudSync"))
+        MovoCloudRow()
+    }
+
+    @ViewBuilder private var appearanceSection: some View {
+        sectionHeader(appSettings.localized("settings.appearance"))
+        SettingNavChip(
+            title: appSettings.localized("settings.design.title"),
+            subtitle: appSettings.localized("settings.design.subtitle"),
+            systemImage: "paintbrush.pointed.fill"
+        ) { DesignSettingsView() }
+    }
+
+    @ViewBuilder private var integrationsSection: some View {
+        sectionHeader(appSettings.language.lowercased().hasPrefix("de") ? "Integrationen" : "Integrations")
+
+        SettingNavChip(
+            title: "Apple Health",
+            subtitle: appSettings.language.lowercased().hasPrefix("de")
+                ? "Neu verknüpfen & Berechtigungen"
+                : "Relink & permissions",
+            systemImage: "heart.text.square.fill"
+        ) {
+            AppleHealthSettingsView()
+        }
+
+        SettingNavChip(
+            title: appSettings.localized("settings.notifications"),
+            subtitle: notificationsSubtitle,
+            systemImage: "bell.badge.fill"
+        ) {
+            NotificationsSettingsView()
+        }
+    }
+
+    @ViewBuilder
+    private var generalSection: some View {
+        sectionHeader(appSettings.localized("settings.general"))
+
+        let languageDisplay = appSettings.language.lowercased().hasPrefix("de") ? "Deutsch" : "English"
+
+        SettingValueChip(
+            title: appSettings.localized("settings.language"),
+            value: languageDisplay,
+            systemImage: "globe"
+        ) { showLanguageSheet = true }
+
+        SettingValueChip(
+            title: appSettings.localized("settings.units"),
+            value: weightUnit.localizedShort,
+            systemImage: "scalemass"
+        ) { showUnitsSheet = true }
+    }
+
+
+    @ViewBuilder private var aboutSection: some View {
+        sectionHeader(appSettings.localized("settings.about"))
+
+        SettingValueChip(
+            title: appSettings.localized("settings.version"),
+            value: Bundle.main.appVersionDisplay,
+            systemImage: "info.circle"
+        ) { }
+
+        SettingNavChip(
+            title: appSettings.localized("settings.aboutApp.title"),
+            subtitle: appSettings.localized("settings.aboutApp.subtitle"),
+            systemImage: "sparkles"
+        ) { AboutAppView() }
+
+        SettingNavChip(
+            title: appSettings.localized("settings.support.title"),
+            subtitle: appSettings.localized("settings.support.subtitle"),
+            systemImage: "envelope"
+        ) { SupportView() }
+    }
+
+    @ViewBuilder private var legalSection: some View {
+        sectionHeader(appSettings.localized("settings.legal"))
+
+        SettingLinkChip(
+            title: appSettings.localized("settings.legal.imprint.title"),
+            subtitle: appSettings.localized("settings.legal.imprint.subtitle"),
+            systemImage: "doc.text.magnifyingglass",
+            urlString: "https://www.movobp.de/impressum.html"
+        )
+
+        SettingLinkChip(
+            title: "AGB",
+            subtitle: appSettings.localized("settings.legal.imprint.subtitle"),
+            systemImage: "doc.text",
+            urlString: "https://www.movobp.de/agb.html"
+        )
+
+        SettingLinkChip(
+            title: appSettings.localized("settings.legal.privacy.title"),
+            subtitle: appSettings.localized("settings.legal.privacy.subtitle"),
+            systemImage: "hand.raised.fill",
+            urlString: "https://www.movobp.de/datenschutz.html"
+        )
+
+        SettingNavChip(
+            title: appSettings.localized("settings.legal.consent.title"),
+            subtitle: appSettings.localized("settings.legal.consent.subtitle"),
+            systemImage: "switch.2"
+        ) { ConsentCenterView() }
+    }
+
+    @ViewBuilder private var accountSection: some View {
+        sectionHeader(appSettings.localized("settings.account"))
+
+        SettingActionChip(
+            title: appSettings.localized("settings.logout"),
+            systemImage: "rectangle.portrait.and.arrow.right",
+            role: .destructive
+        ) { confirmLogout = true }
+
+        SettingActionChip(
+            title: appSettings.localized("settings.account.delete"),
+            systemImage: "trash",
+            role: .destructive
+        ) { confirmDelete = true }
+    }
+
+    // MARK: - Small helpers
+
+    private var notificationsSubtitle: String {
+        let isDE = appSettings.language.lowercased().hasPrefix("de")
+        return appSettings.notificationsEnabled
+            ? (isDE ? "Aktiviert" : "Enabled")
+            : (isDE ? "Deaktiviert" : "Disabled")
+    }
+
+    @ToolbarContentBuilder private var doneToolbar: some ToolbarContent {
+        if showsDoneButton {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(appSettings.localized("settings.done")) { dismiss() }
             }
         }
     }
@@ -699,6 +729,513 @@ private struct SettingActionChip: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(title)
+    }
+}
+
+// MARK: - Apple Health Settings
+
+private struct AppleHealthSettingsView: View {
+    @EnvironmentObject var appSettings: AppSettings
+    @StateObject private var healthKit = HealthKitManager()
+
+    @State private var notifStatus: UNAuthorizationStatus = .notDetermined
+    @State private var isWorking = false
+
+    private var isDE: Bool { appSettings.language.lowercased().hasPrefix("de") }
+    private func L(_ de: String, _ en: String) -> String { isDE ? de : en }
+
+    // gleiche Read-Types wie in deinem Onboarding requestPermissions() :contentReference[oaicite:1]{index=1}
+    private var onboardingReadTypes: [HKObjectType] {
+        [
+            HKObjectType.quantityType(forIdentifier: .stepCount)!,
+            HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!,
+            HKObjectType.quantityType(forIdentifier: .bodyMass)!,
+            HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!,
+            HKObjectType.quantityType(forIdentifier: .height)!,
+            HKObjectType.quantityType(forIdentifier: .heartRate)!,
+            HKObjectType.workoutType()
+        ]
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                Text(L(
+                    "Hier kannst du Apple Health und (falls nötig) Benachrichtigungen erneut verknüpfen – genau wie im Onboarding.",
+                    "Here you can relink Apple Health and (if needed) notifications — just like in onboarding."
+                ))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+                SettingActionChip(
+                    title: L("Alles neu verknüpfen", "Relink everything"),
+                    systemImage: "link.circle.fill"
+                ) {
+                    Task { await relinkAll() }
+                }
+                .disabled(isWorking)
+
+                SettingActionChip(
+                    title: L("Health-App öffnen", "Open Health app"),
+                    systemImage: "heart.fill"
+                ) {
+                    openHealthApp()
+                }
+
+                SettingActionChip(
+                    title: L("App-Einstellungen öffnen", "Open App settings"),
+                    systemImage: "gearshape.fill"
+                ) {
+                    openAppSettings()
+                }
+
+                if notifStatus == .denied {
+                    Text(L(
+                        "Hinweis: Benachrichtigungen sind in iOS aktuell deaktiviert. Bitte in den App-Einstellungen aktivieren.",
+                        "Note: Notifications are currently disabled in iOS. Please enable them in App Settings."
+                    ))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 6)
+                }
+            }
+            .padding(16)
+        }
+        .background(bgGradient)
+        .navigationTitle("Apple Health")
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await refreshNotifStatus() }
+    }
+
+    private func relinkAll() async {
+        isWorking = true
+        defer { isWorking = false }
+
+        // Notifications neu anfragen (über deinen NotificationManager1) :contentReference[oaicite:2]{index=2}
+        await NotificationManager1.shared.requestAuthorization()
+        await refreshNotifStatus()
+
+        // HealthKit neu anfragen (wie Onboarding) :contentReference[oaicite:3]{index=3}
+        await healthKit.requestReadAuthorizationIfNeeded(
+            readTypes: onboardingReadTypes,
+            forcePrompt: true
+        )
+    }
+
+    private func refreshNotifStatus() async {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        await MainActor.run { notifStatus = settings.authorizationStatus }
+    }
+
+    private func openAppSettings() {
+        #if canImport(UIKit)
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
+        #endif
+    }
+
+    private func openHealthApp() {
+        #if canImport(UIKit)
+        guard let url = URL(string: "x-apple-health://") else { return }
+        UIApplication.shared.open(url)
+        #endif
+    }
+}
+
+// MARK: - Notifications Settings
+import SwiftUI
+import UserNotifications
+
+#if canImport(UIKit)
+import UIKit
+#endif
+
+// MARK: - Notifications Settings
+
+private struct NotificationsSettingsView: View {
+    @EnvironmentObject var appSettings: AppSettings
+
+    // MARK: Scheduled reminders (mit Uhrzeit)
+    @AppStorage("notif.training.enabled") private var trainingEnabled: Bool = true
+    @AppStorage("notif.training.hour") private var trainingHour: Int = 18
+    @AppStorage("notif.training.minute") private var trainingMinute: Int = 0
+
+    @AppStorage("notif.morning.enabled") private var morningEnabled: Bool = true
+    @AppStorage("notif.morning.hour") private var morningHour: Int = 8
+    @AppStorage("notif.morning.minute") private var morningMinute: Int = 0
+
+    @AppStorage("notif.water.enabled") private var waterEnabled: Bool = false
+    @AppStorage("notif.water.hour") private var waterHour: Int = 12
+    @AppStorage("notif.water.minute") private var waterMinute: Int = 0
+    @AppStorage("notif.water.identifier") private var waterIdentifier: String = ""
+
+    // MARK: “Mehr” Notifications (ohne Uhrzeit – werden aus App-Logik getriggert)
+    @AppStorage("notif.postWorkoutHydration.enabled") private var postWorkoutHydrationEnabled: Bool = true
+    @AppStorage("notif.workoutSummary.enabled") private var workoutSummaryEnabled: Bool = true
+
+    @AppStorage("notif.weightMilestones.enabled") private var weightMilestonesEnabled: Bool = true
+    @AppStorage("notif.streakMilestones.enabled") private var streakMilestonesEnabled: Bool = true
+    @AppStorage("notif.personalRecord.enabled") private var personalRecordEnabled: Bool = true
+
+    @AppStorage("notif.challengeProgress.enabled") private var challengeProgressEnabled: Bool = true
+    @AppStorage("notif.restDay.enabled") private var restDayEnabled: Bool = true
+    @AppStorage("notif.comeback.enabled") private var comebackEnabled: Bool = true
+    @AppStorage("notif.weeklySummary.enabled") private var weeklySummaryEnabled: Bool = true
+
+    // MARK: UI state
+    @State private var notifStatus: UNAuthorizationStatus = .notDetermined
+    @State private var showTrainingTime = false
+    @State private var showMorningTime = false
+    @State private var showWaterTime = false
+
+    private var isDE: Bool { appSettings.language.lowercased().hasPrefix("de") }
+    private func L(_ de: String, _ en: String) -> String { isDE ? de : en }
+
+    // ✅ stabil (kein $appSettings.dynamicMember)
+    private var masterBinding: Binding<Bool> {
+        Binding(
+            get: { appSettings.notificationsEnabled },
+            set: { newValue in
+                appSettings.notificationsEnabled = newValue
+                NotificationManager1.shared.setMasterEnabled(newValue) // ✅ Master AUS => cancelAllNotifications()
+            }
+        )
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+
+                sectionTitle(L("Benachrichtigungen", "Notifications"))
+
+                SettingToggleChip(
+                    title: L("Benachrichtigungen aktivieren", "Enable notifications"),
+                    systemImage: "bell.fill",
+                    isOn: masterBinding
+                )
+                .onChange(of: appSettings.notificationsEnabled) { _, _ in
+                    Task { await handleMasterChanged() }
+                }
+
+                permissionArea
+
+                // MARK: - Erinnerungen (scheduled)
+                sectionTitle(L("Erinnerungen", "Reminders"))
+
+                SettingToggleChip(
+                    title: L("Trainingserinnerung", "Training reminder"),
+                    systemImage: "figure.strengthtraining.traditional",
+                    isOn: $trainingEnabled
+                )
+                .disabled(!appSettings.notificationsEnabled)
+                .onChange(of: trainingEnabled) { _, _ in applySchedules() }
+
+                SettingValueChip(
+                    title: L("Uhrzeit", "Time"),
+                    value: timeString(trainingHour, trainingMinute),
+                    systemImage: "clock"
+                ) { showTrainingTime = true }
+                .disabled(!(appSettings.notificationsEnabled && trainingEnabled))
+                .opacity((appSettings.notificationsEnabled && trainingEnabled) ? 1 : 0.5)
+
+                SettingToggleChip(
+                    title: L("Morgen-Motivation", "Morning motivation"),
+                    systemImage: "sunrise.fill",
+                    isOn: $morningEnabled
+                )
+                .disabled(!appSettings.notificationsEnabled)
+                .onChange(of: morningEnabled) { _, _ in applySchedules() }
+
+                SettingValueChip(
+                    title: L("Uhrzeit", "Time"),
+                    value: timeString(morningHour, morningMinute),
+                    systemImage: "clock"
+                ) { showMorningTime = true }
+                .disabled(!(appSettings.notificationsEnabled && morningEnabled))
+                .opacity((appSettings.notificationsEnabled && morningEnabled) ? 1 : 0.5)
+
+                sectionTitle(L("Hydration", "Hydration"))
+
+                SettingToggleChip(
+                    title: L("Trink-Erinnerung", "Water reminder"),
+                    systemImage: "drop.fill",
+                    isOn: $waterEnabled
+                )
+                .disabled(!appSettings.notificationsEnabled)
+                .onChange(of: waterEnabled) { _, _ in applySchedules() }
+
+                SettingValueChip(
+                    title: L("Uhrzeit", "Time"),
+                    value: timeString(waterHour, waterMinute),
+                    systemImage: "clock"
+                ) { showWaterTime = true }
+                .disabled(!(appSettings.notificationsEnabled && waterEnabled))
+                .opacity((appSettings.notificationsEnabled && waterEnabled) ? 1 : 0.5)
+
+                // MARK: - Aktivität
+                sectionTitle(L("Aktivität", "Activity"))
+
+                SettingToggleChip(
+                    title: L("Workout-Zusammenfassung", "Workout summary"),
+                    systemImage: "figure.run",
+                    isOn: $workoutSummaryEnabled
+                )
+                .disabled(!appSettings.notificationsEnabled)
+
+                SettingToggleChip(
+                    title: L("Nach dem Workout: Trinken", "Post-workout hydration"),
+                    systemImage: "drop.triangle.fill",
+                    isOn: $postWorkoutHydrationEnabled
+                )
+                .disabled(!appSettings.notificationsEnabled)
+
+                // MARK: - Erfolge
+                sectionTitle(L("Erfolge", "Milestones"))
+
+                SettingToggleChip(
+                    title: L("Gewicht-Updates & Meilensteine", "Weight updates & milestones"),
+                    systemImage: "scalemass",
+                    isOn: $weightMilestonesEnabled
+                )
+                .disabled(!appSettings.notificationsEnabled)
+
+                SettingToggleChip(
+                    title: L("Streak-Meilensteine", "Streak milestones"),
+                    systemImage: "flame.fill",
+                    isOn: $streakMilestonesEnabled
+                )
+                .disabled(!appSettings.notificationsEnabled)
+
+                SettingToggleChip(
+                    title: L("Persönliche Rekorde", "Personal records"),
+                    systemImage: "trophy.fill",
+                    isOn: $personalRecordEnabled
+                )
+                .disabled(!appSettings.notificationsEnabled)
+
+                // MARK: - Fortschritt / Reaktivierung
+                sectionTitle(L("Fortschritt", "Progress"))
+
+                SettingToggleChip(
+                    title: L("Challenge-Fortschritt", "Challenge progress"),
+                    systemImage: "target",
+                    isOn: $challengeProgressEnabled
+                )
+                .disabled(!appSettings.notificationsEnabled)
+
+                SettingToggleChip(
+                    title: L("Restday-Reminder", "Rest day reminder"),
+                    systemImage: "bed.double.fill",
+                    isOn: $restDayEnabled
+                )
+                .disabled(!appSettings.notificationsEnabled)
+
+                SettingToggleChip(
+                    title: L("Comeback-Reminder", "Comeback reminder"),
+                    systemImage: "arrow.uturn.left.circle.fill",
+                    isOn: $comebackEnabled
+                )
+                .disabled(!appSettings.notificationsEnabled)
+
+                SettingToggleChip(
+                    title: L("Wöchentliche Zusammenfassung", "Weekly summary"),
+                    systemImage: "calendar",
+                    isOn: $weeklySummaryEnabled
+                )
+                .disabled(!appSettings.notificationsEnabled)
+            }
+            .padding(16)
+        }
+        .navigationTitle(L("Benachrichtigungen", "Notifications"))
+        .navigationBarTitleDisplayMode(.inline)
+        .task {
+            // ✅ sorgt dafür, dass Master wirklich wirkt
+            NotificationManager1.shared.setMasterEnabled(appSettings.notificationsEnabled)
+            await refreshNotifStatus()
+            applySchedules()
+        }
+        .sheet(isPresented: $showTrainingTime) {
+            TimePickerSheet(
+                title: L("Training", "Training"),
+                hour: $trainingHour,
+                minute: $trainingMinute,
+                doneTitle: L("Fertig", "Done")
+            ) { applySchedules() }
+        }
+        .sheet(isPresented: $showMorningTime) {
+            TimePickerSheet(
+                title: L("Morgen", "Morning"),
+                hour: $morningHour,
+                minute: $morningMinute,
+                doneTitle: L("Fertig", "Done")
+            ) { applySchedules() }
+        }
+        .sheet(isPresented: $showWaterTime) {
+            TimePickerSheet(
+                title: L("Trinken", "Hydration"),
+                hour: $waterHour,
+                minute: $waterMinute,
+                doneTitle: L("Fertig", "Done")
+            ) { applySchedules() }
+        }
+    }
+
+    // MARK: - Permission UI
+
+    @ViewBuilder
+    private var permissionArea: some View {
+        if appSettings.notificationsEnabled {
+            if notifStatus == .notDetermined {
+                SettingActionChip(
+                    title: L("Berechtigung anfragen", "Request permission"),
+                    systemImage: "hand.raised.fill"
+                ) {
+                    Task {
+                        await NotificationManager1.shared.requestAuthorization()
+                        await refreshNotifStatus()
+                        applySchedules()
+                    }
+                }
+            } else if notifStatus == .denied {
+                SettingActionChip(
+                    title: L("In Einstellungen aktivieren", "Enable in Settings"),
+                    systemImage: "gearshape.fill"
+                ) { openAppSettings() }
+            }
+        }
+    }
+
+    // MARK: - Logic
+
+    private func handleMasterChanged() async {
+        await refreshNotifStatus()
+
+        if appSettings.notificationsEnabled {
+            if notifStatus == .notDetermined {
+                await NotificationManager1.shared.requestAuthorization()
+                await refreshNotifStatus()
+            }
+            applySchedules()
+        } else {
+            // ✅ Master AUS -> wirklich alles weg
+            NotificationManager1.shared.cancelAllNotifications()
+        }
+    }
+
+    private func applySchedules() {
+        guard appSettings.notificationsEnabled else {
+            NotificationManager1.shared.cancelAllNotifications()
+            return
+        }
+        guard notifStatus != .denied else { return }
+
+        // Training (fixe ID im Manager)
+        if trainingEnabled {
+            NotificationManager1.shared.scheduleDailyTrainingReminder(hour: trainingHour, minute: trainingMinute)
+        } else {
+            NotificationManager1.shared.cancelNotification(withIdentifier: "movo.dailyTrainingReminder")
+        }
+
+        // Morning Motivation (fixe ID im Manager)
+        if morningEnabled {
+            NotificationManager1.shared.scheduleMorningMotivation(hour: morningHour, minute: morningMinute)
+        } else {
+            NotificationManager1.shared.cancelNotification(withIdentifier: "movo.morningMotivation")
+        }
+
+        // General Water (ID enthält hour/minute)
+        let newWaterId = "movo.generalWater.\(waterHour).\(waterMinute)"
+
+        if waterEnabled {
+            if !waterIdentifier.isEmpty, waterIdentifier != newWaterId {
+                NotificationManager1.shared.cancelNotification(withIdentifier: waterIdentifier)
+            }
+            waterIdentifier = newWaterId
+            NotificationManager1.shared.scheduleGeneralWaterReminder(hour: waterHour, minute: waterMinute)
+        } else {
+            if !waterIdentifier.isEmpty {
+                NotificationManager1.shared.cancelNotification(withIdentifier: waterIdentifier)
+            }
+            waterIdentifier = ""
+        }
+    }
+
+    private func refreshNotifStatus() async {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        await MainActor.run { notifStatus = settings.authorizationStatus }
+    }
+
+    private func openAppSettings() {
+        #if canImport(UIKit)
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
+        #endif
+    }
+
+    private func timeString(_ h: Int, _ m: Int) -> String {
+        let hh = h < 10 ? "0\(h)" : "\(h)"
+        let mm = m < 10 ? "0\(m)" : "\(m)"
+        return "\(hh):\(mm)"
+    }
+
+    private func sectionTitle(_ title: String) -> some View {
+        Text(title)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .padding(.top, 8)
+    }
+}
+
+
+// MARK: - Time Picker Sheet (Wheel)
+
+private struct TimePickerSheet: View {
+    let title: String
+    @Binding var hour: Int
+    @Binding var minute: Int
+    let doneTitle: String
+    let onDone: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack {
+                DatePicker(
+                    "",
+                    selection: dateBinding,
+                    displayedComponents: .hourAndMinute
+                )
+                .datePickerStyle(.wheel)
+                .labelsHidden()
+            }
+            .padding()
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(doneTitle) {
+                        onDone()
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private var dateBinding: Binding<Date> {
+        Binding<Date>(
+            get: {
+                let cal = Calendar.current
+                let base = Date()
+                return cal.date(bySettingHour: hour, minute: minute, second: 0, of: base) ?? base
+            },
+            set: { newDate in
+                let c = Calendar.current.dateComponents([.hour, .minute], from: newDate)
+                hour = c.hour ?? hour
+                minute = c.minute ?? minute
+            }
+        )
     }
 }
 

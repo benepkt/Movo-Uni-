@@ -5,7 +5,8 @@ import WidgetKit
 import Combine
 import UserNotifications
 import FirebaseAuth
-
+import HealthKit
+import CoreLocation
 // ⛔️ Kein Firestore-Write aus diesem View
 
 // MARK: - Adaptive surfaces (global nutzbar)
@@ -44,7 +45,34 @@ struct RewardMessage {
     let color: Color
 }
 
+// MARK: - RewardPopup moved to top-level (so modifiers can see it)
+struct RewardPopup: View {
+    let text: String
+    let icon: String
+    let color: Color
+    @Environment(\.designTokens) private var t
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 40, weight: .bold))
+                .foregroundStyle(color)
+            Text(text).font(.headline.bold())
+        }
+        .padding(22)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(LinearGradient(colors: [t.palette.surfaceA, t.palette.surfaceB],
+                                     startPoint: .topLeading, endPoint: .bottomTrailing))
+        )
+        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(t.palette.outline, lineWidth: 1))
+        .shadow(color: .black.opacity(0.18), radius: 14, x: 0, y: 8)
+        .padding()
+    }
+}
+
 // MARK: - NewTrainingView (Kraft – nur lokal speichern)
+
 struct NewTrainingView: View {
     @EnvironmentObject var sessionManager: TrainingSessionManager
     @EnvironmentObject var appSettings: AppSettings
@@ -54,6 +82,7 @@ struct NewTrainingView: View {
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var syncService: SyncService
     @EnvironmentObject var purchaseManager: PurchaseManager
+    @EnvironmentObject var healthKit: HealthKitManager
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.designTokens) private var t
@@ -70,7 +99,7 @@ struct NewTrainingView: View {
 
     // 🔔 Pausen-Timer
     @State private var showPauseTimer = false
-    @StateObject private var pauseTimer = PauseTimer()
+    @StateObject private var pauseTimer = PauseTimer() // FIX: use model, not sheet view
     @State private var pauseSheetDetent: PresentationDetent = .fraction(0.6)
 
     // 🔁 Einheiten-Auswahl (kg/lb)
@@ -97,6 +126,50 @@ struct NewTrainingView: View {
     @State private var summaryStreakWeeks: Int? = nil
     @State private var summaryWeekProgress: [Bool] = Array(repeating: false, count: 7)
 
+    // Minimieren-Status, um Live Activity nicht zu beenden
+    @State private var isMinimized = false
+
+    // ✅ Animations (fix: ambig spring)
+    private let reorderSpring = SwiftUI.Animation.spring(response: 0.25, dampingFraction: 0.85, blendDuration: 0)
+    private let rewardSpring  = SwiftUI.Animation.spring(response: 0.45, dampingFraction: 0.9,  blendDuration: 0)
+
+    // MARK: - Header
+    private var headerView: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            // Titel
+            TextField(appSettings.localized("training.title.placeholder"),
+                      text: $sessionManager.trainingTitle)
+                .font(.system(size: 28, weight: .bold))
+                .padding(.vertical, 10)
+                .padding(.horizontal, 14)
+                .dsField(corner: 16)
+                .focused($titleFocused)
+
+            // Chips: Datum, Timer, Pause + ❤️ Puls
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) {
+                    dateChip
+                    timeChip
+                    Spacer(minLength: 8)
+                    pauseKnobChip
+                    heartRateChip
+                }
+
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 10) {
+                        dateChip
+                        timeChip
+                    }
+                    HStack(spacing: 10) {
+                        pauseKnobChip
+                        heartRateChip
+                    }
+                }
+            }
+        }
+        .padding(.vertical, 2)
+    }
+
     // Chips
     private let chipHeight: CGFloat = 36
 
@@ -108,235 +181,251 @@ struct NewTrainingView: View {
     private var filteredExercises: [ExerciseInfo] {
         exerciseSearchText.isEmpty
         ? exerciseLibrary.exercises
-        : exerciseLibrary.exercises.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        : exerciseLibrary.exercises.filter { $0.name.localizedCaseInsensitiveContains(exerciseSearchText) }
     }
-    private var searchText: String { exerciseSearchText }
 
+    // ⌚️ Nur-Watch-Update-Timer (wenn kein Premium)
+    @State private var watchUpdateTimer: Timer?
+
+    // 👉 NEU: HR-Info/Detail Overlays
+    @State private var showHRInfo = false
+    @State private var showHRDetail = false
+
+    // MARK: - Body (refactored to help the compiler)
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    headerView
-                    actionButtons
-                    addExerciseButton
-                    exerciseList
-                }
-                .padding()
-                .onTapGesture { hideKeyboard() }
-            }
-            .safeAreaInset(edge: .bottom) {
-                Color.clear
-                    .frame(height: 100)
-            }
-            .scrollDismissesKeyboard(.interactively)
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
-
-            // Übungsauswahl
-            .sheet(isPresented: $showExercisePicker) {
-                NavigationStack {
-                    VStack {
-                        HStack(spacing: 10) {
-                            Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                            TextField(appSettings.localized("training.searchExercise"),
-                                      text: $exerciseSearchText)
-                                .textInputAutocapitalization(.never)
-                                .disableAutocorrection(true)
-                        }
-                        .padding(12)
-                        .dsField(corner: 12)
-                        .padding()
-
-                        List(filteredExercises, id: \.self) { info in
-                            HStack {
-                                Text(info.name)
-                                    .foregroundStyle(t.palette.primary)
-                                Spacer()
-                                Button {
-                                    selectedExerciseInfo = info
-                                } label: {
-                                    Image(systemName: "info.circle").font(.title3)
-                                }
-                                .buttonStyle(.plain)
-                                .foregroundStyle(t.palette.primary)
-                                .accessibilityLabel("Übungsdetails")
-                            }
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                sessionManager.addExercise(info.name)
-                                showExercisePicker = false
-                                exerciseSearchText = ""
-                            }
-                        }
-                        .listStyle(.insetGrouped)
-                    }
-                    .navigationTitle(appSettings.localized("training.addExerciseNav"))
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button(appSettings.localized("training.cancel")) {
-                                showExercisePicker = false
-                                exerciseSearchText = ""
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 🔔 Pausen-Timer Sheet
-            .sheet(isPresented: $showPauseTimer) {
-                PauseTimerSheet(timer: pauseTimer)
-                    .presentationDetents([.fraction(0.72), .large], selection: $pauseSheetDetent)
-                    .presentationDragIndicator(.visible)
-                    .ignoresSafeArea(.keyboard)
-            }
-
-            // 📄 Übungs-Detail
-            .sheet(item: $selectedExerciseInfo) { info in
-                ExerciseDetailView(exerciseInfo: info)
-                    .environmentObject(trainingStore)
-            }
-
-            // Live Activity & Timer (nur für Premium)
-            .onAppear {
-                if !sessionManager.isTrainingActive {
-                    sessionManager.startTraining()
-                }
-                if purchaseManager.hasUnlockedStatistics {
-                    startLiveActivityIfNeeded()
-                }
-
-                visibility = Visibility(rawValue: defaultVisibilityRaw) ?? .public
-
-                pauseTimer.configure(total: 60)
-                pauseTimer.onFinished = {
-                    NotificationHelper.schedule(
-                        title: appSettings.localized("training.restOverTitle") ?? "Pause vorbei",
-                        body:  appSettings.localized("training.restOverBody")  ?? "Weiter trainieren!"
-                    )
-                }
-            }
-
-            .onDisappear {
-                activityTimer?.invalidate()
-                activityTimer = nil
-                if liveActivityActive {
-                    LiveActivityManager.shared.endActivity()
-                    liveActivityActive = false
-                }
-            }
-
-            .onChange(of: purchaseManager.hasUnlockedStatistics) { isPro in
-                if isPro && !liveActivityActive {
-                    LiveActivityManager.shared.startActivity()
-                    liveActivityActive = true
-                    activityTimer = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { _ in
-                        LiveActivityManager.shared.updateActivity(
-                            elapsedTime: sessionManager.elapsedTime,
-                            completedExercises: countCompletedExercises(),
-                            totalWeight: calculateTotalWeight()
-                        )
-                    }
-                } else if !isPro && liveActivityActive {
-                    activityTimer?.invalidate()
-                    activityTimer = nil
-                    LiveActivityManager.shared.endActivity()
-                    liveActivityActive = false
-                }
-            }
-            .onChange(of: visibility) { newVal in
-                defaultVisibilityRaw = newVal.rawValue
-            }
-            // 🔁 Fokuswechsel: Gewicht committen, wenn Feld verlassen wurde
-            .onChange(of: focusedField) { newFocus in
-                if let prev = lastFocusedField, prev != newFocus {
-                    commitWeight(for: prev)
-                    weightDraft[prev] = nil
-                }
-                lastFocusedField = newFocus
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button { cancelTapped() } label: { Image(systemName: "xmark") }
-                        .accessibilityLabel(appSettings.localized("training.cancel"))
-                }
-
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button(appSettings.localized("settings.done")) {
-                        if let id = focusedField {
-                            commitWeight(for: id)
-                            weightDraft[id] = nil
-                        }
-                        focusedField = nil
-                        titleFocused = false
-                        hideKeyboard()
-                    }
-                    .tint(t.palette.primary)
-                }
-            }
+            mainContent
+                .navigationBarBackButtonHidden(true)
+                .toolbar { keyboardToolbar }
         }
-
-        // ✅ Reward-Popup
-        .overlay(alignment: .center) {
-            if let reward = rewardMessage {
-                RewardPopup(text: reward.text, icon: reward.icon, color: t.palette.primary)
-                    .transition(.scale.combined(with: .opacity))
-                    .zIndex(999)
-                    .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            withAnimation(.easeOut) { rewardMessage = nil }
+        .modifier(LifecycleHandlersModifier(onAppear: handleOnAppear,
+                                           onDisappear: handleOnDisappear))
+        .onChange(of: purchaseManager.hasUnlockedStatistics) { isPro in
+            handleProChange(isPro)
+        }
+        .onChange(of: visibility) { newVal in
+            defaultVisibilityRaw = newVal.rawValue
+        }
+        .onChange(of: focusedField) { newFocus in
+            if let prev = lastFocusedField, prev != newFocus {
+                commitWeight(for: prev)
+                weightDraft[prev] = nil
+            }
+            lastFocusedField = newFocus
+        }
+        .onChange(of: sessionManager.trainingTitle) { _ in
+            pushActiveWorkoutToWatchIfNeeded()
+        }
+        .onChange(of: sessionManager.exercises.count) { _ in
+            pushActiveWorkoutToWatchIfNeeded()
+        }
+        .onChange(of: totalSetCount) { _ in
+            pushActiveWorkoutToWatchIfNeeded()
+        }
+        .modifier(exercisePickerSheetModifier)
+        .modifier(pauseTimerSheetModifier)
+        .modifier(exerciseDetailSheetModifier)
+        .modifier(overlaysAlertsSummaryModifier)
+        // 👉 NEU: HR Info Sheet (Details werden direkt darin als Sheet präsentiert)
+        .sheet(isPresented: $showHRInfo) {
+            HeartRateInfoSheet(
+                bpm: healthKit.currentHeartRate.map { Int($0) },
+                isMonitoring: healthKit.isHeartRateMonitoringActive,
+                onStart: {
+                    Task {
+                        if let type = HKQuantityType.quantityType(forIdentifier: .heartRate) {
+                            await healthKit.requestReadAuthorizationIfNeeded(readTypes: [type], forcePrompt: true)
+                            // AirPods/andere Quellen erlauben → nicht auf Watch filtern
+                            healthKit.startHeartRateStreaming(filterToAppleWatch: false)
                         }
                     }
-            }
-        }
-        // ❌ Abbrechen-Alert
-        .alert(appSettings.localized("training.cancel"), isPresented: $showCancelConfirm) {
-            Button(appSettings.localized("training.cancel"), role: .destructive) { cancelWithoutSaving() }
-            Button(appSettings.localized("settings.done"), role: .cancel) { }
-        } message: {
-            Text(appSettings.localized("training.discardMessage") ?? "Unfertiges Training verwerfen?")
-        }
-        // 🧾 Workout Summary
-        .fullScreenCover(isPresented: $showSummary, onDismiss: { lastSavedEntry = nil }) {
-            if let entry = lastSavedEntry {
-                WorkoutSummaryView(
-                    entry: entry,
-                    streakWeeks: summaryStreakWeeks,
-                    weekProgress: summaryWeekProgress
-                ) {
-                    showSummary = false
-                    dismiss()
                 }
-            } else {
-                VStack {
-                    Text("Summary").font(.title2).padding()
-                    Button("Fertig") { showSummary = false; dismiss() }
-                }
+            )
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
+        .watchPushOnAppear(
+            elapsed: sessionManager.elapsedTime,
+            completed: countCompletedExercises(),
+            totalKg: calculateTotalWeight(),
+            unitRaw: weightUnit.rawValue
+        )
+    }
+
+
+    // MARK: - Split view pieces
+
+    private var contentScroll: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                headerView
+                actionButtons
+                addExerciseButton
+                exerciseList
             }
+            .padding()
+            .onTapGesture { hideKeyboard() }
         }
     }
 
-    // MARK: - Header
-    private var headerView: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            TextField(appSettings.localized("training.title.placeholder"),
-                      text: $sessionManager.trainingTitle)
-                .font(.system(size: 28, weight: .bold))
-                .padding(.vertical, 10)
-                .padding(.horizontal, 14)
-                .dsField(corner: 16)
-                .focused($titleFocused)
-
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 10) { dateChip; timeChip; Spacer(minLength: 8); pauseKnobChip }
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack(spacing: 10) { dateChip; timeChip; Spacer(minLength: 8); pauseKnobChip }
-                }
-            }
-        }
-        .padding(.vertical, 2)
+    // Type-erased, grouped content to reduce inference complexity
+    private var mainContent: some View {
+        AnyView(
+            contentScroll
+                .modifier(ApplyTopInsets(controls: topLeftControls))
+                .modifier(ApplyBottomInset(height: 100))
+                .scrollDismissesKeyboard(.interactively)
+        )
     }
 
+    
+    // MARK: - Small helpers to keep `body` lightweight
+
+    private var totalSetCount: Int {
+        sessionManager.exercises.reduce(0) { $0 + $1.sets.count }
+    }
+
+    private func pushActiveWorkoutToWatchIfNeeded() {
+        guard sessionManager.isTrainingActive else { return }
+        PhoneConnectivity.shared.pushActiveWorkoutState(buildActiveWorkoutPayloadForWatch())
+    }
+
+    private func openDetailFromPicker(info: ExerciseInfo) {
+        showExercisePicker = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.selectedExerciseInfo = info
+        }
+    }
+
+    private var exercisePickerSheetModifier: ExercisePickerSheetModifier {
+        ExercisePickerSheetModifier(
+            isPresented: $showExercisePicker,
+            searchText: $exerciseSearchText,
+            filteredExercises: filteredExercises,
+            onSelect: { info in
+                sessionManager.addExercise(info.name)
+                showExercisePicker = false
+                exerciseSearchText = ""
+            },
+            onInfo: { info in
+                openDetailFromPicker(info: info)
+            },
+            onCancel: {
+                showExercisePicker = false
+                exerciseSearchText = ""
+            },
+            navTitle: appSettings.localized("training.addExercise") ?? "Übung hinzufügen",
+            cancelTitle: appSettings.localized("common.cancel") ?? "Abbrechen",
+            searchPlaceholder: appSettings.localized("common.search") ?? "Suchen"
+        )
+    }
+
+    private var pauseTimerSheetModifier: PauseTimerSheetModifierWrap {
+        PauseTimerSheetModifierWrap(
+            isPresented: $showPauseTimer,
+            detent: $pauseSheetDetent,
+            timer: pauseTimer
+        )
+    }
+
+    private var exerciseDetailSheetModifier: ExerciseDetailSheetModifier {
+        ExerciseDetailSheetModifier(
+            selectedExerciseInfo: $selectedExerciseInfo,
+            trainingStore: trainingStore
+        )
+    }
+
+    private var overlaysAlertsSummaryModifier: OverlaysAlertsSummaryModifier<AnyView> {
+        OverlaysAlertsSummaryModifier(
+            rewardMessage: $rewardMessage,
+            showCancelConfirm: $showCancelConfirm,
+            cancelAction: { cancelWithoutSaving() },
+            doneTitle: appSettings.localized("settings.done") ?? "Fertig",
+            cancelTitle: appSettings.localized("training.cancel") ?? "Abbrechen",
+            discardMessage: appSettings.localized("training.discardConfirm") ?? "Training verwerfen?",
+            showSummary: $showSummary,
+            lastSavedEntry: $lastSavedEntry,
+            summaryView: { entry, dismissAction in
+                AnyView(summaryView(entry: entry, dismissAction: dismissAction))
+            }
+        )
+    }
+
+
+// MARK: - Keyboard toolbar
+    @ToolbarContentBuilder
+    private var keyboardToolbar: some ToolbarContent {
+        ToolbarItemGroup(placement: .keyboard) {
+            Spacer()
+            Button(appSettings.localized("settings.done")) {
+                if let id = focusedField {
+                    commitWeight(for: id)
+                    weightDraft[id] = nil
+                }
+                focusedField = nil
+                titleFocused = false
+                hideKeyboard()
+            }
+            .tint(t.palette.primary)
+        }
+    }
+
+    // MARK: - Summary view builder
+    @ViewBuilder
+    private func summaryView(entry: TrainingEntry, dismissAction: @escaping () -> Void) -> some View {
+        WorkoutSummaryView(
+            entry: entry,
+            streakWeeks: summaryStreakWeeks,
+            weekProgress: summaryWeekProgress
+        ) {
+            showSummary = false
+            dismiss()
+        }
+    }
+
+    // MARK: - Top Left Controls (✅ push down via safeAreaInset)
+    private var topLeftControls: some View {
+        VStack(spacing: 10) {
+            Button(action: { minimizeToHome() }) {
+                ZStack {
+                    Circle()
+                        .fill(.ultraThinMaterial)
+                    Circle()
+                        .stroke(Color.dsOutline, lineWidth: 0.5)
+
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundStyle(.primary)
+                }
+                .frame(width: 40, height: 40)
+                .shadow(color: .black.opacity(0.10), radius: 8, x: 0, y: 4)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(appSettings.localized("common.back") ?? "Zurück")
+
+            Button(action: { cancelTapped() }) {
+                ZStack {
+                    Circle()
+                        .fill(.ultraThinMaterial)
+                    Circle()
+                        .stroke(Color.dsOutline, lineWidth: 0.5)
+
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.primary)
+                }
+                .frame(width: 40, height: 40)
+                .shadow(color: .black.opacity(0.10), radius: 8, x: 0, y: 4)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(appSettings.localized("training.cancel"))
+        }
+        .padding(.leading, 12)
+        .padding(.top, 6)
+        .padding(.bottom, 12)
+    }
+
+    // MARK: - Header Chips
     private var dateChip: some View {
         HStack(spacing: 8) {
             Image(systemName: "calendar").foregroundStyle(t.palette.primary)
@@ -377,6 +466,38 @@ struct NewTrainingView: View {
         )
         .frame(height: chipHeight)
     }
+
+    private var heartRateChip: some View {
+        // optional: wenn du es nur für Pro anzeigen willst, lass diese Guard drin
+        guard purchaseManager.hasUnlockedStatistics else { return AnyView(EmptyView()) }
+
+        let hr = healthKit.currentHeartRate
+        let text = hr == nil ? "—" : "\(Int(hr!))"
+
+        return AnyView(
+            Button {
+                showHRInfo = true
+            } label: {
+                HStack(spacing: 6) {
+                    Text(text)
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .monospacedDigit()
+
+                    Image(systemName: "heart.fill")
+                        .foregroundStyle(.red)
+                        .font(.caption)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .frame(height: chipHeight)
+                .background(Color.black)
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        )
+    }
+
 
     // MARK: - Buttons
     private var actionButtons: some View {
@@ -480,6 +601,38 @@ struct NewTrainingView: View {
         .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.dsOutline, lineWidth: 0.5))
     }
 
+    private func buildActiveWorkoutPayloadForWatch() -> ActiveWorkoutPayload {
+        let exercises: [ActiveWorkoutPayload.ExerciseItem] =
+            sessionManager.exercises.enumerated().map { idx, ex in
+                let mappedSets: [ActiveWorkoutPayload.LoggedSetItem] = ex.sets.map { set in
+                    let repsInt = Int(set.reps) ?? 0
+                    let weightKg = parseWeightString(set.weight)
+                    return ActiveWorkoutPayload.LoggedSetItem(
+                        id: set.id.uuidString,
+                        reps: repsInt,
+                        weight: weightKg,
+                        completed: set.isCompleted          // ✅
+                    )
+                }
+
+                return ActiveWorkoutPayload.ExerciseItem(
+                    id: ex.id.uuidString,
+                    name: ex.name,
+                    order: idx,
+                    setCount: mappedSets.count,
+                    sets: mappedSets
+                )
+            }
+
+        return ActiveWorkoutPayload(
+            isActive: true,
+            workoutId: UUID().uuidString,
+            workoutName: sessionManager.trainingTitle.isEmpty ? "Training" : sessionManager.trainingTitle,
+            exercises: exercises,
+            selectedExerciseId: exercises.first?.id
+        )
+    }
+
     private func startLiveActivityIfNeeded() {
         guard !liveActivityActive, canUseLiveActivity else { return }
         LiveActivityManager.shared.startActivity()
@@ -489,8 +642,27 @@ struct NewTrainingView: View {
                 completedExercises: countCompletedExercises(),
                 totalWeight: calculateTotalWeight()
             )
+            // WATCH ⬅ mit jedem Live-Update auch Watch updaten
+            PhoneConnectivity.shared.sendLiveUpdate(
+                elapsed: sessionManager.elapsedTime,
+                completed: countCompletedExercises(),
+                totalKg: calculateTotalWeight(),
+                unitRaw: weightUnit.rawValue
+            )
         }
         liveActivityActive = true
+    }
+
+    private func startWatchUpdatesIfNeeded() {
+        guard watchUpdateTimer == nil else { return }
+        watchUpdateTimer = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { _ in
+            PhoneConnectivity.shared.sendLiveUpdate(
+                elapsed: sessionManager.elapsedTime,
+                completed: countCompletedExercises(),
+                totalKg: calculateTotalWeight(),
+                unitRaw: weightUnit.rawValue
+            )
+        }
     }
 
     private func stopLiveActivityIfNeeded() {
@@ -501,52 +673,98 @@ struct NewTrainingView: View {
         liveActivityActive = false
     }
 
-    // MARK: - Set Row
+    // MARK: - Set Row (Empfehlung als Prompt/Placeholder + Propagation Trigger)
     @ViewBuilder
     private func setRow(exerciseIndex: Int, setIndex: Int, set: ExerciseSet) -> some View {
-        HStack(spacing: 12) {
-            HStack(spacing: 6) {
-                TextField(appSettings.localized("training.kg"),
-                          text: weightBinding(exerciseIndex: exerciseIndex, setIndex: setIndex, set: set))
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 12) {
+                HStack(spacing: 6) {
+                    TextField("",
+                              text: weightBinding(exerciseIndex: exerciseIndex, setIndex: setIndex, set: set),
+                              prompt: Text(weightPrompt(exerciseIndex: exerciseIndex, setIndex: setIndex))
+                                .foregroundStyle(.secondary)
+                    )
                     .keyboardType(.decimalPad)
                     .padding(8)
                     .dsField()
                     .frame(width: 90)
                     .focused($focusedField, equals: set.id)
+                    .onChange(of: weightDraft[set.id] ?? "") { _ in
+                        // kein sofortiger Trigger – Commit passiert beim Focus-Verlust/Done
+                    }
 
-                Text(weightUnit.symbol)
-                    .foregroundStyle(.secondary)
-                    .font(.subheadline)
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
-            }
+                    Text(weightUnit.symbol)
+                        .foregroundStyle(.secondary)
+                        .font(.subheadline)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                }
 
-            TextField(appSettings.localized("training.reps"),
-                      text: $sessionManager.exercises[exerciseIndex].sets[setIndex].reps)
+                TextField("",
+                          text: $sessionManager.exercises[exerciseIndex].sets[setIndex].reps,
+                          prompt: Text(repsPrompt(exerciseIndex: exerciseIndex, setIndex: setIndex))
+                            .foregroundStyle(.secondary)
+                )
                 .keyboardType(.numberPad)
                 .padding(8)
                 .dsField()
                 .frame(width: 80)
                 .focused($focusedField, equals: set.id)
+                .onChange(of: sessionManager.exercises[exerciseIndex].sets[setIndex].reps) { newVal in
+                    // Wenn Reps nun „echt“ sind und Gewicht auch > 0 (in kg), in leere Sätze propagieren
+                    let repsClean = newVal.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let kg = parseWeightString(sessionManager.exercises[exerciseIndex].sets[setIndex].weight)
+                    if (!repsClean.isEmpty && repsClean != "0") || kg > 0 {
+                        sessionManager.propagateSuggestionToEmptySets(exerciseIndex: exerciseIndex, sourceSetIndex: setIndex)
+                    }
+                }
 
-            Spacer()
+                Spacer()
 
-            Button {
-                sessionManager.toggleSetCompleted(exerciseIndex: exerciseIndex, setIndex: setIndex)
-            } label: {
-                Image(systemName: set.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.title2)
-                    .foregroundStyle(set.isCompleted ? t.palette.positive : .secondary)
+                Button {
+                    sessionManager.toggleSetCompleted(exerciseIndex: exerciseIndex, setIndex: setIndex)
+                } label: {
+                    Image(systemName: set.isCompleted ? "checkmark.circle.fill" : "circle")
+                        .font(.title2)
+                        .foregroundStyle(set.isCompleted ? t.palette.positive : .secondary)
+                }
+
+                Button {
+                    sessionManager.removeSet(from: exerciseIndex, setIndex: setIndex)
+                } label: {
+                    Image(systemName: "trash")
+                        .foregroundStyle(t.palette.warning)
+                }
             }
-
-            Button {
-                sessionManager.removeSet(from: exerciseIndex, setIndex: setIndex)
-            } label: {
-                Image(systemName: "trash")
-                    .foregroundStyle(t.palette.warning)
-            }
+            .padding(.vertical, 4)
         }
-        .padding(.vertical, 4)
+    }
+
+    // Prompt (Gewicht) basierend auf vorherigem Satz
+    private func weightPrompt(exerciseIndex: Int, setIndex: Int) -> String {
+        guard setIndex > 0,
+              sessionManager.exercises.indices.contains(exerciseIndex),
+              sessionManager.exercises[exerciseIndex].sets.indices.contains(setIndex - 1) else {
+            return appSettings.localized("training.kg")
+        }
+        let prev = sessionManager.exercises[exerciseIndex].sets[setIndex - 1]
+        let prevKg = parseWeightString(prev.weight)
+        if prevKg <= 0 { return appSettings.localized("training.kg") }
+        let unitVal = roundedForDisplay(weightUnit.fromKilograms(prevKg))
+        let s = displayFormatter.string(from: NSNumber(value: unitVal)) ?? String(unitVal)
+        return s
+    }
+
+    // Prompt (Reps) basierend auf vorherigem Satz
+    private func repsPrompt(exerciseIndex: Int, setIndex: Int) -> String {
+        guard setIndex > 0,
+              sessionManager.exercises.indices.contains(exerciseIndex),
+              sessionManager.exercises[exerciseIndex].sets.indices.contains(setIndex - 1) else {
+            return appSettings.localized("training.reps")
+        }
+        let prev = sessionManager.exercises[exerciseIndex].sets[setIndex - 1]
+        let repsClean = prev.reps.trimmingCharacters(in: .whitespacesAndNewlines)
+        return repsClean.isEmpty ? appSettings.localized("training.reps") : repsClean
     }
 
     // MARK: - Reorder
@@ -560,7 +778,7 @@ struct NewTrainingView: View {
         let target = index > from ? min(index, arr.count) : index
         arr.insert(moved, at: target)
 
-        withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) {
+        withAnimation(reorderSpring) {
             sessionManager.exercises = arr
         }
     }
@@ -583,6 +801,7 @@ struct NewTrainingView: View {
     // MARK: - Save (nur lokal; keinerlei Cloud-/Social-Write)
     private func save() {
         activityTimer?.invalidate(); activityTimer = nil
+        watchUpdateTimer?.invalidate(); watchUpdateTimer = nil
 
         let prevDays = trainingStore.currentStreakDays()
         let prevWeeks = weeksCeil(fromDays: prevDays)
@@ -606,7 +825,7 @@ struct NewTrainingView: View {
 
         Task { await syncService.saveProfile(level: gm.level, xp: gm.xp, coins: gm.coins) }
 
-        withAnimation(.spring()) {
+        withAnimation(rewardSpring) {
             rewardMessage = RewardMessage(text: "+80 XP & +10 Coins",
                                           icon: "star.fill",
                                           color: t.palette.primary)
@@ -646,8 +865,15 @@ struct NewTrainingView: View {
 
     private func cancelWithoutSaving() {
         activityTimer?.invalidate(); activityTimer = nil
+        watchUpdateTimer?.invalidate(); watchUpdateTimer = nil
         stopLiveActivityIfNeeded()
         sessionManager.reset()
+        dismiss()
+    }
+
+    // 🔙 Minimieren: zurück zur HomeView ohne Training zu beenden
+    private func minimizeToHome() {
+        isMinimized = true
         dismiss()
     }
 
@@ -690,35 +916,20 @@ struct NewTrainingView: View {
         }
     }
 
-    // MARK: - RewardPopup
-    private struct RewardPopup: View {
-        let text: String
-        let icon: String
-        let color: Color
-        @Environment(\.designTokens) private var t
-
-        var body: some View {
-            VStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.system(size: 40, weight: .bold))
-                    .foregroundStyle(color)
-                Text(text).font(.headline.bold())
-            }
-            .padding(22)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(LinearGradient(colors: [t.palette.surfaceA, t.palette.surfaceB],
-                                         startPoint: .topLeading, endPoint: .bottomTrailing))
-            )
-            .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(t.palette.outline, lineWidth: 1))
-            .shadow(color: .black.opacity(0.18), radius: 14, x: 0, y: 8)
-            .padding()
-        }
-    }
-
     private func openDetail(for exercise: Exercise) {
         if let info = exerciseLibrary.exercises.first(where: { $0.name == exercise.name }) {
-            selectedExerciseInfo = info
+            if showExercisePicker {
+                // Falls Picker noch offen ist: erst schließen, dann Info nach kurzer Verzögerung öffnen.
+                showExercisePicker = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    self.selectedExerciseInfo = info
+                }
+            } else {
+                // Normalfall: asynchron auf den nächsten Runloop
+                DispatchQueue.main.async {
+                    self.selectedExerciseInfo = info
+                }
+            }
         } else {
             #if canImport(UIKit)
             UINotificationFeedbackGenerator().notificationOccurred(.warning)
@@ -794,6 +1005,13 @@ struct NewTrainingView: View {
         let kg6 = (kgRaw * 1_000_000).rounded() / 1_000_000
         sessionManager.exercises[path.i].sets[path.j].weight =
             storageFormatter.string(from: NSNumber(value: kg6)) ?? String(format: "%.6f", kg6)
+
+        // Nach Commit: Wenn dieser Satz echte Werte hat, in leere Sätze propagieren
+        if parseWeightString(sessionManager.exercises[path.i].sets[path.j].weight) > 0 ||
+            !sessionManager.exercises[path.i].sets[path.j].reps.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            sessionManager.exercises[path.i].sets[path.j].reps != "0" {
+            sessionManager.propagateSuggestionToEmptySets(exerciseIndex: path.i, sourceSetIndex: path.j)
+        }
     }
 
     private func indexPath(for setId: UUID) -> (i: Int, j: Int)? {
@@ -804,6 +1022,120 @@ struct NewTrainingView: View {
         }
         return nil
     }
+
+    // MARK: - Lifecycle handlers split
+
+    private func handleOnAppear() {
+        if !sessionManager.isTrainingActive {
+            sessionManager.startTraining()
+        }
+
+        PhoneConnectivity.shared.activate()
+        
+        PhoneConnectivity.shared.onHeartRate = { bpm in
+            Task { @MainActor in
+                healthKit.ingestWatchHeartRate(bpm)
+            }
+        }
+
+        PhoneConnectivity.shared.pushActiveWorkoutState(buildActiveWorkoutPayloadForWatch())
+
+        PhoneConnectivity.shared.sendLiveUpdate(
+            elapsed: sessionManager.elapsedTime,
+            completed: countCompletedExercises(),
+            totalKg: calculateTotalWeight(),
+            unitRaw: weightUnit.rawValue
+        )
+
+        if purchaseManager.hasUnlockedStatistics {
+            startLiveActivityIfNeeded()
+        } else {
+            startWatchUpdatesIfNeeded()
+        }
+
+        visibility = Visibility(rawValue: defaultVisibilityRaw) ?? .public
+
+        pauseTimer.configure(total: 60)
+        pauseTimer.onFinished = {
+            NotificationManager1.shared.scheduleWaterReminder(delayMinutes: 0)
+        }
+
+        if purchaseManager.hasUnlockedStatistics {
+            Task {
+                if let type = HKQuantityType.quantityType(forIdentifier: .heartRate) {
+                    await healthKit.requestReadAuthorizationIfNeeded(
+                        readTypes: [type],
+                        forcePrompt: true
+                    )
+                    // AirPods/andere Quellen erlauben → nicht auf Watch filtern
+                    healthKit.startHeartRateStreaming(filterToAppleWatch: false)
+                }
+            }
+        }
+
+        isMinimized = false
+
+        // WATCH ⬅ Sofort initialen Stand an die Watch senden
+        PhoneConnectivity.shared.sendLiveUpdate(
+            elapsed: sessionManager.elapsedTime,
+            completed: countCompletedExercises(),
+            totalKg: calculateTotalWeight(),
+            unitRaw: weightUnit.rawValue
+        )
+    }
+
+    private func handleOnDisappear() {
+        activityTimer?.invalidate()
+        activityTimer = nil
+        PhoneConnectivity.shared.onHeartRate = nil
+
+
+        watchUpdateTimer?.invalidate()
+        watchUpdateTimer = nil
+
+        if liveActivityActive && !isMinimized {
+            LiveActivityManager.shared.endActivity()
+            liveActivityActive = false
+        }
+
+        healthKit.stopHeartRateStreaming()
+    }
+
+    private func handleProChange(_ isPro: Bool) {
+        if isPro {
+            // Stoppe reinen Watch-Timer und starte Live Activity inkl. kombinierten Updates
+            watchUpdateTimer?.invalidate()
+            watchUpdateTimer = nil
+
+            if !liveActivityActive {
+                LiveActivityManager.shared.startActivity()
+                liveActivityActive = true
+                activityTimer = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { _ in
+                    LiveActivityManager.shared.updateActivity(
+                        elapsedTime: sessionManager.elapsedTime,
+                        completedExercises: countCompletedExercises(),
+                        totalWeight: calculateTotalWeight()
+                    )
+                    // WATCH ⬅ mit jedem Live-Update auch Watch updaten
+                    PhoneConnectivity.shared.sendLiveUpdate(
+                        elapsed: sessionManager.elapsedTime,
+                        completed: countCompletedExercises(),
+                        totalKg: calculateTotalWeight(),
+                        unitRaw: weightUnit.rawValue
+                    )
+                }
+            }
+        } else {
+            // Beende Live Activity, starte Watch-only Updates
+            activityTimer?.invalidate()
+            activityTimer = nil
+            if liveActivityActive {
+                LiveActivityManager.shared.endActivity()
+                liveActivityActive = false
+            }
+            startWatchUpdatesIfNeeded()
+        }
+    }
 }
 
 // MARK: - Mini Pause Knob
@@ -812,13 +1144,17 @@ private struct PauseKnob: View {
     let remaining: TimeInterval
     var action: () -> Void
 
+    private var clampedProgress: CGFloat {
+        max(CGFloat(0.001), min(CGFloat(1), progress))
+    }
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
                 ZStack {
                     Circle().stroke(Color.dsOutline.opacity(0.6), lineWidth: 3)
                     Circle()
-                        .trim(from: 0, to: max(0.001, min(1, progress)))
+                        .trim(from: 0, to: clampedProgress)
                         .stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round))
                         .rotationEffect(.degrees(-90))
                 }
@@ -843,7 +1179,6 @@ private struct PauseKnob: View {
         return String(format: "%02d:%02d", m, s)
     }
 }
-
 // MARK: - Keyboard helper
 extension View {
     func hideKeyboard() {
@@ -851,6 +1186,230 @@ extension View {
                                         to: nil, from: nil, for: nil)
     }
 }
+
+// MARK: - View Modifiers to break up large chains
+
+private struct ApplyTopInsets: ViewModifier {
+    let controls: AnyView
+    init<Controls: View>(controls: Controls) {
+        self.controls = AnyView(controls)
+    }
+    func body(content: Content) -> some View {
+        content
+            .safeAreaInset(edge: .top, alignment: .leading, spacing: 0) {
+                controls
+            }
+    }
+}
+
+private struct ApplyBottomInset: ViewModifier {
+    let height: CGFloat
+    func body(content: Content) -> some View {
+        content
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: height)
+            }
+    }
+}
+
+private struct ExercisePickerSheetModifier: ViewModifier {
+    @Binding var isPresented: Bool
+    @Binding var searchText: String
+    let filteredExercises: [ExerciseInfo]
+    let onSelect: (ExerciseInfo) -> Void
+    let onInfo: (ExerciseInfo) -> Void
+    let onCancel: () -> Void
+    let navTitle: String
+    let cancelTitle: String
+    let searchPlaceholder: String
+
+    func body(content: Content) -> some View {
+        content.sheet(isPresented: $isPresented) {
+            NavigationStack {
+                VStack {
+                    HStack(spacing: 10) {
+                        Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                        TextField(searchPlaceholder, text: $searchText)
+                            .textInputAutocapitalization(.never)
+                            .disableAutocorrection(true)
+                    }
+                    .padding(12)
+                    .dsField(corner: 12)
+                    .padding()
+
+                    List(filteredExercises, id: \.self) { info in
+                        HStack {
+                            Text(info.name)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Button {
+                                onInfo(info)
+                            } label: {
+                                Image(systemName: "info.circle").font(.title3)
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(.primary)
+                            .accessibilityLabel("Übungsdetails")
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            onSelect(info)
+                        }
+                    }
+                    .listStyle(.insetGrouped)
+                }
+                .navigationTitle(navTitle)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(cancelTitle) { onCancel() }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct PauseTimerSheetModifierWrap: ViewModifier {
+    @Environment(\.designTokens) private var t
+
+    @Binding var isPresented: Bool
+    @Binding var detent: PresentationDetent
+    var timer: PauseTimer
+
+    func body(content: Content) -> some View {
+        content.sheet(isPresented: $isPresented) {
+            PauseTimerSheet(timer: timer, accent: t.palette.primary)
+                .presentationDetents(
+                    [PresentationDetent.fraction(0.72), PresentationDetent.large],
+                    selection: $detent
+                )
+                // Falls du noch dein enum Visibility im File hast -> unbedingt so qualifizieren:
+                .presentationDragIndicator(SwiftUI.Visibility.visible)
+                .ignoresSafeArea(SwiftUI.SafeAreaRegions.keyboard)
+                .preferredColorScheme(.dark)
+                .modifier(ClearSheetBackground())
+        }
+    }
+}
+
+
+private struct ClearSheetBackground: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 16.4, *) {
+            content.presentationBackground(.clear)   // ✅ entfernt das helle System-Sheet
+        } else {
+            content
+        }
+    }
+}
+ 
+private struct ExerciseDetailSheetModifier: ViewModifier {
+    @Binding var selectedExerciseInfo: ExerciseInfo?
+    var trainingStore: TrainingStore
+
+    func body(content: Content) -> some View {
+        content.sheet(item: $selectedExerciseInfo) { info in
+            ExerciseDetailView(exerciseInfo: info)
+                .environmentObject(trainingStore)
+        }
+    }
+}
+
+private struct LifecycleHandlersModifier: ViewModifier {
+    let onAppear: () -> Void
+    let onDisappear: () -> Void
+    func body(content: Content) -> some View {
+        content
+            .onAppear(perform: onAppear)
+            .onDisappear(perform: onDisappear)
+    }
+}
+
+private struct WatchImmediatePushModifier: ViewModifier {
+    let elapsed: TimeInterval
+    let completed: Int
+    let totalKg: Double
+    let unitRaw: String
+    func body(content: Content) -> some View {
+        content
+            .onAppear {
+                PhoneConnectivity.shared.sendLiveUpdate(
+                    elapsed: elapsed,
+                    completed: completed,
+                    totalKg: totalKg,
+                    unitRaw: unitRaw
+                )
+            }
+    }
+}
+
+// Expose WatchImmediatePushModifier as a chainable view extension
+private extension View {
+    func watchPushOnAppear(elapsed: TimeInterval,
+                           completed: Int,
+                           totalKg: Double,
+                           unitRaw: String) -> some View {
+        self.modifier(WatchImmediatePushModifier(elapsed: elapsed,
+                                                 completed: completed,
+                                                 totalKg: totalKg,
+                                                 unitRaw: unitRaw))
+    }
+}
+
+private struct OverlaysAlertsSummaryModifier<SummaryView: View>: ViewModifier {
+    @Environment(\.designTokens) private var t
+
+    @Binding var rewardMessage: RewardMessage?
+    @Binding var showCancelConfirm: Bool
+
+    let cancelAction: () -> Void
+    let doneTitle: String
+    let cancelTitle: String
+    let discardMessage: String
+
+    @Binding var showSummary: Bool
+    @Binding var lastSavedEntry: TrainingEntry?
+
+    let summaryView: (TrainingEntry, @escaping () -> Void) -> SummaryView
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(alignment: .center) {
+                if let reward = rewardMessage {
+                    RewardPopup(text: reward.text, icon: reward.icon, color: t.palette.primary)
+                        .transition(AnyTransition.scale.combined(with: AnyTransition.opacity))
+                        .zIndex(999)
+                        .onAppear {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                withAnimation(.easeOut) { rewardMessage = nil }
+                            }
+                        }
+                }
+            }
+            .alert(cancelTitle, isPresented: $showCancelConfirm) {
+                Button(cancelTitle, role: .destructive) { cancelAction() }
+                Button(doneTitle, role: .cancel) { }
+            } message: {
+                Text(discardMessage)
+            }
+            .fullScreenCover(isPresented: $showSummary, onDismiss: { lastSavedEntry = nil }) {
+                if let entry = lastSavedEntry {
+                    summaryView(entry) {
+                        showSummary = false
+                    }
+                } else {
+                    VStack {
+                        Text("Summary").font(.title2).padding()
+                        Button("Fertig") { showSummary = false }
+                    }
+                }
+            }
+    }
+}
+
+// MARK: - 🔧 Pausen-Timer Engine + UI
+// PauseTimerSheet UI is defined in PauseTimer.swift
+
 
 // MARK: - 🔧 Pausen-Timer Engine + UI
 private final class PauseTimer: ObservableObject {
@@ -949,11 +1508,17 @@ private final class PauseTimer: ObservableObject {
 private struct PauseTimerSheet: View {
     @ObservedObject var timer: PauseTimer
     @Environment(\.dismiss) private var dismiss
+    var accent: Color = .accentColor   // ✅ neu
 
     @State private var minutes: Int = 1
     @State private var seconds: Int = 0
 
     private let presets: [Int] = [30, 45, 60, 90, 120]
+
+    private var clampedProgress: CGFloat {
+        max(CGFloat(0.001), min(CGFloat(1), timer.progress))
+    }
+
 
     var body: some View {
         VStack(spacing: 18) {
@@ -1049,9 +1614,9 @@ private struct PauseTimerSheet: View {
             ZStack {
                 Circle().stroke(Color.gray.opacity(0.25), lineWidth: 16)
                 Circle()
-                    .trim(from: 0, to: max(0.001, min(1, timer.progress)))
+                    .trim(from: 0, to: clampedProgress)
                     .stroke(
-                        AngularGradient(gradient: Gradient(colors: [.accentColor, .accentColor.opacity(0.5), .accentColor]),
+                        AngularGradient(gradient: Gradient(colors: [accent, accent.opacity(0.5), accent]),
                                         center: .center),
                         style: StrokeStyle(lineWidth: 16, lineCap: .round)
                     )
@@ -1135,47 +1700,222 @@ private struct PauseTimerSheet: View {
         return String(format: "%02d:%02d", m, s)
     }
 }
+private extension PauseTimer {
+    var isRunning: Bool { state == .running || state == .paused }
+}
 
-enum NotificationHelper {
-    static func schedule(title: String, body: String, after seconds: TimeInterval = 1) {
-        let center = UNUserNotificationCenter.current()
-        center.getNotificationSettings { settings in
-            let status = settings.authorizationStatus
-            if status == .authorized || status == .provisional {
-                scheduleNow(center: center, title: title, body: body, after: seconds)
-            } else {
-                center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
-                    guard granted else {
-                        print("[NOTIF] not granted by user")
-                        return
+// MARK: - HR Sheets/Views
+
+private struct HeartRateInfoSheet: View {
+    let bpm: Int?
+    let isMonitoring: Bool
+    let onStart: () -> Void
+
+    @State private var showDetails = false
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 16) {
+                // Header
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle().fill(Color.red.opacity(0.12)).frame(width: 44, height: 44)
+                        Image(systemName: "heart.fill").foregroundStyle(.red)
                     }
-                    scheduleNow(center: center, title: title, body: body, after: seconds)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Herzfrequenz")
+                            .font(.headline)
+                        Text(isMonitoring ? "Live aktiv" : "Inaktiv")
+                            .font(.footnote)
+                            .foregroundStyle(isMonitoring ? .green : .secondary)
+                    }
+                    Spacer()
+                    Text(bpm.map { "\($0) bpm" } ?? "—")
+                        .font(.title3.weight(.bold))
+                        .monospacedDigit()
+                }
+                .padding(.horizontal)
+
+                // Kurz erklärt (knapper Text)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("So funktioniert’s")
+                        .font(.subheadline.weight(.semibold))
+                    Text("Movo liest deine Herzfrequenz aus Apple Health. Mit Apple Watch oder kompatiblen Kopfhörern (z. B. AirPods) erhältst du oft aktuellere Werte.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .background(RoundedRectangle(cornerRadius: 14).fill(Color.dsFieldBG))
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.dsOutline, lineWidth: 0.5))
+                .padding(.horizontal)
+
+                // Aktionen
+                VStack(spacing: 10) {
+                    Button {
+                        onStart()
+                    } label: {
+                        Label("Live‑HR starten", systemImage: "play.fill")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    Button {
+                        showDetails = true
+                    } label: {
+                        Label("Details anzeigen", systemImage: "info.circle")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .padding(.horizontal)
+
+                Spacer(minLength: 8)
+            }
+            .navigationTitle("Herzfrequenz")
+            .navigationBarTitleDisplayMode(.inline)
+            // Detail-Sheet über diesem Sheet
+            .sheet(isPresented: $showDetails) {
+                HeartRateDetailView(
+                    bpm: bpm,
+                    isMonitoring: isMonitoring,
+                    onClose: { showDetails = false }
+                )
+            }
+        }
+    }
+}
+
+private struct HeartRateDetailView: View {
+    let bpm: Int?
+    let isMonitoring: Bool
+    let onClose: () -> Void
+
+    private var zoneText: String {
+        guard let bpm else { return "—" }
+        // Einfache Heuristik ohne Alter: Zonen grob anhand 190 als Max
+        let maxHR = 190.0
+        let pct = Double(bpm) / maxHR
+        switch pct {
+        case ..<0.6: return "Zone 1 · Leicht"
+        case ..<0.7: return "Zone 2 · Locker"
+        case ..<0.8: return "Zone 3 · Mittel"
+        case ..<0.9: return "Zone 4 · Hart"
+        default:     return "Zone 5 · Maximal"
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Große Zahl
+                    VStack(spacing: 8) {
+                        Text(bpm.map { "\($0)" } ?? "—")
+                            .font(.system(size: 96, weight: .bold, design: .rounded))
+                            .monospacedDigit()
+                            .foregroundStyle(.red)
+                        Text("bpm")
+                            .font(.headline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.top, 16)
+
+                    // Zone
+                    VStack(spacing: 6) {
+                        Text(zoneText)
+                            .font(.title3.weight(.semibold))
+                        Text(isMonitoring ? "Monitoring aktiv" : "Monitoring inaktiv")
+                            .font(.footnote)
+                            .foregroundStyle(isMonitoring ? .green : .secondary)
+                    }
+
+                    // Hinweise
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Tipps für genauere Werte")
+                            .font(.headline)
+                        Text("• Trage die Watch/Kopfhörer korrekt.\n• Starte ein Training in Movo.\n• Erlaube den Health‑Zugriff für Herzfrequenz.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 16).fill(Color.dsFieldBG))
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.dsOutline, lineWidth: 0.5))
+                    .padding(.horizontal)
+
+                    // Troubleshooting
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Kein Puls sichtbar?")
+                            .font(.headline)
+                        Text("• Prüfe Health‑Zugriff unter Quellen.\n• Aktiviere Bluetooth.\n• Warte einige Sekunden – HealthKit hat oft geringe Verzögerung.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 16).fill(Color.dsFieldBG))
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.dsOutline, lineWidth: 0.5))
+                    .padding(.horizontal)
+
+                    Spacer(minLength: 20)
+                }
+            }
+            .navigationTitle("HR‑Details")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Fertig") { onClose() }
                 }
             }
         }
     }
+}
 
-    private static func scheduleNow(center: UNUserNotificationCenter, title: String, body: String, after seconds: TimeInterval) {
-        let content = UNMutableNotificationContent()
-        content.title = title
-        content.body = body
-        content.sound = .default
+// MARK: - Polyline ENcodieren (CLLocationCoordinate2D[] -> String)
 
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, seconds), repeats: false)
-        let req = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-
-        center.add(req) { error in
-            if let error = error {
-                print("[NOTIF] add error: \(error.localizedDescription)")
-            } else {
-                print("[NOTIF] scheduled in \(max(1, seconds))s")
-            }
-        }
+func encodePolyline(_ coords: [CLLocationCoordinate2D]) -> String {
+    guard !coords.isEmpty else { return "" }
+    
+    var output = ""
+    var lastLat = 0
+    var lastLon = 0
+    
+    for coord in coords {
+        let lat = Int(round(coord.latitude * 1e5))
+        let lon = Int(round(coord.longitude * 1e5))
+        
+        let dLat = lat - lastLat
+        let dLon = lon - lastLon
+        
+        output.append(encodeSigned(dLat))
+        output.append(encodeSigned(dLon))
+        
+        lastLat = lat
+        lastLon = lon
     }
+    
+    return output
+}
 
-    static func openSystemSettings() {
-        if let url = URL(string: UIApplication.openSettingsURLString) {
-            DispatchQueue.main.async { UIApplication.shared.open(url) }
-        }
+private func encodeSigned(_ value: Int) -> String {
+    var v = value << 1
+    if value < 0 {
+        v = ~v
     }
+    
+    var chunks: [UInt8] = []
+    
+    while v >= 0x20 {
+        let chunk = UInt8((0x20 | (v & 0x1f)) + 63)
+        chunks.append(chunk)
+        v >>= 5
+    }
+    chunks.append(UInt8(v + 63))
+    
+    return String(bytes: chunks, encoding: .utf8) ?? ""
 }

@@ -68,8 +68,6 @@ struct Exercise: Identifiable, Codable, Equatable {
         sets.allSatisfy { $0.isCompleted }
     }
 }
-
-// MARK: - TrainingEntry (⚠️ jetzt mit updatedAt)
 struct TrainingEntry: Identifiable, Codable, Equatable {
     let id: UUID
     let date: Date
@@ -79,13 +77,12 @@ struct TrainingEntry: Identifiable, Codable, Equatable {
     var duration: TimeInterval
     var totalWeight: Double
     var emoji: String?
-    var updatedAt: Date   // ⬅️ wird für Sync/Conflict-Resolution genutzt
-    
-    var routePolyline: String?    // optional für alte Einträge
-    
-    var cardioType: String?      // z.B. "Outdoor Walk", "Outdoor Run"
+    var updatedAt: Date
+    var routePolyline: String?
+    var cardioType: String?
 
-
+    // 👇 NEU: Distanz in Kilometern (optional, damit alte Daten weiter decodierbar sind)
+    var distanceKm: Double?
 
     init(
         id: UUID = UUID(),
@@ -95,12 +92,10 @@ struct TrainingEntry: Identifiable, Codable, Equatable {
         duration: TimeInterval = 0,
         totalWeight: Double? = nil,
         emoji: String? = nil,
-        updatedAt: Date = Date(),  // ⬅️ Standard: jetzt
-        routePolyline: String? = nil,  // 👈 default, damit alte Call-Sites kompilieren
-        cardioType: String? = nil
-
-        
-
+        updatedAt: Date = Date(),
+        routePolyline: String? = nil,
+        cardioType: String? = nil,
+        distanceKm: Double? = nil          // 👈 NEU, Default = nil
     ) {
         self.id = id
         self.date = date
@@ -112,14 +107,14 @@ struct TrainingEntry: Identifiable, Codable, Equatable {
         self.updatedAt = updatedAt
         self.routePolyline = routePolyline
         self.cardioType = cardioType
-
-
+        self.distanceKm = distanceKm      // 👈 NEU
     }
 
     var isCompleted: Bool {
         exercises.allSatisfy { $0.isCompleted }
     }
 }
+
 
 // Für deine Merge-Logik in SyncService:
 extension TrainingEntry {

@@ -2,18 +2,40 @@ import SwiftUI
 import UserNotifications
 import FirebaseCore
 import FirebaseFirestore
-import WidgetKit
 import GoogleSignIn
 
-// Gemeinsamer Onboarding-Key für die ganze App
-// (Bitte denselben auch in OnboardingFlowView verwenden, dort nicht erneut private definieren)
 let kOnboardingKey = "onboarding.v2.completed"
+
+// MARK: - Firebase Bootstrap (shared)
+
+enum FirebaseBootstrap {
+    static func configureIfNeeded() {
+        guard FirebaseApp.app() == nil else { return }
+
+        #if DEBUG
+        FirebaseConfiguration.shared.setLoggerLevel(.debug)
+        #endif
+
+        FirebaseApp.configure()
+
+        // Optional: Firestore persistence
+        let settings = FirestoreSettings()
+        settings.isPersistenceEnabled = true
+        Firestore.firestore().settings = settings
+
+        print("[FirebaseBootstrap] ✅ Firebase configured")
+    }
+}
 
 // MARK: - AppDelegate
 
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+
+        // Configure Firebase as early as possible (safe to call multiple times because of guard)
+        FirebaseBootstrap.configureIfNeeded()
+
         UNUserNotificationCenter.current().delegate = self
         return true
     }
@@ -57,26 +79,19 @@ struct MovoApp: App {
     @AppStorage("steps.goal") private var stepsGoal: Int = 8000
     @Environment(\.scenePhase) private var scenePhase
 
-    // 🧭 Onboarding-Flag (entscheidet: Onboarding vs. RootView)
+    // 🧭 Onboarding
     @AppStorage(kOnboardingKey) private var onboardingCompleted: Bool = false
 
-    // DEBUG UI
     #if DEBUG
-    @State private var isSmokeBusy = false
     @State private var smokeMessage: String? = nil
     #endif
 
     // MARK: - Init
 
     init() {
-        if FirebaseApp.app() == nil {
-            FirebaseApp.configure()
-            FirebaseConfiguration.shared.setLoggerLevel(.debug)
-
-            let settings = FirestoreSettings()
-            settings.isPersistenceEnabled = true
-            Firestore.firestore().settings = settings
-        }
+        // ✅ Wichtig: Firebase VOR allen Services konfigurieren,
+        // die evtl. Auth/Firestore benutzen (z.B. AuthService()).
+        FirebaseBootstrap.configureIfNeeded()
 
         let settings   = AppSettings()
         let design     = DesignSettingsStore()
@@ -85,7 +100,8 @@ struct MovoApp: App {
         let training   = TrainingStore()
         let session    = TrainingSessionManager()
         let library    = ExerciseLibrary()
-        let templates  = TemplateStore(training: training) // <- lokal gekoppelt
+        let templates  = TemplateStore(training: training)
+
         let auth       = AuthService()
         let purchase   = PurchaseManager()
         let health     = HealthKitManager()
@@ -126,9 +142,6 @@ struct MovoApp: App {
     var body: some Scene {
         WindowGroup {
             AppThemeHost {
-                // 🔑 Zentraler Flow:
-                // 1. Wenn Onboarding noch nicht abgeschlossen → OnboardingFlowView
-                // 2. Sonst → RootView (die kümmert sich um Auth / Main UI)
                 if onboardingCompleted {
                     RootView()
                 } else {
@@ -137,7 +150,6 @@ struct MovoApp: App {
                     }
                 }
             }
-            // EnvironmentObjects für beide Fälle
             .environmentObject(appSettings)
             .environmentObject(design)
             .environmentObject(sessionManager)
@@ -153,16 +165,64 @@ struct MovoApp: App {
             .environmentObject(globalNotesStore)
             .environmentObject(syncService)
             .environmentObject(deepLink)
-
-            // 🔗 Deep Links & Google Sign-In Callback
             .onOpenURL { url in
                 if GIDSignIn.sharedInstance.handle(url) { return }
                 deepLink.handle(url)
             }
-
-            // 🔔 Notifications
             .onAppear {
                 NotificationManager.shared.bootstrap(appSettings: appSettings)
+                PhoneConnectivity.shared.activate()
+
+                // Watch callbacks
+                PhoneConnectivity.shared.onSetLogged = { _, workoutExerciseId, reps, weight in
+                    guard sessionManager.isTrainingActive else { return }
+                    sessionManager.addSetFromWatch(
+                        workoutExerciseId: workoutExerciseId,
+                        reps: reps,
+                        weightKg: weight,
+                        markCompleted: true
+                    )
+                    // ⌚️ Sofort aktualisierten Payload pushen (inkl. Propagation)
+                    let payload = buildActiveWorkoutPayload(from: sessionManager)
+                    PhoneConnectivity.shared.pushActiveWorkoutState(payload)
+                    #if os(iOS)
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    #endif
+                }
+
+                PhoneConnectivity.shared.onSetUpdated = { _, workoutExerciseId, setId, reps, weight in
+                    guard sessionManager.isTrainingActive else { return }
+                    sessionManager.updateSetFromWatch(
+                        workoutExerciseId: workoutExerciseId,
+                        setId: setId,
+                        reps: reps,
+                        weightKg: weight
+                    )
+                    // ⌚️ Sofort aktualisierten Payload pushen (inkl. Propagation)
+                    let payload = buildActiveWorkoutPayload(from: sessionManager)
+                    PhoneConnectivity.shared.pushActiveWorkoutState(payload)
+                    #if os(iOS)
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    #endif
+                }
+
+                PhoneConnectivity.shared.onSetRemoved = { workoutExerciseId, setId in
+                    guard sessionManager.isTrainingActive else { return }
+                    sessionManager.removeSetFromWatch(
+                        workoutExerciseId: workoutExerciseId,
+                        setId: setId
+                    )
+                    // ⌚️ Sofort aktualisierten Payload pushen
+                    let payload = buildActiveWorkoutPayload(from: sessionManager)
+                    PhoneConnectivity.shared.pushActiveWorkoutState(payload)
+                    #if os(iOS)
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    #endif
+                }
+
+                PhoneConnectivity.shared.onExerciseChanged = { _, workoutExerciseId in
+                    print("⌚️ exercise_changed:", workoutExerciseId)
+                }
             }
             .onChange(of: appSettings.notificationsEnabled) { enabled in
                 NotificationManager.shared.setEnabled(enabled, appSettings: appSettings)
@@ -170,25 +230,23 @@ struct MovoApp: App {
             .onChange(of: appSettings.language) { _ in
                 NotificationManager.shared.rescheduleIfNeeded(appSettings: appSettings)
             }
-
-            // 🚶‍♂️ HealthKit ↔︎ Widget
             .task {
                 healthKit.dailyGoal = stepsGoal
                 healthKit.refreshToday()
+
                 await healthKit.startBackgroundDelivery()
+                await healthKit.startWorkoutObserver()
+                await healthKit.startWeightObserver()
+
+                print("[App] ✅ All HealthKit background observers started")
             }
             .onChange(of: stepsGoal) { newGoal in
                 healthKit.dailyGoal = newGoal
                 healthKit.refreshToday()
             }
             .onChange(of: scenePhase) { phase in
-                switch phase {
-                case .active:
+                if phase == .active {
                     healthKit.refreshToday()
-            //    case .background:
-                  //  syncService.flushInBackgroundSilently()
-                default:
-                    break
                 }
             }
 
@@ -206,41 +264,74 @@ struct MovoApp: App {
             #endif
         }
     }
-}
 
-// MARK: - Smoke-Test (nur DEBUG)
+    // MARK: - Helper: Payload Builder (global nutzbar)
+    private func buildActiveWorkoutPayload(from manager: TrainingSessionManager) -> ActiveWorkoutPayload {
+        // Workout-ID: versuche eine stabile ID aus dem Snapshot; ansonsten generisch
+        let wid: String = {
+            if let started = manager.loadResumeSnapshot()?.startedAt {
+                let f = ISO8601DateFormatter()
+                f.formatOptions = [.withInternetDateTime]
+                return f.string(from: started)
+            } else {
+                return UUID().uuidString
+            }
+        }()
 
-#if DEBUG
-extension MovoApp {
-    @MainActor
-    private func smokeTestWrite() async {
-        guard let uid = authService.user?.uid else {
-            print("[SMOKE] kein uid (nicht eingeloggt?)")
-            smokeMessage = "SMOKE: kein uid"
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { smokeMessage = nil }
-            return
-        }
+        let exercises: [ActiveWorkoutPayload.ExerciseItem] =
+            manager.exercises.enumerated().map { idx, ex in
+                // Exercise-ID
+                let exId = Mirror(reflecting: ex).children.first { $0.label == "id" }?.value as? UUID ?? UUID()
+                let exName = Mirror(reflecting: ex).children.first { $0.label == "name" }?.value as? String ?? "Exercise \(idx + 1)"
+                // Sets
+                let anySets = Mirror(reflecting: ex).children.first { $0.label == "sets" }?.value
+                let arr = anySets as? [Any] ?? []
+                let sets: [ActiveWorkoutPayload.LoggedSetItem] = arr.map { s in
+                    let sid = Mirror(reflecting: s).children.first { $0.label == "id" }?.value as? UUID ?? UUID()
+                    let repsAny = Mirror(reflecting: s).children.first { $0.label == "reps" }?.value
+                    let weightAny = Mirror(reflecting: s).children.first { $0.label == "weight" }?.value
+                    let completedAny = Mirror(reflecting: s).children.first { $0.label == "isCompleted" }?.value
 
-        isSmokeBusy = true
-        smokeMessage = "SMOKE läuft…"
+                    let repsVal: Int = {
+                        if let i = repsAny as? Int { return i }
+                        if let str = repsAny as? String { return Int(str.filter("0123456789".contains)) ?? 0 }
+                        return 0
+                    }()
+                    let weightVal: Double = {
+                        if let d = weightAny as? Double { return d }
+                        if let str = weightAny as? String {
+                            let trimmed = str.trimmingCharacters(in: .whitespacesAndNewlines)
+                            let nf = NumberFormatter(); nf.locale = .current; nf.numberStyle = .decimal
+                            if let n = nf.number(from: trimmed) { return n.doubleValue }
+                            if let d = Double(trimmed.replacingOccurrences(of: ",", with: ".")) { return d }
+                            if let n = nf.number(from: trimmed.replacingOccurrences(of: ".", with: ",")) { return n.doubleValue }
+                        }
+                        return 0
+                    }()
+                    let completedVal: Bool = (completedAny as? Bool) ?? false
 
-        let db = Firestore.firestore()
-        do {
-            let ref = db.collection("users").document(uid)
-                .collection("diagnostics").document("ping")
-            try await ref.setData([
-                "by": "ios",
-                "ts": FieldValue.serverTimestamp()
-            ], merge: true)
-            print("[SMOKE] diagnostics/ping ✅ write ok (\(ref.path))")
-            smokeMessage = "SMOKE ✅"
-        } catch {
-            print("[SMOKE] diagnostics/ping ❌", error.localizedDescription)
-            smokeMessage = "SMOKE ❌"
-        }
+                    return ActiveWorkoutPayload.LoggedSetItem(
+                        id: sid.uuidString,
+                        reps: repsVal,
+                        weight: weightVal,
+                        completed: completedVal
+                    )
+                }
+                return ActiveWorkoutPayload.ExerciseItem(
+                    id: exId.uuidString,
+                    name: exName,
+                    order: idx,
+                    setCount: sets.count,
+                    sets: sets
+                )
+            }
 
-        isSmokeBusy = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { smokeMessage = nil }
+        return ActiveWorkoutPayload(
+            isActive: true,
+            workoutId: wid,
+            workoutName: manager.trainingTitle.isEmpty ? "Training" : manager.trainingTitle,
+            exercises: exercises,
+            selectedExerciseId: exercises.first?.id
+        )
     }
 }
-#endif

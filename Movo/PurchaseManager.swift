@@ -1,5 +1,9 @@
 import Foundation
 import StoreKit
+import SwiftUI
+import UIKit   // ✅ hinzufügen
+
+// MARK: - Purchase Manager
 
 @MainActor
 final class PurchaseManager: ObservableObject {
@@ -7,7 +11,7 @@ final class PurchaseManager: ObservableObject {
     // MARK: - Public State (für UI)
     @Published var hasUnlockedStatistics: Bool
 
-    // Optional: Preise & Badges live aus dem Store anzeigen (nutze sie in deiner Paywall)
+    // Preise & Badges live aus dem Store anzeigen
     @Published var displayPriceMonthly: String?
     @Published var displayPriceYearly: String?
     @Published var displayPriceLifetime: String?
@@ -17,10 +21,11 @@ final class PurchaseManager: ObservableObject {
     // MARK: - Config
     private let useMockMode = false
 
-    // 👉 IDs: genau so in App Store Connect angelegt (Abo-Gruppe für monthly/yearly!)
-    private let productIDMonthly  = "com.benepkt.movo.premium.monthly"
-    private let productIDYearly   = "com.benepkt.movo.premium.yearly"
-    private let productIDLifetime = "com.benepkt.movo.premium.lifetime"
+    // 👉 IDs: müssen 1:1 in App Store Connect existieren (Groß/Klein zählt)
+    private let productIDMonthly  = "com.benepkt.movo.premium.monthlyabo.v4"
+    private let productIDYearly   = "com.benepkt.movo.premium.yearly.v4"
+    private let productIDLifetime = "com.benepkt.movo.premium.lifetime.v4"
+
 
     // Cache
     private var products: [String: Product] = [:]
@@ -55,7 +60,7 @@ final class PurchaseManager: ObservableObject {
 
         do {
             try await AppStore.sync()
-            await refreshEntitlements(preserveLocal: false)  // ← hier darf auf false gehen
+            await refreshEntitlements(preserveLocal: false)
         } catch {
             print("❌ Wiederherstellen fehlgeschlagen: \(error)")
         }
@@ -64,47 +69,46 @@ final class PurchaseManager: ObservableObject {
     private func setPremium(_ unlocked: Bool) {
         hasUnlockedStatistics = unlocked
         UserDefaults.standard.set(unlocked, forKey: "hasUnlockedStatistics")
-        StepsShared.setPremium(unlocked) // <- schreibt ins App-Group-JSON + Widget reload
+        StepsShared.setPremium(unlocked) // App-Group + Widget reload
     }
 
-    
     public func applyRemotePremium(_ enabled: Bool) {
         // Remote-Flag darf NIEMALS downgraden.
-        // → Nur upgraden, wenn remote=true. Ansonsten lokalen Zustand beibehalten.
         if enabled { setPremium(true) }
     }
-
 
     // MARK: - Core
     private func purchase(productID: String) async {
         if useMockMode {
-            setPremium(true)                              // ⬅︎ HIER
-            hasUnlockedStatistics = true
-            UserDefaults.standard.set(true, forKey: "hasUnlockedStatistics")
+            setPremium(true)
             print("🟢 MOCK: Premium freigeschaltet")
             return
         }
 
         do {
-            // Sicherstellen, dass das Produkt geladen ist
             let product = try await product(for: productID)
-
             let result = try await product.purchase()
+
             switch result {
             case .success(let verification):
                 switch verification {
-                case .verified(_):
-                    hasUnlockedStatistics = true
-                    setPremium(true)                      // ⬅︎ HIER
+                case .verified(let transaction):
+                    // ✅ WICHTIG: Transaktion abschließen
+                    await transaction.finish()
+                    setPremium(true)
+                    print("✅ Kauf erfolgreich: \(transaction.productID)")
 
-                    UserDefaults.standard.set(true, forKey: "hasUnlockedStatistics")
-                    print("✅ Kauf erfolgreich!")
                 case .unverified(_, let error):
                     print("⚠️ Kauf unbestätigt: \(String(describing: error))")
                 }
+
             case .userCancelled:
                 print("❌ Kauf abgebrochen")
-            default:
+
+            case .pending:
+                print("⏳ Kauf pending (z.B. Family Approval)")
+
+            @unknown default:
                 break
             }
         } catch {
@@ -115,11 +119,12 @@ final class PurchaseManager: ObservableObject {
     private func refreshEntitlements(preserveLocal: Bool) async {
         do {
             var active = false
+
             for await result in StoreKit.Transaction.currentEntitlements {
                 if case .verified(let t) = result,
-                   t.productID == productIDMonthly ||
-                   t.productID == productIDYearly  ||
-                   t.productID == productIDLifetime {
+                   (t.productID == productIDMonthly ||
+                    t.productID == productIDYearly  ||
+                    t.productID == productIDLifetime) {
                     active = true
                     break
                 }
@@ -128,52 +133,71 @@ final class PurchaseManager: ObservableObject {
             if active {
                 setPremium(true)                 // Upgrade sofort übernehmen
             } else if !preserveLocal {
-                setPremium(false)                // Nur wenn explizit gewünscht (z. B. Restore)
-            } // sonst: lokalen Zustand beibehalten
+                setPremium(false)                // nur bei Restore/Explizit
+            }
         } catch {
             print("❌ Entitlements prüfen fehlgeschlagen: \(error)")
-            // Im Fehlerfall lieber *nichts* ändern (Zustand beibehalten)
         }
     }
-
 
     private func listenForTransactionUpdates() {
         Task.detached { [weak self] in
             guard let self else { return }
             for await update in StoreKit.Transaction.updates {
                 if case .verified(let transaction) = update {
-                    _ = await transaction.finish()
+                    await transaction.finish()
 
                     // Falls widerrufen/erstattet:
-                    if let _ = transaction.revocationDate {
-                        await MainActor.run { self.setPremium(false) }   // ⬅︎ HIER
+                    if transaction.revocationDate != nil {
+                        await MainActor.run { self.setPremium(false) }
                         continue
                     }
 
                     if transaction.productID == self.productIDMonthly ||
                        transaction.productID == self.productIDYearly  ||
                        transaction.productID == self.productIDLifetime {
-                        await MainActor.run { self.setPremium(true) }    // ⬅︎ HIER
+                        await MainActor.run { self.setPremium(true) }
                     }
                 }
             }
         }
     }
 
-
     // MARK: - Product Loading
     private func fetchProducts() async {
         let ids = [productIDMonthly, productIDYearly, productIDLifetime]
         do {
-            let fetched = try await Product.products(for: ids)
+            var fetched = try await Product.products(for: ids)
+            print("🧾 fetched products:", fetched.map(\.id))
+
+            // Fallback: fehlende IDs einzeln nachladen (Sandbox/Storefront kann selektiv filtern)
+            let fetchedIDs = Set(fetched.map(\.id))
+            let missing = ids.filter { !fetchedIDs.contains($0) }
+            if !missing.isEmpty {
+                print("🧾 missing products in batch (will fetch individually):", missing)
+                for id in missing {
+                    do {
+                        let extra = try await Product.products(for: [id])
+                        if let p = extra.first {
+                            fetched.append(p)
+                            print("🧾 recovered product via single fetch:", p.id)
+                        } else {
+                            print("⚠️ still missing after single fetch:", id)
+                        }
+                    } catch {
+                        print("❌ single fetch failed for \(id): \(error)")
+                    }
+                }
+            }
+
+            // Cache aktualisieren
             for p in fetched { products[p.id] = p }
 
-            // Preise ins UI spiegeln
+            // UI-Strings setzen
             displayPriceMonthly  = products[productIDMonthly]?.displayPrice
             displayPriceYearly   = products[productIDYearly]?.displayPrice
             displayPriceLifetime = products[productIDLifetime]?.displayPrice
 
-            // Intro-Badges (nur für Abos)
             introBadgeMonthly = introBadgeText(for: products[productIDMonthly])
             introBadgeYearly  = introBadgeText(for: products[productIDYearly])
         } catch {
@@ -184,19 +208,22 @@ final class PurchaseManager: ObservableObject {
     private func product(for id: String) async throws -> Product {
         if let p = products[id] { return p }
         let fetched = try await Product.products(for: [id])
-        guard let p = fetched.first else { throw NSError(domain: "PurchaseManager", code: 404, userInfo: [NSLocalizedDescriptionKey: "Produkt nicht gefunden (\(id))"]) }
+        guard let p = fetched.first else {
+            throw NSError(
+                domain: "PurchaseManager",
+                code: 404,
+                userInfo: [NSLocalizedDescriptionKey: "Produkt nicht gefunden (\(id))"]
+            )
+        }
         products[id] = p
         return p
     }
-
-    
-
 
     // MARK: - Helpers
     private func introBadgeText(for product: Product?) -> String? {
         guard let offer = product?.subscription?.introductoryOffer else { return nil }
 
-        switch offer.paymentMode {            // 👈 statt offer.type
+        switch offer.paymentMode {
         case .freeTrial:
             let p = offer.period
             switch p.unit {
@@ -215,111 +242,105 @@ final class PurchaseManager: ObservableObject {
             return "Einführungsangebot"
         }
     }
-
 }
 
-// MARK: - Paywall-Integration per Plan (achte: .lifetime im Enum vorhanden!)
-
-
-
-import SwiftUI
-
 // MARK: - Pläne
+
 enum PaywallPlan: String, CaseIterable {
     case monthly
     case yearly
     case lifetime
-    case beta
 }
 
 // MARK: - Kauf-Routing
+
 @MainActor
 extension PurchaseManager {
     func purchase(plan: PaywallPlan) async {
         switch plan {
-        case .monthly:
-            await purchaseMonthly()
-        case .yearly:
-            await purchaseYearly()
-        case .lifetime:
-            await purchaseLifetime()
-        case .beta:
-            setPremium(true)                          // ⬅︎ HIER (statt direkte Zuweisungen)
-
-            // Nur falls du Beta weiterhin willst – sonst entfernen
-            hasUnlockedStatistics = true
-            UserDefaults.standard.set(true, forKey: "hasUnlockedStatistics")
-            print("🟢 Beta gratis freigeschaltet")
+        case .monthly:  await purchaseMonthly()
+        case .yearly:   await purchaseYearly()
+        case .lifetime: await purchaseLifetime()
         }
     }
 }
 
+@MainActor
+extension PurchaseManager {
 
+    /// Öffnet Apples offizielles "Code einlösen" Sheet (Offer Code / Promo Code).
+    /// Danach werden Entitlements aktualisiert, damit Premium sofort aktiv wird.
+    func redeemCode() async {
+        #if os(iOS)
+        do {
+            if #available(iOS 16.0, *) {
+                // bestes aktives UIWindowScene finden
+                let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+                guard let scene =
+                        scenes.first(where: { $0.activationState == .foregroundActive }) ??
+                        scenes.first
+                else {
+                    print("❌ Kein UIWindowScene gefunden für Redeem Sheet")
+                    return
+                }
 
-import SwiftUI
-import StoreKit
+                try await AppStore.presentOfferCodeRedeemSheet(in: scene)
+            } else {
+                // iOS 15 und älter
+                SKPaymentQueue.default().presentCodeRedemptionSheet()
+            }
 
-// MARK: - (Alt) Farben – falls anderweitig genutzt
-private struct PW {
-    static let bgTop = Color(red: 21/255, green: 32/255, blue: 58/255)
-    static let bgBottom = Color(red: 10/255, green: 15/255, blue: 28/255)
-    static let rowTop = Color(red: 33/255, green: 45/255, blue: 75/255)
-    static let rowBottom = Color(red: 21/255, green: 30/255, blue: 54/255)
-    static let stroke = Color.white.opacity(0.35)
-    static let strokeSelected = Color.yellow.opacity(0.9)
-    static let textPrimary = Color.white
-    static let textSecondary = Color.white.opacity(0.85)
+            // nach Einlösung Entitlements neu prüfen (Premium sollte dann anspringen)
+            await refreshEntitlements(preserveLocal: true)
+
+        } catch {
+            print("❌ Code einlösen fehlgeschlagen: \(error)")
+        }
+        #endif
+    }
 }
 
-import SwiftUI
-import StoreKit
-import SwiftUI
-import StoreKit
 
-// MARK: - Farben & Gradients
+// MARK: - Paywall Theme
+
 private struct PaywallTheme {
     static let accentA = Color(red: 0.40, green: 0.63, blue: 1.00)
     static let accentB = Color(red: 0.58, green: 0.42, blue: 1.00)
     static let bgTop   = Color.black
     static let bgBot   = Color(red: 0.05, green: 0.07, blue: 0.11)
-
-    static let cardStroke = LinearGradient(
-        colors: [Color.white.opacity(0.25), Color.white.opacity(0.25)],
-        startPoint: .topLeading, endPoint: .bottomTrailing
-    )
-    static let selectedStroke = LinearGradient(
-        colors: [accentA, accentB],
-        startPoint: .topLeading, endPoint: .bottomTrailing
-    )
 }
-import SwiftUI
-import StoreKit
 
-// MARK: - Paywall
+// MARK: - Paywall View
+
 struct PaywallView: View {
     @EnvironmentObject var appSettings: AppSettings
     @EnvironmentObject var purchaseManager: PurchaseManager
     @Environment(\.dismiss) private var dismiss
 
-    /// Optionaler Callback für sanftes Schließen aus dem Parent (z. B. StatisticsView-Overlay)
     var onRequestClose: (() -> Void)? = nil
 
-    @State private var selected: PaywallPlan = .beta
+    @State private var selected: PaywallPlan = .monthly
     @State private var isLoading = false
 
-    // Optional: Externe Links, wenn vorhanden – sonst werden interne Sheets gezeigt
-    var termsURL: URL? = nil
-    var privacyURL: URL? = nil
+    var eulaURL: URL?    = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")
+
+    var termsURL: URL? = URL(string: "https://www.movobp.de/agb.html")
+    var privacyURL: URL? = URL(string: "https://www.movobp.de/datenschutz.html")
 
     private var isDE: Bool { appSettings.language.lowercased().hasPrefix("de") }
     private func L(_ de: String, _ en: String) -> String { isDE ? de : en }
 
+    // ✅ CTA erst aktivieren, wenn Produkte wirklich geladen sind
+    private var productsReady: Bool {
+        purchaseManager.displayPriceMonthly != nil ||
+        purchaseManager.displayPriceYearly != nil ||
+        purchaseManager.displayPriceLifetime != nil
+    }
+
     var body: some View {
         ZStack {
-            // Anti-Flash: echte Vollflächenfarbe ganz unten
             Color.black.ignoresSafeArea()
 
-            // Hintergrund-Gradients
             LinearGradient(colors: [PaywallTheme.bgTop, PaywallTheme.bgBot],
                            startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea()
@@ -354,18 +375,56 @@ struct PaywallView: View {
                     PaywallFeatureCarousel()
                         .padding(.top, 4)
 
-                    // Plan-Auswahl – aktuell nur Beta
+                    // Plan-Auswahl
                     VStack(spacing: 12) {
+
+                        // Jahresabo
                         PlanCardGlass(
-                            title: L("Beta-Zugang", "Beta Access"),
-                            leftPill: L("Kostenlos", "Free"),
-                            rightBadge: L("Bestes Angebot", "Best Value"),
-                            price: L("Kostenlos", "Free"),
-                            subline: L("Alle Pro-Features aktuell gratis.", "All Pro features currently free."),
-                            selected: selected == .beta,
-                            glow: true
+                            title: L("Jahresabo", "Yearly"),
+                            leftPill: L("Beliebt", "Popular"),
+                            rightBadge: purchaseManager.introBadgeYearly,
+                            price: purchaseManager.displayPriceYearly ?? "—",
+                            periodLabel: L("pro Jahr", "per year"),
+                            subline: {
+                                // If intro is available, show explicit free-trial copy with price
+                                if purchaseManager.introBadgeYearly != nil,
+                                   let price = purchaseManager.displayPriceYearly {
+                                    return L("7 Tage kostenlos, danach \(price)/Jahr",
+                                             "7 days free, then \(price)/year")
+                                } else {
+                                    return L("Bestes Preis-Leistungs-Verhältnis", "Best value")
+                                }
+                            }(),
+                            selected: selected == .yearly,
+                            glow: selected == .yearly
                         )
-                        .onTapGesture { selected = .beta }
+                        .onTapGesture { withAnimation(.easeInOut(duration: 0.18)) { selected = .yearly } }
+
+                        // Monatsabo
+                        PlanCardGlass(
+                            title: L("Monatsabo", "Monthly"),
+                            leftPill: nil,
+                            rightBadge: purchaseManager.introBadgeMonthly,
+                            price: purchaseManager.displayPriceMonthly ?? "—",
+                            periodLabel: L("pro Monat", "per month"),
+                            subline: L("Maximum Flexibilität, kündbar jederzeit.",
+                                       "Maximum flexibility, cancel anytime."),
+                            selected: selected == .monthly
+                        )
+                        .onTapGesture { withAnimation(.easeInOut(duration: 0.18)) { selected = .monthly } }
+
+                        // Lifetime
+                        PlanCardGlass(
+                            title: L("Lifetime", "Lifetime"),
+                            leftPill: L("Einmalig", "One-time"),
+                            rightBadge: nil,
+                            price: purchaseManager.displayPriceLifetime ?? "—",
+                            periodLabel: L("einmalig", "one-time"),
+                            subline: L("Einmal zahlen, für immer nutzen.",
+                                       "Pay once, use forever."),
+                            selected: selected == .lifetime
+                        )
+                        .onTapGesture { withAnimation(.easeInOut(duration: 0.18)) { selected = .lifetime } }
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
@@ -384,13 +443,18 @@ struct PaywallView: View {
                             isLoading = true
                             await purchaseManager.purchase(plan: selected)
                             isLoading = false
-                            if purchaseManager.hasUnlockedStatistics {
-                                close()
-                            }
+                            if purchaseManager.hasUnlockedStatistics { close() }
                         }
                     }
                     .padding(.horizontal, 18)
                     .padding(.top, 6)
+                    .opacity(productsReady ? 1 : 0.6)
+                    .disabled(!productsReady || isLoading)
+
+                    Text(L("Jederzeit kündbar • Kein Risiko", "Cancel anytime • No risk"))
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.white.opacity(0.75))
+                        .padding(.top, 4)
 
                     footer
                         .padding(.horizontal, 20)
@@ -401,10 +465,9 @@ struct PaywallView: View {
             .background(Color.clear)
             .modifier(HideScrollBG())
         }
-        .interactiveDismissDisabled(true)    // kein versehentliches Wegwischen
+        .interactiveDismissDisabled(true)
         .colorScheme(.dark)
         .preferredColorScheme(.dark)
-        // Falls Premium von außen aktiv wird (Remote/Restore in anderem Screen)
         .onChange(of: purchaseManager.hasUnlockedStatistics) { unlocked in
             if unlocked { close() }
         }
@@ -418,9 +481,7 @@ struct PaywallView: View {
                     isLoading = true
                     await purchaseManager.restorePurchases()
                     isLoading = false
-                    if purchaseManager.hasUnlockedStatistics {
-                        close()
-                    }
+                    if purchaseManager.hasUnlockedStatistics { close() }
                 }
             } label: {
                 Text(L("Wiederherstellen", "Restore"))
@@ -430,6 +491,7 @@ struct PaywallView: View {
                     .padding(.vertical, 8)
                     .background(.thinMaterial, in: Capsule())
             }
+            .disabled(isLoading)
 
             Spacer()
 
@@ -477,6 +539,24 @@ struct PaywallView: View {
                 }
                 .buttonStyle(.plain)
             }
+            
+            if let eulaURL {
+                          Link("EULA", destination: eulaURL)
+                              .underline()
+                              .foregroundStyle(.white.opacity(0.8))
+                      }
+            
+            
+            Button {
+                   Task { await purchaseManager.redeemCode() }
+               } label: {
+                   Text(L("Code einlösen", "Redeem code"))
+                       .underline()
+                       .foregroundStyle(.white.opacity(0.8))
+               }
+               .buttonStyle(.plain)
+            
+            
 
             Spacer()
         }
@@ -491,11 +571,9 @@ struct PaywallView: View {
     // MARK: - CTA Text
     private func ctaText() -> String {
         switch selected {
-        case .beta:
-            return L("Kostenlos freischalten", "Unlock for free")
         case .yearly:
             return purchaseManager.introBadgeYearly != nil
-                ? L("7 Tage gratis starten", "Start 7-day free trial")
+                ? L("Gratis starten", "Start free trial")
                 : L("Jahresabo abschließen", "Subscribe yearly")
         case .monthly:
             return L("Monatsabo abschließen", "Subscribe monthly")
@@ -506,15 +584,13 @@ struct PaywallView: View {
 
     // MARK: - Close Helper
     private func close() {
-        if let onRequestClose {
-            onRequestClose()
-        } else {
-            dismiss()
-        }
+        if let onRequestClose { onRequestClose() }
+        else { dismiss() }
     }
 }
 
-// MARK: - Kleine Helper (gegen ScrollView-System-Hintergrund)
+// MARK: - Helpers
+
 private struct HideScrollBG: ViewModifier {
     func body(content: Content) -> some View {
         if #available(iOS 16.0, *) {
@@ -524,7 +600,9 @@ private struct HideScrollBG: ViewModifier {
         }
     }
 }
-// MARK: - Feature Carousel (mit Anti-Initial-Anim)
+
+// MARK: - Feature Carousel
+
 private struct PaywallFeatureCarousel: View {
     @State private var page: Int = 0
     @State private var didAppear = false
@@ -535,20 +613,23 @@ private struct PaywallFeatureCarousel: View {
                 TemplatesFeatureCard().tag(0)
                 StatisticsFeatureCard().tag(1)
                 LiveActivityFeatureCard().tag(2)
-                WidgetsFeatureCard(style: .mediumBars).id("widgets_bars").tag(3)
+                HeartRateFeatureCard().tag(3)
+                WidgetsFeatureCard(style: .mediumBars)
+                    .id("widgets_bars")
+                    .tag(4)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .background(Color.clear)
             .frame(height: 300)
             .onAppear { didAppear = true }
 
-            // Page indicator
             HStack(spacing: 10) {
-                ForEach(0..<4, id: \.self) { i in
+                ForEach(0..<5, id: \.self) { i in
                     Capsule()
                         .fill(i == page ? Color.white.opacity(0.9) : Color.white.opacity(0.28))
                         .frame(width: i == page ? 46 : 26, height: 7)
-                        .animation(didAppear ? .easeInOut(duration: 0.22) : .none, value: page)
+                        .animation(didAppear ? .easeInOut(duration: 0.22) : .none,
+                                   value: page)
                 }
             }
             .padding(.horizontal, 8)
@@ -556,6 +637,9 @@ private struct PaywallFeatureCarousel: View {
         .padding(.horizontal, 16)
     }
 }
+
+// MARK: - Launcher
+
 struct PaywallLauncher: View {
     @State private var showPaywall = false
     @State private var dim = 0.0
@@ -565,12 +649,10 @@ struct PaywallLauncher: View {
 
     var body: some View {
         ZStack {
-            // Dein eigentlicher Inhalt
             Button("Premium öffnen") {
                 openPaywallSmooth()
             }
 
-            // Dunkles Overlay für den weichen Übergang
             Color.black
                 .ignoresSafeArea()
                 .opacity(dim)
@@ -578,7 +660,6 @@ struct PaywallLauncher: View {
         }
         .fullScreenCover(isPresented: $showPaywall) {
             PaywallView(onRequestClose: {
-                // sanft wieder schließen
                 withAnimation(.easeInOut(duration: 0.25)) {
                     dim = 0
                     showPaywall = false
@@ -591,30 +672,17 @@ struct PaywallLauncher: View {
     }
 
     private func openPaywallSmooth() {
-        // 1) Abdunkeln
         withAnimation(.easeInOut(duration: 0.20)) {
             dim = 1
         }
-        // 2) Danach Cover öffnen, während es dunkel ist
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.22) {
             showPaywall = true
         }
     }
 }
-func animateInterfaceStyleChange(_ style: UIUserInterfaceStyle, duration: TimeInterval = 0.30) {
-    guard let window = UIApplication.shared
-        .connectedScenes
-        .compactMap({ $0 as? UIWindowScene })
-        .flatMap({ $0.windows })
-        .first(where: { $0.isKeyWindow }) else { return }
 
-    UIView.transition(with: window, duration: duration, options: [.transitionCrossDissolve, .allowAnimatedContent]) {
-        window.overrideUserInterfaceStyle = style
-        window.layoutIfNeeded()
-    }
-}
+// MARK: - Glass Card
 
-// MARK: - Glass Container
 private struct GlassCard<Content: View>: View {
     var corner: CGFloat = 28
     @ViewBuilder var content: () -> Content
@@ -642,10 +710,12 @@ private struct GlassCard<Content: View>: View {
     }
 }
 
-// MARK: - Reusable Icon
+// MARK: - Feature Icon
+
 private struct FeatureIconCircle: View {
     var tint: Color
     var system: String
+
     var body: some View {
         ZStack {
             Circle()
@@ -659,8 +729,14 @@ private struct FeatureIconCircle: View {
     }
 }
 
-// MARK: - Feature: Templates (2 Reihen)
+// MARK: - Templates Feature
+
 private struct TemplatesFeatureCard: View {
+    @EnvironmentObject var appSettings: AppSettings
+
+    private var isDE: Bool { appSettings.language.lowercased().hasPrefix("de") }
+    private func L(_ de: String, _ en: String) -> String { isDE ? de : en }
+
     private let accent = Color(hue: 0.65, saturation: 0.75, brightness: 1.0)
 
     var body: some View {
@@ -669,10 +745,11 @@ private struct TemplatesFeatureCard: View {
                 HStack(spacing: 14) {
                     FeatureIconCircle(tint: accent, system: "list.bullet.rectangle.fill")
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Unbegrenzte Templates")
+                        Text(L("Unbegrenzte Templates", "Unlimited templates"))
                             .font(.title2.bold())
                             .foregroundColor(.white)
-                        Text("Erstelle & nutze so viele Vorlagen wie du willst.")
+                        Text(L("Erstelle & nutze so viele Vorlagen wie du willst.",
+                               "Create and use as many templates as you like."))
                             .foregroundColor(.white.opacity(0.85))
                             .font(.subheadline)
                             .fixedSize(horizontal: false, vertical: true)
@@ -682,8 +759,8 @@ private struct TemplatesFeatureCard: View {
                 }
 
                 VStack(spacing: 10) {
-                    templateRow(title: "Push", count: 6)
-                    templateRow(title: "Pull", count: 4)
+                    templateRow(title: L("Push", "Push"), count: 6)
+                    templateRow(title: L("Pull", "Pull"), count: 4)
                 }
             }
         }
@@ -703,7 +780,7 @@ private struct TemplatesFeatureCard: View {
                 Text(title)
                     .font(.headline.weight(.semibold))
                     .foregroundColor(accent)
-                Text("\(count) Übungen")
+                Text("\(count) " + L("Übungen", "exercises"))
                     .foregroundColor(.white.opacity(0.7))
                     .font(.subheadline)
             }
@@ -712,7 +789,8 @@ private struct TemplatesFeatureCard: View {
                 .foregroundColor(.white.opacity(0.5))
         }
         .padding(12)
-        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(Color.white.opacity(0.06),
+                    in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .stroke(Color.white.opacity(0.10), lineWidth: 1)
@@ -720,8 +798,14 @@ private struct TemplatesFeatureCard: View {
     }
 }
 
-// MARK: - Feature: Statistiken (Mini-Barchart + Cards)
+// MARK: - Statistics Feature
+
 private struct StatisticsFeatureCard: View {
+    @EnvironmentObject var appSettings: AppSettings
+
+    private var isDE: Bool { appSettings.language.lowercased().hasPrefix("de") }
+    private func L(_ de: String, _ en: String) -> String { isDE ? de : en }
+
     private let accentA = PaywallTheme.accentA
     private let accentB = PaywallTheme.accentB
 
@@ -731,17 +815,17 @@ private struct StatisticsFeatureCard: View {
                 HStack(spacing: 14) {
                     FeatureIconCircle(tint: .purple, system: "chart.bar.fill")
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Statistiken")
+                        Text(L("Statistiken", "Statistics"))
                             .font(.title2.bold())
                             .foregroundColor(.white)
-                        Text("Bestes Training, Dauer & Top-Übungen.")
+                        Text(L("Bestes Training, Dauer & Top-Übungen.",
+                               "Best workout, duration & top exercises."))
                             .foregroundColor(.white.opacity(0.85))
                             .font(.subheadline)
                     }
                     Spacer()
                 }
 
-                // Mini-Barchart (Mock)
                 HStack(alignment: .bottom, spacing: 10) {
                     ForEach([12, 24, 10, 48, 6, 22, 14], id: \.self) { h in
                         RoundedRectangle(cornerRadius: 6, style: .continuous)
@@ -754,11 +838,10 @@ private struct StatisticsFeatureCard: View {
                 .frame(height: 70)
                 .padding(.top, 2)
 
-                // Drei kleine KPI-Pills
                 HStack(spacing: 12) {
-                    kpi(title: "Trainings", value: "5")
-                    kpi(title: "Zeit", value: "49m")
-                    kpi(title: "Gewicht", value: "2.8 t")
+                    kpi(title: L("Trainings", "Workouts"), value: "5")
+                    kpi(title: L("Zeit", "Time"), value: "49m")
+                    kpi(title: L("Gewicht", "Weight"), value: "2.8 t")
                 }
             }
         }
@@ -766,17 +849,130 @@ private struct StatisticsFeatureCard: View {
 
     private func kpi(title: String, value: String) -> some View {
         VStack(spacing: 4) {
-            Text(value).font(.subheadline.weight(.bold)).foregroundStyle(.white)
-            Text(title).font(.caption2).foregroundStyle(.white.opacity(0.8))
+            Text(value)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.white)
+            Text(title)
+                .font(.caption2)
+                .foregroundStyle(.white.opacity(0.8))
         }
-        .padding(.horizontal, 12).padding(.vertical, 10)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Color.white.opacity(0.12), lineWidth: 1))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(.ultraThinMaterial,
+                    in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+        )
     }
 }
 
-// MARK: - Feature: Live Activity (Dynamic-Island-Pill)
+// MARK: - Heart Rate Feature
+
+private struct HeartRateFeatureCard: View {
+    @EnvironmentObject var appSettings: AppSettings
+
+    private var isDE: Bool { appSettings.language.lowercased().hasPrefix("de") }
+    private func L(_ de: String, _ en: String) -> String { isDE ? de : en }
+
+    private let accent = Color(red: 0.45, green: 0.50, blue: 1.0)
+
+    var body: some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: 18) {
+                HStack(spacing: 14) {
+                    FeatureIconCircle(tint: .red, system: "heart.fill")
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(L("Herzfrequenz im Training", "Heart rate during workouts"))
+                            .font(.title2.bold())
+                            .foregroundColor(.white)
+                    }
+                    Spacer()
+                }
+
+                ZStack {
+                    RoundedRectangle(cornerRadius: 32, style: .continuous)
+                        .fill(Color.black.opacity(0.97))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 32, style: .continuous)
+                                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                        )
+                        .shadow(color: .black.opacity(0.5), radius: 18, y: 10)
+
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text(L("Push Workout", "Push workout"))
+                            .font(.system(size: 20, weight: .heavy, design: .rounded))
+                            .foregroundColor(.white)
+
+                        HStack(spacing: 10) {
+                            chip(icon: "calendar", text: L("11. Dez 2025", "11 Dec 2025"))
+                            chip(icon: "timer", text: "0m 25s")
+                            Spacer()
+                        }
+
+                        HStack(spacing: 14) {
+                            HStack(spacing: 10) {
+                                ZStack {
+                                    Circle().fill(accent)
+                                    Image(systemName: "pause.fill")
+                                        .foregroundColor(.white)
+                                        .font(.system(size: 14, weight: .bold))
+                                }
+                                .frame(width: 30, height: 30)
+
+                                Text("01:00")
+                                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.white)
+                            }
+                            .padding(.horizontal, 18)
+                            .padding(.vertical, 10)
+                            .background(
+                                Capsule().fill(Color.white.opacity(0.06))
+                            )
+
+                            Spacer()
+
+                            HStack(spacing: 6) {
+                                Text("64")
+                                    .font(.system(size: 26, weight: .heavy, design: .rounded))
+                                    .foregroundColor(.white)
+                                Image(systemName: "heart.fill")
+                                    .foregroundColor(.red)
+                                    .font(.system(size: 18, weight: .semibold))
+                            }
+                        }
+                    }
+                    .padding(18)
+                }
+                .frame(height: 170)
+            }
+        }
+    }
+
+    private func chip(icon: String, text: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 13, weight: .semibold))
+            Text(text)
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+        }
+        .foregroundColor(.white)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            Capsule().fill(Color.white.opacity(0.10))
+        )
+    }
+}
+
+// MARK: - Live Activity Feature
+
 private struct LiveActivityFeatureCard: View {
+    @EnvironmentObject var appSettings: AppSettings
+
+    private var isDE: Bool { appSettings.language.lowercased().hasPrefix("de") }
+    private func L(_ de: String, _ en: String) -> String { isDE ? de : en }
+
     private let accent = Color.cyan
 
     var body: some View {
@@ -785,10 +981,11 @@ private struct LiveActivityFeatureCard: View {
                 HStack(spacing: 14) {
                     FeatureIconCircle(tint: accent, system: "play.circle.fill")
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Live Activity")
+                        Text(L("Live Activity", "Live Activity"))
                             .font(.title2.bold())
                             .foregroundColor(.white)
-                        Text("Fortschritt direkt auf dem Sperrbildschirm.")
+                        Text(L("Fortschritt direkt auf dem Sperrbildschirm.",
+                               "Progress right on your Lock Screen."))
                             .foregroundColor(.white.opacity(0.85))
                             .font(.subheadline)
                     }
@@ -805,11 +1002,14 @@ private struct LiveActivityFeatureCard: View {
                         .shadow(color: .black.opacity(0.45), radius: 18, y: 8)
 
                     HStack(spacing: 0) {
-                        metric(icon: "figure.strengthtraining.traditional", value: "0", title: "Sets")
+                        metric(icon: "figure.strengthtraining.traditional",
+                               value: "0", title: L("Sätze", "Sets"))
                         divider
-                        metric(icon: "clock", value: "0m", title: "Time")
+                        metric(icon: "clock",
+                               value: "0m", title: L("Zeit", "Time"))
                         divider
-                        metric(icon: "scalemass", value: "0 kg", title: "Weight")
+                        metric(icon: "scalemass",
+                               value: "0 kg", title: L("Gewicht", "Weight"))
                     }
                     .padding(.horizontal, 18)
                 }
@@ -827,25 +1027,39 @@ private struct LiveActivityFeatureCard: View {
 
     private func metric(icon: String, value: String, title: String) -> some View {
         HStack(spacing: 10) {
-            Image(systemName: icon).foregroundColor(.white)
+            Image(systemName: icon)
+                .foregroundColor(.white)
+
             VStack(alignment: .leading, spacing: 2) {
-                Text(value).foregroundColor(.white).font(.headline.bold())
-                Text(title).foregroundColor(.white.opacity(0.7)).font(.footnote)
+                Text(value)
+                    .foregroundColor(.white)
+                    .font(.headline.bold())
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+
+                Text(title)
+                    .foregroundColor(.white.opacity(0.7))
+                    .font(.footnote)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
-// MARK: - Widgets (wie im Screenshot, wähle 1 Stil)
-
+// MARK: - Widgets Feature
 
 private enum WidgetPreviewStyle { case mediumBars, smallRing }
 
 private struct WidgetsFeatureCard: View {
-    let style: WidgetPreviewStyle          // <— mediumBars ODER smallRing
+    @EnvironmentObject var appSettings: AppSettings
 
-    // Farben für Ring/Balken
+    private var isDE: Bool { appSettings.language.lowercased().hasPrefix("de") }
+    private func L(_ de: String, _ en: String) -> String { isDE ? de : en }
+
+    let style: WidgetPreviewStyle
+
     private let ringA = PaywallTheme.accentA
     private let ringB = PaywallTheme.accentB
 
@@ -855,17 +1069,18 @@ private struct WidgetsFeatureCard: View {
                 HStack(spacing: 14) {
                     iconCircle(system: "square.grid.2x2.fill", tint: .purple)
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Widgets").font(.title2.bold()).foregroundColor(.white)
-                        Text("iOS-Widgets für Verlauf & Schritte.")
+                        Text(L("Widgets", "Widgets"))
+                            .font(.title2.bold())
+                            .foregroundColor(.white)
+                        Text(L("iOS-Widgets für Verlauf & Schritte.",
+                               "iOS widgets for history & steps."))
                             .foregroundColor(.white.opacity(0.85))
                             .font(.subheadline)
                     }
                     Spacer()
                 }
-                .padding(.bottom, 12)   // << mehr Abstand zum Widget
+                .padding(.bottom, 12)
 
-
-                // ---- EINE der beiden Previews ----
                 switch style {
                 case .mediumBars:
                     widgetPreviewMediumBars()
@@ -876,7 +1091,6 @@ private struct WidgetsFeatureCard: View {
         }
     }
 
-    // Hintergrund im iOS-Widget-Look
     private func widgetBackground(corner: CGFloat = 22) -> some View {
         RoundedRectangle(cornerRadius: corner, style: .continuous)
             .fill(Color.black.opacity(0.88))
@@ -886,28 +1100,24 @@ private struct WidgetsFeatureCard: View {
             )
     }
 
-    // --- Medium: „Schritte – 7 Tage“ mit Balken ---
     private func widgetPreviewMediumBars() -> some View {
         ZStack {
             widgetBackground()
             VStack(alignment: .leading, spacing: 8) {
-                // Header
                 HStack(spacing: 8) {
                     Image(systemName: "figure.walk")
                         .foregroundStyle(.white.opacity(0.8))
-                    Text("Schritte – 7 Tage")
+                    Text(L("Schritte – 7 Tage", "Steps – 7 days"))
                         .foregroundStyle(.white.opacity(0.8))
                         .font(.subheadline.weight(.semibold))
                 }
 
-                // Zahl
                 Text("35.073")
                     .font(.system(size: 30, weight: .black, design: .rounded))
                     .foregroundStyle(.white)
 
-                // Bars
                 HStack(alignment: .bottom, spacing: 8) {
-                    ForEach([0.35,0.78,0.42,0.40,0.38,0.62,0.05], id: \.self) { h in
+                    ForEach([0.35, 0.78, 0.42, 0.40, 0.38, 0.62, 0.05], id: \.self) { h in
                         RoundedRectangle(cornerRadius: 4, style: .continuous)
                             .fill(LinearGradient(colors: [ringA, ringB],
                                                  startPoint: .top, endPoint: .bottom))
@@ -917,11 +1127,11 @@ private struct WidgetsFeatureCard: View {
                 }
                 .padding(.vertical, 4)
 
-                // Footer
                 HStack {
-                    Text("Summe 35.073 • Ø 5.010")
+                    Text(L("Summe 35.073 • Ø 5.010",
+                           "Total 35,073 • avg 5,010"))
                     Spacer()
-                    Text("Ziel 8.000")
+                    Text(L("Ziel 8.000", "Goal 8,000"))
                 }
                 .font(.footnote)
                 .foregroundStyle(.white.opacity(0.75))
@@ -931,12 +1141,10 @@ private struct WidgetsFeatureCard: View {
         .frame(height: 156)
     }
 
-    // --- Small: Ring mit KW/Ziel ---
     private func widgetPreviewSmallRing() -> some View {
         ZStack {
             widgetBackground()
             VStack(alignment: .leading, spacing: 10) {
-                // App-Title Zeile
                 HStack(spacing: 6) {
                     Image(systemName: "rectangle.grid.2x2")
                         .font(.caption.bold())
@@ -948,14 +1156,14 @@ private struct WidgetsFeatureCard: View {
                 }
 
                 HStack(spacing: 12) {
-                    // Ring
                     ZStack {
                         Circle().stroke(Color.white.opacity(0.20), lineWidth: 10)
                         Circle()
-                            .trim(from: 0, to: 0.80) // 80%
+                            .trim(from: 0, to: 0.80)
                             .stroke(
                                 LinearGradient(colors: [ringA, ringB],
-                                               startPoint: .topLeading, endPoint: .bottomTrailing),
+                                               startPoint: .topLeading,
+                                               endPoint: .bottomTrailing),
                                 style: StrokeStyle(lineWidth: 10, lineCap: .round)
                             )
                             .rotationEffect(.degrees(-90))
@@ -966,8 +1174,12 @@ private struct WidgetsFeatureCard: View {
                     .frame(width: 68, height: 68)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("KW 43").font(.subheadline.weight(.semibold)).foregroundStyle(.white)
-                        Text("Ziel 3/Wo.").font(.footnote).foregroundStyle(.white.opacity(0.8))
+                        Text(L("KW 43", "Week 43"))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white)
+                        Text(L("Ziel 3/Wo.", "Goal 3/week"))
+                            .font(.footnote)
+                            .foregroundStyle(.white.opacity(0.8))
                     }
 
                     Spacer()
@@ -979,52 +1191,35 @@ private struct WidgetsFeatureCard: View {
         .frame(height: 156)
     }
 
-    // Icon-Bubble
     private func iconCircle(system: String, tint: Color) -> some View {
         ZStack {
             Circle().fill(LinearGradient(colors: [tint.opacity(0.55), tint.opacity(0.28)],
                                          startPoint: .topLeading, endPoint: .bottomTrailing))
-            Image(systemName: system).font(.system(size: 20, weight: .bold)).foregroundColor(.white)
+            Image(systemName: system)
+                .font(.system(size: 20, weight: .bold))
+                .foregroundColor(.white)
         }
         .frame(width: 52, height: 52)
     }
 }
 
-// MARK: - Kleiner Ring
-private struct ProgressDRing: View {
-    var progress: Double // 0...1
-    var body: some View {
-        ZStack {
-            Circle().stroke(Color.white.opacity(0.20), lineWidth: 8)
-            Circle()
-                .trim(from: 0, to: progress)
-                .stroke(
-                    LinearGradient(colors: [PaywallTheme.accentA, PaywallTheme.accentB],
-                                   startPoint: .topLeading, endPoint: .bottomTrailing),
-                    style: StrokeStyle(lineWidth: 8, lineCap: .round)
-                )
-                .rotationEffect(.degrees(-90))
-        }
-    }
-}
+// MARK: - Plan Card
 
-// MARK: - Plan Card (glasig) mit optionalem Glow + Auswahl-Stroke
 private struct PlanCardGlass: View {
     var title: String
     var leftPill: String?
     var rightBadge: String?
     var price: String
+    var periodLabel: String?
     var subline: String?
     var selected: Bool
     var glow: Bool = false
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            // Glas-Körper (ohne jeden Stroke!)
             RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .fill(.ultraThinMaterial)
                 .overlay(
-                    // zartes Glaslicht innen
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
                         .fill(
                             LinearGradient(colors: [Color.white.opacity(0.10),
@@ -1037,7 +1232,6 @@ private struct PlanCardGlass: View {
                 .shadow(color: .black.opacity(selected ? 0.35 : 0.25),
                         radius: selected ? 18 : 10, y: 10)
 
-            // Inhalt
             HStack(spacing: 14) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(title)
@@ -1047,14 +1241,17 @@ private struct PlanCardGlass: View {
                     if let leftPill {
                         Text(leftPill.uppercased())
                             .font(.caption.bold())
-                            .padding(.horizontal, 10).padding(.vertical, 6)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
                             .background(
                                 LinearGradient(colors: [PaywallTheme.accentA.opacity(0.28),
                                                         PaywallTheme.accentB.opacity(0.28)],
                                                startPoint: .topLeading, endPoint: .bottomTrailing),
                                 in: Capsule()
                             )
-                            .overlay(Capsule().stroke(Color.white.opacity(0.18)))
+                            .overlay(
+                                Capsule().stroke(Color.white.opacity(0.18))
+                            )
                             .foregroundStyle(.white)
                     }
 
@@ -1067,16 +1264,25 @@ private struct PlanCardGlass: View {
 
                 Spacer()
 
-                Text(price)
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(.white)
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text(price)
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(.white)
+
+                    if let periodLabel {
+                        Text(periodLabel)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.white.opacity(0.75))
+                    }
+                }
             }
             .padding(18)
 
             if let rightBadge {
                 Text(rightBadge.uppercased())
                     .font(.caption2.weight(.heavy))
-                    .padding(.horizontal, 10).padding(.vertical, 6)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                     .background(
                         LinearGradient(colors: [PaywallTheme.accentA, PaywallTheme.accentB],
                                        startPoint: .topLeading, endPoint: .bottomTrailing),
@@ -1086,9 +1292,8 @@ private struct PlanCardGlass: View {
                     .padding(10)
             }
         }
-        // 👉 Rand und Glow **außerhalb** des Materials, ganz oben in der Z-Reihenfolge:
         .overlay(NeonOutline(corner: 22, active: selected, showGlow: glow))
-        .padding(.vertical, 2) // etwas Platz, damit der Glow nicht abgeschnitten wird
+        .padding(.vertical, 2)
     }
 }
 
@@ -1104,31 +1309,28 @@ private struct NeonOutline: View {
 
     var body: some View {
         ZStack {
-            // 1) weicher Außen-Glow (additiv)
             if showGlow {
                 RoundedRectangle(cornerRadius: corner, style: .continuous)
-                    .stroke(g, lineWidth: 6)     // größer als der „scharfe“ Rand
+                    .stroke(g, lineWidth: 6)
                     .blur(radius: 14)
                     .opacity(0.95)
-                    .blendMode(.plusLighter)     // macht’s wirklich leuchtend
+                    .blendMode(.plusLighter)
                     .allowsHitTesting(false)
             }
             let borderStyle: AnyShapeStyle = active
-                ? AnyShapeStyle(g)                             // Gradient
+                ? AnyShapeStyle(g)
                 : AnyShapeStyle(Color.white.opacity(0.14))
-            // 2) feiner, scharfer Rand
+
             RoundedRectangle(cornerRadius: corner, style: .continuous)
                 .stroke(borderStyle, lineWidth: active ? 2 : 1)
-                .compositingGroup()           // verhindert Material-Entsättigung
+                .compositingGroup()
                 .allowsHitTesting(false)
         }
     }
 }
 
-
-
-
 // MARK: - Glasiger Primary Button
+
 private struct GlassPrimaryButton: View {
     var title: String
     var isLoading: Bool
@@ -1162,7 +1364,8 @@ private struct GlassPrimaryButton: View {
     }
 }
 
-// MARK: - Optional: Paywalled-Overlay (falls du's anderswo nutzt)
+// MARK: - Paywalled Overlay (wie gehabt)
+
 public enum PaywallFit { case fill, content }
 
 public struct Paywalled<Content: View>: View {
@@ -1280,146 +1483,78 @@ public struct Paywalled<Content: View>: View {
     }
 }
 
-
-// MARK: - Feature Carousel (glass, Apple-like)
-
-
-    private func templateRow(title: String, count: Int, accent: Color) -> some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle().fill(accent.opacity(0.16))
-                Image(systemName: "list.bullet.rectangle")
-                    .foregroundColor(accent)
-                    .font(.system(size: 16, weight: .semibold))
-            }
-            .frame(width: 40, height: 40)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.headline.weight(.semibold))
-                    .foregroundColor(accent)
-                Text("\(count) Übungen")
-                    .foregroundColor(.white.opacity(0.7))
-                    .font(.subheadline)
-            }
-            Spacer()
-            Image(systemName: "chevron.right")
-                .foregroundColor(.white.opacity(0.5))
-        }
-        .padding(12)
-        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.white.opacity(0.10), lineWidth: 1)
-        )
-    }
-
-    private func iconCircle(system: String, tint: Color) -> some View {
-        ZStack {
-            Circle()
-                .fill(LinearGradient(colors: [tint.opacity(0.55), tint.opacity(0.28)],
-                                     startPoint: .topLeading, endPoint: .bottomTrailing))
-            Image(systemName: system)
-                .font(.system(size: 20, weight: .bold))
-                .foregroundColor(.white)
-        }
-        .frame(width: 52, height: 52)
-    }
-
-
-// MARK: - Live Activity (Dynamic-Island-Pill-Preview)
-
-
-    private var divider: some View {
-        Rectangle()
-            .fill(Color.white.opacity(0.10))
-            .frame(width: 1, height: 34)
-            .padding(.horizontal, 16)
-    }
-
-    private func metric(icon: String, value: String, title: String) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: icon)
-                .foregroundColor(.white)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(value)
-                    .foregroundColor(.white)
-                    .font(.headline.bold())
-                Text(title)
-                    .foregroundColor(.white.opacity(0.7))
-                    .font(.footnote)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-// MARK: - Shared: kleine KPI-Pills unten in der Karte
-
-
-private func pill(title: String, value: String) -> some View {
-    VStack(spacing: 6) {
-        Text(value)
-            .font(.headline.weight(.semibold))
-            .foregroundColor(.white)
-        Text(title)
-            .font(.footnote)
-            .foregroundColor(.white.opacity(0.75))
-    }
-    .frame(maxWidth: .infinity)
-    .padding(.vertical, 12)
-    .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-    .overlay(
-        RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .stroke(Color.white.opacity(0.10), lineWidth: 1)
-    )
-}
+// MARK: - Optional Premium Teaser Card (wie gehabt)
 
 private struct PremiumTeaserCard: View {
+    @EnvironmentObject var appSettings: AppSettings
+
+    private var isDE: Bool { appSettings.language.lowercased().hasPrefix("de") }
+    private func L(_ de: String, _ en: String) -> String { isDE ? de : en }
+
     var tap: () -> Void
 
     var body: some View {
         VStack(spacing: 14) {
             HStack(spacing: 12) {
                 ZStack {
-                    Circle().fill(LinearGradient(colors: [.purple.opacity(0.6), .blue.opacity(0.6)],
-                                                 startPoint: .topLeading, endPoint: .bottomTrailing))
-                    Image(systemName: "crown.fill").foregroundStyle(.white).font(.title2.bold())
+                    Circle().fill(
+                        LinearGradient(colors: [.purple.opacity(0.6), .blue.opacity(0.6)],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                    Image(systemName: "crown.fill")
+                        .foregroundStyle(.white)
+                        .font(.title2.bold())
                 }
                 .frame(width: 40, height: 40)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Premium-Statistiken").font(.headline)
-                    Text("Beta: Alle Pro-Features sind aktuell kostenlos.")
-                        .font(.subheadline).foregroundStyle(.secondary)
+                    Text(L("Premium-Statistiken", "Premium statistics"))
+                        .font(.headline)
+                    Text(L("Beta: Alle Pro-Features sind aktuell kostenlos.",
+                           "Beta: All pro features are currently free."))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
             }
 
-            // kleine Feature-Liste
             VStack(spacing: 10) {
-                row(icon: "chart.bar.fill", title: "Erweiterte Diagramme & Trends")
-                row(icon: "trophy.fill",     title: "Bestes Training & Rekorde")
-                row(icon: "timer",           title: "Dauer, Volumen, Top-Übungen")
-                row(icon: "square.grid.2x2", title: "Widgets auf dem Homescreen")
+                row(icon: "chart.bar.fill",
+                    title: L("Erweiterte Diagramme & Trends",
+                             "Advanced charts & trends"))
+                row(icon: "trophy.fill",
+                    title: L("Bestes Training & Rekorde",
+                             "Best workouts & records"))
+                row(icon: "timer",
+                    title: L("Dauer, Volumen, Top-Übungen",
+                             "Duration, volume, top exercises"))
+                row(icon: "square.grid.2x2",
+                    title: L("Widgets auf dem Homescreen",
+                             "Widgets on the Home Screen"))
             }
 
             Button(action: tap) {
-                Text("Kostenlos freischalten")
+                Text(L("Kostenlos testen", "test for free"))
                     .fontWeight(.bold)
                     .padding(.vertical, 14)
                     .frame(maxWidth: .infinity)
-                    .background(LinearGradient(colors: [.blue, .purple],
-                                               startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .background(
+                        LinearGradient(colors: [.blue, .purple],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
                     .foregroundStyle(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                     .shadow(radius: 8, y: 4)
             }
         }
         .padding(16)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
-            .stroke(Color.white.opacity(0.12), lineWidth: 1))
+        .background(Color(.secondarySystemBackground),
+                    in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+        )
     }
 
     private func row(icon: String, title: String) -> some View {
@@ -1430,10 +1565,13 @@ private struct PremiumTeaserCard: View {
                     .frame(width: 44, height: 44)
                 Image(systemName: icon).foregroundStyle(.primary)
             }
-            Text(title).font(.subheadline.weight(.semibold))
+            Text(title)
+                .font(.subheadline.weight(.semibold))
             Spacer()
         }
         .padding(10)
-        .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(Color.white.opacity(0.05),
+                    in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 }
+

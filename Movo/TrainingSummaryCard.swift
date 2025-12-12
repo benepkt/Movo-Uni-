@@ -10,6 +10,11 @@ struct TrainingSummaryCard: View {
         let t = entry.title.lowercased()
         return t.contains("woche ") || t.contains("week ")
     }
+    
+    private var isJogging: Bool {
+        let t = entry.title.lowercased()
+        return t.contains("joggen") || t.contains("running") || t.contains("lauf")
+    }
 
     var body: some View {
         NavigationLink {
@@ -23,7 +28,9 @@ struct TrainingSummaryCard: View {
     // MARK: - Label
     @ViewBuilder
     private var cardLabel: some View {
-        if isWeek {
+        if isJogging {
+            joggingVariant
+        } else if isWeek {
             weekVariant
         } else {
             defaultVariant
@@ -48,6 +55,135 @@ struct TrainingSummaryCard: View {
         .background(Color(.secondarySystemBackground))
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+    }
+    
+    // MARK: - Jogging-Variante (fitness tracking style)
+    private var joggingVariant: some View {
+        let distanceKm = extractDistance(from: entry.title)
+        let duration = entry.duration
+        let pace = calculatePace(distance: distanceKm, duration: duration)
+        let calories = estimateCalories(distanceKm: distanceKm)
+        
+        return VStack(alignment: .leading, spacing: 16) {
+            // Large distance at top
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(String(format: "%.2f", distanceKm).replacingOccurrences(of: ".", with: ","))
+                    .font(.system(size: 48, weight: .bold))
+                    .monospacedDigit()
+                    .foregroundStyle(.primary)
+                
+                Image(systemName: "figure.run")
+                    .font(.system(size: 40, weight: .medium))
+                    .foregroundStyle(.green)
+            }
+            
+            // Activity type
+            Text("Outdoor Running")
+                .font(.title3.weight(.semibold))
+            
+            // Date/time info
+            HStack(spacing: 4) {
+                Image(systemName: "clock")
+                    .font(.caption)
+                Text(formattedDateTime(entry.date, duration: duration))
+                    .font(.caption)
+            }
+            .foregroundStyle(.secondary)
+            
+            // Stats grid - 2 columns
+            VStack(spacing: 12) {
+                HStack(spacing: 12) {
+                    statBlock(value: String(format: "%.0f", calories), unit: "KCAL", label: "Active Calories")
+                    statBlock(value: String(format: "%.2f", distanceKm).replacingOccurrences(of: ".", with: ","), unit: "KM", label: "Distance")
+                }
+                
+                HStack(spacing: 12) {
+                    statBlock(value: formattedDuration(duration), unit: "", label: "Duration")
+                    statBlock(value: pace, unit: "MIN/KM", label: "Avg Pace")
+                }
+            }
+        }
+        .padding(16)
+        .background(Color(.secondarySystemBackground))
+        .cornerRadius(16)
+        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
+    }
+    
+    private func statBlock(value: String, unit: String, label: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(value)
+                    .font(.system(size: 24, weight: .bold))
+                    .monospacedDigit()
+                
+                if !unit.isEmpty {
+                    Text(unit)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(Color(.tertiarySystemBackground))
+        .cornerRadius(12)
+    }
+    
+    // Helper functions for jogging variant
+    private func extractDistance(from title: String) -> Double {
+        // Extract distance from title like "Joggen – 5.23 km"
+        let components = title.components(separatedBy: "–")
+        if components.count > 1 {
+            let distPart = components[1].trimmingCharacters(in: .whitespaces)
+            let numString = distPart.replacingOccurrences(of: "km", with: "")
+                .replacingOccurrences(of: ",", with: ".")
+                .trimmingCharacters(in: .whitespaces)
+            return Double(numString) ?? 0.0
+        }
+        return 0.0
+    }
+    
+    private func calculatePace(distance: Double, duration: TimeInterval) -> String {
+        guard distance > 0 else { return "--:--" }
+        let secondsPerKm = duration / distance
+        let minutes = Int(secondsPerKm) / 60
+        let seconds = Int(secondsPerKm) % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+    
+    private func estimateCalories(distanceKm: Double) -> Double {
+        // Simple estimate: ~75 kg person * 0.75 kcal per kg per km
+        return distanceKm * 75.0 * 0.75
+    }
+    
+    private func formattedDuration(_ duration: TimeInterval) -> String {
+        let total = Int(duration)
+        let hours = total / 3600
+        let minutes = (total % 3600) / 60
+        let seconds = total % 60
+        
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            return String(format: "%d:%02d", minutes, seconds)
+        }
+    }
+    
+    private func formattedDateTime(_ date: Date, duration: TimeInterval) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMM 'at' HH:mm"
+        let startTime = formatter.string(from: date)
+        
+        let endDate = date.addingTimeInterval(duration)
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HH:mm"
+        let endTime = timeFormatter.string(from: endDate)
+        
+        return "\(startTime)–\(endTime)"
     }
 
     // MARK: - Week-Variante (zeit-/stationsbasiert)

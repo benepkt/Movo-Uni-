@@ -1,152 +1,159 @@
-// OnboardingFlowView.swift – FINAL (iPad fix, scrolls when needed, Dark Mode fix)
+// Interactive Onboarding Flow - Redesigned with animations and new features
+// Features: Goal weight tracking, premium showcase, XRP system, activity window
 
 import SwiftUI
 import UserNotifications
 import HealthKit
 
-// Falls noch nicht global definiert:
-// let kOnboardingKey = "onboarding.completed"
 
-// Brand & Background
-private let brand      = Color(hex: 0x4C5BFF)   // Periwinkle-Blau
-private let bgDeepA    = Color(hex: 0x0A0E19)   // sehr dunkles Navy
-private let bgDeepB    = Color(hex: 0x0D1222)   // sehr dunkles Navy
-private let brandTintA = Color(hex: 0x3846E8)   // gedämpfter Brand-Ton
+
+
+// Brand colors
+private let brand      = Color(hex: 0x4C5BFF)
+private let bgDeepA    = Color(hex: 0x0A0E19)
+private let bgDeepB    = Color(hex: 0x0D1222)
+private let brandTintA = Color(hex: 0x3846E8)
+
+// MARK: - Main Onboarding View
 
 struct OnboardingFlowView: View {
+    
+    
     var onFinished: (() -> Void)? = nil
-
-    // Abhängigkeiten
+    
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.designTokens) private var t
     @EnvironmentObject var appSettings: AppSettings
     @EnvironmentObject var healthKit: HealthKitManager
-
+    @EnvironmentObject var purchaseManager: PurchaseManager
+    
     // User Defaults
     @AppStorage("units.weight") private var weightUnit: WeightUnit = .kg
     @AppStorage("profile.weightKg") private var weightKg: Double = 70
     @AppStorage("profile.heightCm") private var heightCm: Double = 175
     @AppStorage("steps.goal") private var stepsGoal: Int = 10_000
     @AppStorage(kOnboardingKey) private var completed: Bool = false
-
+    @AppStorage("profile.hasGoalWeight") private var hasGoalWeight: Bool = false
+    @AppStorage("profile.goalWeightKg")  private var storedGoalWeightKg: Double = 75
+    
     // UI State
-    @State private var page: Int = 0
-    private let pages: [Page] = Page.all
-
-    enum Page: Int, CaseIterable {
-        case welcome, log, challenges, stats, history, units, bodyweight, height, permissions, steps, week, done
-        static var all: [Page] {
-            [.welcome, .log, .challenges, .stats, .history,
-             .units, .bodyweight, .height, .permissions, .steps, .week, .done]
-        }
-        var isLast: Bool { self == .done }
-    }
-
+    @State private var currentStep: Int = 0
+    @State private var backgroundOffset: CGFloat = 0
+    @State private var showContent: Bool = false
+    
+    private let totalSteps = 10
+    
     var body: some View {
         ZStack {
-            // Background
-            LinearGradient(colors: [bgDeepA, bgDeepB],
-                           startPoint: .topLeading,
-                           endPoint: .bottomTrailing)
-                .ignoresSafeArea()
-            LinearGradient(colors: [brandTintA.opacity(0.18), .clear],
-                           startPoint: .topLeading,
-                           endPoint: .bottomTrailing)
-                .ignoresSafeArea()
+            // Animated background
+            AnimatedBackground(offset: backgroundOffset)
+            
+            // Content
+            VStack(spacing: 0) {
+                // Top bar
+                topBar
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                
+                Spacer()
+                
+                currentStepView
+                    .id(currentStep) // wichtig für saubere Transitions
+                    .transition(.asymmetric(
+                        insertion: .scale(scale: 0.9).combined(with: .opacity),
+                        removal: .opacity.combined(with: .scale(scale: 1.1))
+                    ))
+                    .animation(.spring(response: 0.5, dampingFraction: 0.8), value: currentStep)
 
-            // Vollflächiges Paging
-            TabView(selection: $page) {
-                welcome.tag(Page.welcome.rawValue)
-                logFast.tag(Page.log.rawValue)
-                challenges.tag(Page.challenges.rawValue)
-                statistics.tag(Page.stats.rawValue)
-                historyPreview.tag(Page.history.rawValue)
-                units.tag(Page.units.rawValue)
-                bodyweight.tag(Page.bodyweight.rawValue)
-                height.tag(Page.height.rawValue)
-                permissions.tag(Page.permissions.rawValue)
-                stepsPreview.tag(Page.steps.rawValue)
-                weekOverview.tag(Page.week.rawValue)
-                final.tag(Page.done.rawValue)
+                
+                Spacer()
+                
+                // Bottom bar
+                bottomBar
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .animation(.easeInOut, value: page)
-            .background(.clear) // wichtig: TabView selbst transparent
         }
-        .colorScheme(.dark)            // erzwingt dunkle Inhalte in diesem View
-        .preferredColorScheme(.dark)   // (optional) gleiche Absicht für übergeordnete Container
-
-        // Bars nehmen der TabView keine Höhe
-        .safeAreaInset(edge: .top) {
-            topBar
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-        }
-        .safeAreaInset(edge: .bottom) {
-            bottomBar
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+        .colorScheme(.dark)
+        .preferredColorScheme(.dark)
+        .onAppear {
+            withAnimation(.linear(duration: 60).repeatForever(autoreverses: false)) {
+                backgroundOffset = 360
+            }
+            withAnimation(.easeOut(duration: 0.6).delay(0.2)) {
+                showContent = true
+            }
         }
         .onChange(of: stepsGoal) { new in
             healthKit.dailyGoal = new
             healthKit.refreshToday()
         }
     }
+    
+    // MARK: - Top/Bottom Bars
+    
+    @ViewBuilder
+    private var currentStepView: some View {
+        switch currentStep {
+        case 0: WelcomeScreen()
+        case 1: QuickLoggingScreen()
+        case 2: ChallengesScreen()
+        case 3:
+            GoalWeightScreen(
+                weightKg: $weightKg,
+                goalWeightKg: Binding<Double?>(
+                    get: { hasGoalWeight ? storedGoalWeightKg : nil },
+                    set: { newValue in
+                        if let v = newValue {
+                            hasGoalWeight = true
+                            storedGoalWeightKg = v
+                        } else {
+                            hasGoalWeight = false
+                        }
+                    }
+                ),
+                weightUnit: weightUnit
+            )
+        case 4: StatisticsScreen()
+        case 5: PremiumShowcaseScreen(onContinueFree: { withAnimation(.spring()) { currentStep += 1 } })
+        case 6: XRPSystemScreen()
+        case 7: PersonalSetupScreen(weightUnit: $weightUnit, heightCm: $heightCm, stepsGoal: $stepsGoal)
+        case 8: PermissionsScreen()
+        case 9: FinalScreen()
+        default: WelcomeScreen()
+        }
+    }
 
-    // MARK: - Top / Bottom
 
     private var topBar: some View {
         HStack {
-            if page > 0 {
-                Button {
-                    withAnimation(.spring()) {
-                        page = max(0, page - 1)
-                    }
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.headline)
-                }
+            if currentStep > 0 {
+                Button { withAnimation(.spring()) { currentStep = max(0, currentStep - 1) } }
+                label: { Image(systemName: "chevron.left").font(.headline) }
             } else {
-                Color.clear
-                    .frame(width: 24, height: 24)
+                Color.clear.frame(width: 24, height: 24)
             }
-
             Spacer()
-
-            Button("Überspringen") {
-                finish()
-            }
-            .font(.subheadline.weight(.semibold))
         }
         .tint(brand)
     }
-
+    
     private var bottomBar: some View {
         VStack(spacing: 16) {
-            Dots(count: pages.count, index: page, accent: brand)
-
+            // Progress dots
+            HStack(spacing: 8) {
+                ForEach(0..<totalSteps, id: \.self) { index in
+                    Capsule()
+                        .fill(index == currentStep ? brand : Color.white.opacity(0.3))
+                        .frame(width: index == currentStep ? 24 : 8, height: 8)
+                        .animation(.spring(), value: currentStep)
+                }
+            }
+            
+            // Continue button
             Button {
-                if page == Page.permissions.rawValue {
-                    NotificationManager.shared.requestAuthorizationIfNeeded(
-                        forcePrompt: true,
-                        appSettings: appSettings
-                    )
-                    Task {
-                        await requestHealthIfNeeded(forcePrompt: true)
-                    }
-                }
-
-                if page < pages.count - 1 {
-                    withAnimation(.spring()) {
-                        page += 1
-                    }
-                } else {
-                    finish()
-                }
+                handleContinue()
             } label: {
-                Text(page == pages.count - 1
-                     ? localized("common.start", fallback: "Los geht’s")
-                     : localized("common.continue", fallback: "Weiter"))
+                Text(currentStep == totalSteps - 1 ? "Let's Go!" : "Continue")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
@@ -155,432 +162,24 @@ struct OnboardingFlowView: View {
             .tint(brand)
         }
     }
-
-    // MARK: - Pages
-    // Jede Seite nutzt .onboardingPage() → bei wenig Höhe automatisch ScrollView
-
-    private var welcome: some View {
-        VStack(spacing: 24) {
-            Spacer(minLength: 12)
-            TitleBlock(
-                title: "Willkommen bei Movo",
-                highlight: "Fokus statt Schnickschnack.",
-                subtitle: "Logge Workouts, halte Streaks, beobachte deinen Fortschritt."
-            )
-            IconHero(name: "figure.strengthtraining.traditional", tint: brand)
-            FeatureRow(icon: "bolt.fill",  title: "Blitzschnelles Logging",
-                       text: "Sätze, Gewichte, Wdh. – alles mit einem Tap.")
-            FeatureRow(icon: "flame.fill", title: "Streaks & Badges",
-                       text: "Bleib dran und sammle Belohnungen.")
-            Spacer()
+    
+    // MARK: - Actions
+    
+    private func handleContinue() {
+        // Special handling for permissions screen
+        if currentStep == 8 {
+            requestPermissions()
         }
-        .onboardingPage()
-    }
-
-    private var logFast: some View {
-        VStack(spacing: 24) {
-            Spacer(minLength: 12)
-            TitleBlock(
-                title: "Workouts loggen",
-                highlight: "ohne Hürden.",
-                subtitle: "Training starten, Sets abhaken, fertig."
-            )
-            DemoCard {
-                VStack(alignment: .leading, spacing: 10) {
-                    Label("Arnold Press (Dumbbell)", systemImage: "dumbbell.fill")
-                        .font(.headline)
-                    HStack(spacing: 8) {
-                        chip("12.5", "kg")
-                        chip("10", "Wdh")
-                        Spacer()
-                        Image(systemName: "checkmark.circle")
-                            .foregroundStyle(.secondary)
-                    }
-                }
+        
+        if currentStep < totalSteps - 1 {
+            withAnimation(.spring()) {
+                currentStep += 1
             }
-            FeatureRow(icon: "clock.badge.checkmark",
-                       title: "Pausen-Timer",
-                       text: "Mit Haptik & Benachrichtigung.")
-            FeatureRow(icon: "arrow.up.arrow.down",
-                       title: "Drag & Drop",
-                       text: "Übungen frei sortieren.")
-            Spacer()
+        } else {
+            finish()
         }
-        .onboardingPage()
     }
-
-    private var challenges: some View {
-        VStack(spacing: 24) {
-            Spacer(minLength: 12)
-            TitleBlock(
-                title: "Challenges",
-                highlight: "die motivieren.",
-                subtitle: "Ziele wie „5 Workouts/Woche“ oder „12.000 Schritte/Tag“."
-            )
-            DemoCard {
-                VStack(alignment: .leading, spacing: 12) {
-                    challengeRow(title: "5 Workouts pro Woche",
-                                 progress: 0.6,
-                                 info: "3/5 Workouts")
-                    challengeRow(title: "12.000 Schritte/Tag",
-                                 progress: 0.35,
-                                 info: "4.156/12.000")
-                }
-            }
-            FeatureRow(icon: "star.fill",
-                       title: "Abzeichen",
-                       text: "Erreiche Meilensteine und sammle Badges.")
-            Spacer()
-        }
-        .onboardingPage()
-    }
-
-    private var statistics: some View {
-        VStack(spacing: 24) {
-            Spacer(minLength: 12)
-            TitleBlock(
-                title: "Statistiken",
-                highlight: "klar & hilfreich.",
-                subtitle: "Volumen, PRs, Trends, Schritt-Ziele."
-            )
-            DemoCard {
-                HStack(spacing: 10) {
-                    stat("Volumen", "10.4k", "kg")
-                    stat("Sätze", "18", nil)
-                    stat("Wdh",  "132", nil)
-                }
-            }
-            FeatureRow(icon: "chart.bar.xaxis",
-                       title: "Wöchentliche Trends",
-                       text: "Sieh sofort, wie deine Woche lief.")
-            Spacer()
-        }
-        .onboardingPage()
-    }
-
-    private var historyPreview: some View {
-        VStack(spacing: 24) {
-            Spacer(minLength: 12)
-            TitleBlock(
-                title: "Trainingsverlauf",
-                highlight: "",
-                subtitle: "Alles chronologisch – inkl. Volumen & Details."
-            )
-            DemoCard {
-                VStack(alignment: .leading, spacing: 14) {
-                    Text("October 2025")
-                        .font(.title2.bold())
-                    historyRow(emoji: "💪", title: "Push",
-                               date: "22. October 2025",
-                               meta: "Volumen: 2.811 kg")
-                    historyRow(emoji: "💪", title: "Pull",
-                               date: "20. October 2025",
-                               meta: "Volumen: 1.964 kg")
-                    historyRow(emoji: "💪", title: "Oberkörper",
-                               date: "20. October 2025",
-                               meta: "Volumen: 2.104 kg")
-                    historyRow(emoji: "💪", title: "Legs",
-                               date: "19. October 2025",
-                               meta: "Volumen: 1.742 kg")
-                }
-            }
-            Spacer()
-        }
-        .onboardingPage()
-    }
-
-    private var units: some View {
-        VStack(spacing: 24) {
-            Spacer(minLength: 12)
-            TitleBlock(
-                title: "Welche Einheiten?",
-                highlight: "",
-                subtitle: "Du kannst das später jederzeit ändern."
-            )
-            HStack(spacing: 14) {
-                UnitCard(selected: weightUnit == .kg,
-                         icon: "scalemass",
-                         title: "Kilogramm") {
-                    weightUnit = .kg
-                }
-                UnitCard(selected: weightUnit == .lb,
-                         icon: "scalemass.fill",
-                         title: "Pounds") {
-                    weightUnit = .lb
-                }
-            }
-            Text("Aktuell: \(weightUnit == .kg ? "kg" : "lb")")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-            Spacer()
-        }
-        .onboardingPage()
-    }
-
-    private var bodyweight: some View {
-        VStack(spacing: 24) {
-            Spacer(minLength: 12)
-            TitleBlock(
-                title: "Dein Körpergewicht",
-                highlight: "",
-                subtitle: "Für bessere Empfehlungen & Analysen."
-            )
-            DemoCard {
-                VStack(spacing: 12) {
-                    Text("\(formatNumber(weightDisplay)) \(weightUnit == .kg ? "kg" : "lb")")
-                        .font(.system(size: 40,
-                                      weight: .bold,
-                                      design: .rounded))
-                        .monospacedDigit()
-                    Slider(
-                        value: Binding(
-                            get: { weightDisplay },
-                            set: { v in
-                                weightKg = (weightUnit == .kg)
-                                    ? v
-                                    : WeightUnit.lb.toKilograms(v)
-                            }
-                        ),
-                        in: weightUnit == .kg ? 40...180 : 90...400,
-                        step: 0.5
-                    )
-                    .tint(brand)
-                }
-            }
-            Spacer()
-        }
-        .onboardingPage()
-    }
-
-    private var height: some View {
-        VStack(spacing: 24) {
-            Spacer(minLength: 12)
-            TitleBlock(
-                title: "Deine Größe",
-                highlight: "",
-                subtitle: "Wird für BMI & Empfehlungen genutzt."
-            )
-            DemoCard {
-                VStack(spacing: 12) {
-                    Text("\(Int(heightCm)) cm")
-                        .font(.system(size: 40,
-                                      weight: .bold,
-                                      design: .rounded))
-                        .monospacedDigit()
-                    Slider(value: $heightCm,
-                           in: 140...210,
-                           step: 1)
-                        .tint(brand)
-                }
-            }
-            Spacer()
-        }
-        .onboardingPage()
-    }
-
-    private var stepsPreview: some View {
-        VStack(spacing: 24) {
-            Spacer(minLength: 12)
-            TitleBlock(
-                title: "Deine Schritte",
-                highlight: "in Movo.",
-                subtitle: "So sieht’s später in der App aus."
-            )
-            .lineLimit(2)
-            .minimumScaleFactor(0.9)
-
-            DemoCard {
-                VStack(alignment: .leading, spacing: 16) {
-                    // Kopf: Donut-Ring + Werte
-                    HStack(spacing: 14) {
-                        RingProgress(progress: progressToday, size: 82)
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Schritte")
-                                .font(.subheadline.weight(.semibold))
-                            Text("\(healthKit.todaySteps.formatted(.number.grouping(.automatic))) / \(stepsGoal.formatted(.number.grouping(.automatic)))")
-                                .font(.headline.monospacedDigit())
-                        }
-                        Spacer()
-                    }
-
-                    // Ziel mit Snap + Presets
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("\(stepsGoal.formatted(.number.grouping(.automatic))) Schritte")
-                            .font(.system(size: 32,
-                                          weight: .bold,
-                                          design: .rounded))
-                            .monospacedDigit()
-
-                        Slider(
-                            value: Binding(
-                                get: { Double(stepsGoal) },
-                                set: { v in
-                                    stepsGoal = clampToRange(
-                                        roundTo500(Int(v)),
-                                        min: 3_000,
-                                        max: 20_000
-                                    )
-                                }
-                            ),
-                            in: 3_000...20_000,
-                            step: 500
-                        )
-                        .tint(brand)
-
-                        HStack(spacing: 8) {
-                            ForEach([8_000, 10_000, 15_000], id: \.self) { preset in
-                                GoalChip(
-                                    value: preset,
-                                    selected: stepsGoal == preset
-                                ) {
-                                    stepsGoal = preset
-                                }
-                            }
-                        }
-                    }
-
-                    // Mini-Bar-Chart (Demo)
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Verlauf (7 Tage)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        let bars = demoLast7Days()
-                        HStack(alignment: .bottom, spacing: 6) {
-                            ForEach(bars, id: \.self) { v in
-                                RoundedRectangle(cornerRadius: 3)
-                                    .fill(brand.opacity(v >= 1 ? 1 : 0.55))
-                                    .frame(width: 16,
-                                           height: max(6, CGFloat(v) * 56))
-                            }
-                        }
-                        .frame(height: 64, alignment: .bottom)
-                    }
-                }
-            }
-            .onAppear {
-                healthKit.dailyGoal = stepsGoal
-                healthKit.refreshToday()
-            }
-
-            Spacer()
-        }
-        .onboardingPage()
-    }
-
-    private var weekOverview: some View {
-        VStack(spacing: 24) {
-            Spacer(minLength: 12)
-            TitleBlock(
-                title: "Home- & Wochenansicht",
-                highlight: "",
-                subtitle: "Geplante Sessions, Warm-up, Übungen, Cool-down."
-            )
-            .padding(.top, 4)
-            .lineLimit(2)
-            .minimumScaleFactor(0.85)
-
-            DemoCard {
-                VStack(alignment: .leading, spacing: 14) {
-                    Text("Woche 1")
-                        .font(.headline)
-
-                    HStack(spacing: 8) {
-                        labelPill("~20 min",  "Dauer")
-                        labelPill("~158 kcal","Kalorien")
-                        labelPill("Brust",    "Fokus")
-                    }
-
-                    Divider().opacity(0.15)
-
-                    VStack(spacing: 10) {
-                        ForEach(sampleExercises(), id: \.self) { name in
-                            HStack(spacing: 12) {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(Color.white.opacity(0.08))
-                                    .frame(width: 36, height: 36)
-                                    .overlay(
-                                        Image(systemName: "figure.strengthtraining.traditional")
-                                    )
-
-                                Text(name)
-                                    .font(.subheadline.weight(.semibold))
-                                Spacer()
-                                Capsule()
-                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                    .overlay(
-                                        Text("35s × 3 Rdn")
-                                            .font(.caption)
-                                    )
-                                    .frame(width: 120, height: 28)
-                            }
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 8)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .fill(Color.white.opacity(0.05))
-                            )
-                        }
-                    }
-                }
-            }
-            Spacer()
-        }
-        .onboardingPage()
-    }
-
-    private var permissions: some View {
-        VStack(spacing: 24) {
-            Spacer(minLength: 12)
-            TitleBlock(
-                title: "Noch zwei Dinge",
-                highlight: "",
-                subtitle: "Bitte erlauben – jederzeit änderbar in den Einstellungen."
-            )
-            VStack(spacing: 12) {
-                PermissionRow(
-                    icon: "heart.fill",
-                    title: "Apple Health",
-                    desc: "Schritte & Kalorien synchronisieren."
-                ) {
-                    Task {
-                        await requestHealthIfNeeded(forcePrompt: true)
-                        healthKit.dailyGoal = stepsGoal
-                        healthKit.refreshToday()
-                    }
-                }
-
-                PermissionRow(
-                    icon: "bell.badge.fill",
-                    title: "Mitteilungen",
-                    desc: "Pausen-Timer & Streak-Hinweise."
-                ) {
-                    NotificationManager.shared.requestAuthorizationIfNeeded(
-                        forcePrompt: true,
-                        appSettings: appSettings
-                    )
-                }
-            }
-            Spacer()
-        }
-        .onboardingPage()
-    }
-
-    private var final: some View {
-        VStack(spacing: 24) {
-            Spacer()
-            TitleBlock(
-                title: "Alles bereit!",
-                highlight: "Viel Spaß mit Movo.",
-                subtitle: "Du kannst später alles in den Einstellungen anpassen."
-            )
-            IconHero(name: "checkmark.seal.fill", tint: brand)
-            Spacer()
-        }
-        .onboardingPage()
-    }
-
-    // MARK: - Helpers
-
+    
     private func finish() {
         completed = true
         healthKit.dailyGoal = stepsGoal
@@ -588,580 +187,981 @@ struct OnboardingFlowView: View {
         onFinished?()
         dismiss()
     }
-
-    private func requestHealthIfNeeded(forcePrompt: Bool = false) async {
-        await healthKit.requestReadAuthorizationIfNeeded(
-            readTypes: [
-                HKObjectType.quantityType(forIdentifier: .stepCount)!,
-                HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!,
-                HKObjectType.quantityType(forIdentifier: .bodyMass)!,
-                HKObjectType.quantityType(forIdentifier: .height)!,
-                HKObjectType.quantityType(forIdentifier: .bodyFatPercentage)!,
-                HKObjectType.quantityType(forIdentifier: .restingHeartRate)!
-            ],
-            forcePrompt: forcePrompt
+    
+    private func requestPermissions() {
+        // Notifications
+        NotificationManager.shared.requestAuthorizationIfNeeded(
+            forcePrompt: true,
+            appSettings: appSettings
         )
+        
+        // HealthKit
+        Task {
+            await healthKit.requestReadAuthorizationIfNeeded(
+                readTypes: [
+                    HKObjectType.quantityType(forIdentifier: .stepCount)!,
+                    HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!,
+                    HKObjectType.quantityType(forIdentifier: .bodyMass)!,
+                    HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!,
+                    HKObjectType.quantityType(forIdentifier: .height)!,
+                    HKObjectType.quantityType(forIdentifier: .heartRate)!,
+                    HKObjectType.workoutType()
+                ],
+                forcePrompt: true
+            )
+        }
     }
+}
 
-    private func localized(_ key: String, fallback: String) -> String {
-        let v = appSettings.localized(key) ?? fallback
-        return v == key ? fallback : v
+// MARK: - Animated Background
+
+private struct AnimatedBackground: View {
+    let offset: CGFloat
+    
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: [bgDeepA, bgDeepB],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            
+            LinearGradient(
+                colors: [brandTintA.opacity(0.2), .clear],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            
+            // Floating particles
+            FloatingParticles(offset: offset)
+        }
+        .ignoresSafeArea()
     }
+}
 
+private struct FloatingParticles: View {
+    let offset: CGFloat
+    
+    var body: some View {
+        GeometryReader { geo in
+            ForEach(0..<15, id: \.self) { index in
+                Circle()
+                    .fill(brand.opacity(0.1))
+                    .frame(width: CGFloat.random(in: 4...12))
+                    .offset(
+                        x: CGFloat.random(in: 0...geo.size.width),
+                        y: (CGFloat(index) * 80 + offset).truncatingRemainder(dividingBy: geo.size.height + 100) - 50
+                    )
+                    .blur(radius: 2)
+            }
+        }
+    }
+}
+
+// MARK: - Screen 1: Welcome
+
+private struct WelcomeScreen: View {
+    @State private var animate = false
+    
+    var body: some View {
+        VStack(spacing: 32) {
+            VStack(spacing: 16) {
+                Text("Welcome to")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+                
+                Text("Movo")
+                    .font(.system(size: 56, weight: .bold))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [brand, brandTintA],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                
+                Text("Focus on what matters.\nTrack workouts, build streaks, see progress.")
+                    .font(.title3)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+            }
+            
+            // Animated icon
+            ZStack {
+                Circle()
+                    .fill(brand.opacity(0.15))
+                    .frame(width: 120, height: 120)
+                    .scaleEffect(animate ? 1.2 : 1.0)
+                    .opacity(animate ? 0 : 1)
+                
+                Image(systemName: "figure.strengthtraining.traditional")
+                .font(.system(size: 48))
+                .foregroundStyle(brand)
+                .rotationEffect(.degrees(animate ? 720 : 0))
+            }
+            .frame(height: 140)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 4)) {
+                    animate = true
+                }
+            }
+            
+            VStack(alignment: .leading, spacing: 12) {
+                FeatureBullet(icon: "bolt.fill", text: "Lightning-fast logging")
+                FeatureBullet(icon: "flame.fill", text: "Streaks & rewards")
+                FeatureBullet(icon: "chart.bar.fill", text: "Detailed insights")
+            }
+        }
+        .padding(.horizontal, 24)
+    }
+}
+
+// MARK: - Screen 2: Quick Logging
+
+private struct QuickLoggingScreen: View {
+    @State private var checkStates = [false, false, false]
+    
+    var body: some View {
+        VStack(spacing: 32) {
+            VStack(spacing: 12) {
+                Text("Log Workouts")
+                    .font(.largeTitle.bold())
+                
+                Text("Tap sets to check them off.\nThat's it. Really.")
+                    .font(.title3)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+            }
+            
+            // Interactive demo card
+            VStack(alignment: .leading, spacing: 16) {
+                Label("Bench Press", systemImage: "dumbbell.fill")
+                    .font(.headline)
+                
+                ForEach(0..<3, id: \.self) { index in
+                    Button {
+                        withAnimation(.spring()) {
+                            checkStates[index].toggle()
+                        }
+                    } label: {
+                        HStack {
+                            Text("80 kg × 10 reps")
+                                .foregroundStyle(checkStates[index] ? .secondary : .primary)
+                                .strikethrough(checkStates[index])
+                            
+                            Spacer()
+                            
+                            Image(systemName: checkStates[index] ? "checkmark.circle.fill" : "circle")
+                                .foregroundStyle(checkStates[index] ? brand : .secondary)
+                                .font(.title2)
+                        }
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.white.opacity(checkStates[index] ? 0.03 : 0.08))
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.white.opacity(0.05))
+            )
+            .padding(. horizontal, 24)
+            
+            Text("Tap above to try it! ☝️")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+    }
+}
+
+// MARK: - Screen 3: Challenges & Gamification
+
+private struct ChallengesScreen: View {
+    @State private var progress: CGFloat = 0
+    
+    var body: some View {
+        VStack(spacing: 32) {
+            VStack(spacing: 12) {
+                Text("Stay Motivated")
+                    .font(.largeTitle.bold())
+                
+                Text("Set challenges, earn XRP coins,\nunlock badges & levels.")
+                    .font(.title3)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+            }
+            
+            // Animated progress ring
+            ZStack {
+                Circle()
+                    .stroke(Color.white.opacity(0.1), lineWidth: 12)
+                    .frame(width: 140, height: 140)
+                
+                Circle()
+                    .trim(from: 0, to: progress)
+                    .stroke(
+                        LinearGradient(colors: [brand, brandTintA], startPoint: .topLeading, endPoint: .bottomTrailing),
+                        style: StrokeStyle(lineWidth: 12, lineCap: .round)
+                    )
+                    .frame(width: 140, height: 140)
+                    .rotationEffect(.degrees(-90))
+                
+                VStack(spacing: 4) {
+                    Text("3/5")
+                        .font(.system(size: 32, weight: .bold))
+                    Text("Workouts")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .onAppear {
+                withAnimation(.spring(duration: 1.5).delay(0.3)) {
+                    progress = 0.6
+                }
+            }
+            
+            VStack(alignment: .leading, spacing: 12) {
+                FeatureBullet(icon: "target", text: "Custom weekly goals")
+                FeatureBullet(icon: "star.fill", text: "Unlock achievements")
+                FeatureBullet(icon: "gift.fill", text: "Earn XRP rewards")
+            }
+            .padding(.horizontal, 24)
+        }
+    }
+}
+
+// MARK: - Screen 4: Goal Weight (NEW!)
+
+private struct GoalWeightScreen: View {
+    @Binding var weightKg: Double
+    @Binding var goalWeightKg: Double?
+    let weightUnit: WeightUnit
+    
+    @State private var hasGoal = false
+    @State private var tempGoal: Double = 70
+    
+    var body: some View {
+        VStack(spacing: 32) {
+            VStack(spacing: 12) {
+                Text("Set Your Goal")
+                    .font(.largeTitle.bold())
+                
+                Text("Track your progress towards\nyour ideal weight.")
+                    .font(.title3)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+            }
+            
+            VStack(spacing: 24) {
+                // Current weight
+                VStack(spacing: 8) {
+                    Text("Current Weight")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    
+                    Text(formatWeight(weightDisplay) + " " + (weightUnit == .kg ? "kg" : "lb"))
+                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                    
+                    Slider(
+                        value: Binding(
+                            get: { weightDisplay },
+                            set: { v in
+                                weightKg = weightUnit == .kg ? v : WeightUnit.lb.toKilograms(v)
+                            }
+                        ),
+                        in: weightUnit == .kg ? 40...180 : 90...400,
+                        step: 0.5
+                    )
+                    .tint(brand)
+                }
+                .padding(20)
+                .background(RoundedRectangle(cornerRadius: 20).fill(Color.white.opacity(0.05)))
+                
+                // Goal weight
+                Toggle("Set a goal weight", isOn: $hasGoal.animation(.spring()))
+                    .tint(brand)
+                
+                if hasGoal {
+                    VStack(spacing: 8) {
+                        Text("Goal Weight")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        
+                        Text(formatWeight(goalDisplay) + " " + (weightUnit == .kg ? "kg" : "lb"))
+                            .font(.system(size: 40, weight: .bold, design: .rounded))
+                            .monospacedDigit()
+                            .foregroundStyle(brand)
+                        
+                        Slider(
+                            value: $tempGoal,
+                            in: weightUnit == .kg ? 40...180 : 90...400,
+                            step: 0.5
+                        )
+                        .tint(brand)
+                        
+                        // Progress visualization
+                        if abs(weightDisplay - goalDisplay) > 1 {
+                            let diff = weightDisplay - goalDisplay
+                            if diff > 0 {
+                                Text("\(formatWeight(abs(diff))) \(weightUnit == .kg ? "kg" : "lb") to lose 💪")
+                                    .font(.subheadline)
+                                    .foregroundStyle(brand)
+                            } else if diff < 0 {
+                                Text("\(formatWeight(abs(diff))) \(weightUnit == .kg ? "kg" : "lb") to gain 💪")
+                                    .font(.subheadline)
+                                    .foregroundStyle(brand)
+                            } else {
+                                Text("Goal reached! 🎉")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.green)
+                            }
+                        }
+                    }
+                    .padding(20)
+                    .background(RoundedRectangle(cornerRadius: 20).fill(brand.opacity(0.1)))
+                    .transition(.scale.combined(with: .opacity))
+                }
+            }
+            .padding(.horizontal, 24)
+        }
+        .onAppear {
+            if let goal = goalWeightKg {
+                tempGoal = weightUnit == .kg ? goal : WeightUnit.lb.fromKilograms(goal)
+                hasGoal = true
+            } else {
+                tempGoal = weightDisplay
+            }
+        }
+        .onChange(of: hasGoal) { newValue in
+            goalWeightKg = newValue ? (weightUnit == .kg ? tempGoal : WeightUnit.lb.toKilograms(tempGoal)) : nil
+        }
+        .onChange(of: tempGoal) { newValue in
+            if hasGoal {
+                goalWeightKg = weightUnit == .kg ? newValue : WeightUnit.lb.toKilograms(newValue)
+            }
+        }
+    }
+    
     private var weightDisplay: Double {
         weightUnit == .kg ? weightKg : WeightUnit.lb.fromKilograms(weightKg)
     }
-
-    private func formatNumber(_ value: Double, decimals: Int = 1) -> String {
-        let nf = NumberFormatter()
-        nf.numberStyle = .decimal
-        nf.minimumFractionDigits = decimals
-        nf.maximumFractionDigits = decimals
-        return nf.string(from: NSNumber(value: value))
-        ?? String(format: "%.\(decimals)f", value)
+    
+    private var goalDisplay: Double {
+        weightUnit == .kg ? tempGoal : WeightUnit.lb.fromKilograms(WeightUnit.lb.toKilograms(tempGoal))
     }
-
-    private var progressToday: CGFloat {
-        guard stepsGoal > 0 else { return 0 }
-        return CGFloat(
-            min(1.0,
-                Double(healthKit.todaySteps) / Double(stepsGoal))
-        )
+    
+    private func formatWeight(_ value: Double) -> String {
+        String(format: "%.1f", value)
     }
+}
 
-    private func demoLast7Days() -> [Double] {
-        [0.85, 0.48, 0.32, 0.46, 0.41, 1.0, 0.38]
-    }
+// MARK: - Screen 5: Statistics & Activity Window (NEW!)
 
-    private func sampleExercises() -> [String] {
-        ["Jumping Jacks", "Hip Opener", "Liegestütze", "Superman Pulls", "Plank"]
-    }
-
-    private func chip(_ value: String, _ unit: String) -> some View {
-        HStack(spacing: 6) {
-            Text(value)
-                .bold()
-                .monospacedDigit()
-            Text(unit)
-                .foregroundStyle(.secondary)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(
-            Capsule().fill(Color.white.opacity(0.08))
-        )
-    }
-
-    private func stat(_ title: String,
-                      _ value: String,
-                      _ unit: String?) -> some View {
-        VStack(spacing: 6) {
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Group {
-                if let unit {
-                    Text(value)
-                        .font(.title3.bold())
-                        .monospacedDigit()
-                    + Text(" \(unit)")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text(value)
-                        .font(.title3.bold())
-                        .monospacedDigit()
+private struct StatisticsScreen: View {
+    @State private var barHeights: [CGFloat] = Array(repeating: 0, count: 7)
+    
+    var body: some View {
+        VStack(spacing: 32) {
+            VStack(spacing: 12) {
+                Text("Smart Statistics")
+                    .font(.largeTitle.bold())
+                
+                Text("See trends, PRs, and discover\nwhen you train best.")
+                    .font(.title3)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+            }
+            
+            // Animated bar chart
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Weekly Volume")
+                    .font(.headline)
+                
+                HStack(alignment: .bottom, spacing: 8) {
+                    ForEach(0..<7, id: \.self) { index in
+                        VStack(spacing: 4) {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(brand.opacity(barHeights[index] > 0.7 ? 1.0 : 0.6))
+                                .frame(width: 32, height: barHeights[index] * 100)
+                            
+                            Text(["M", "T", "W", "T", "F", "S", "S"][index])
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .frame(height: 120)
+            }
+            .padding(20)
+            .background(RoundedRectangle(cornerRadius: 20).fill(Color.white.opacity(0.05)))
+            .padding(.horizontal, 24)
+            .onAppear {
+                let heights: [CGFloat] = [0.6, 0.4, 0.8, 0.5, 0.9, 0.3, 0.4]
+                heights.enumerated().forEach { index, height in
+                    withAnimation(.spring(duration: 0.6).delay(Double(index) * 0.1)) {
+                        barHeights[index] = height
+                    }
                 }
             }
-            .lineLimit(1)
-            .minimumScaleFactor(0.6)
-            .allowsTightening(true)
+            
+            VStack(alignment: .leading, spacing: 12) {
+                FeatureBullet(icon: "clock.fill", text: "Activity window: best training times")
+                FeatureBullet(icon: "chart.line.uptrend.xyaxis", text: "Personal records tracking")
+                FeatureBullet(icon: "calendar", text: "Long-term progress trends")
+            }
+            .padding(.horizontal, 24)
         }
-        .frame(maxWidth: .infinity,
-               minHeight: 68)
-        .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white.opacity(0.06))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.white.opacity(0.08),
-                        lineWidth: 0.5)
-        )
     }
+}
 
-    private func labelPill(_ value: String,
-                           _ caption: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(value)
-                .font(.headline)
-            Text(caption)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.06))
-        )
-    }
+// MARK: - Screen 6: Premium Showcase
 
-    private func challengeRow(title: String,
-                              progress: Double,
-                              info: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 10) {
-                ZStack {
-                    Circle()
-                        .strokeBorder(Color.white.opacity(0.15),
-                                      lineWidth: 6)
-                    Circle()
-                        .trim(from: 0, to: progress)
-                        .stroke(
-                            brand,
-                            style: StrokeStyle(
-                                lineWidth: 6,
-                                lineCap: .round
+private struct PremiumShowcaseScreen: View {
+    @EnvironmentObject var purchaseManager: PurchaseManager
+    @State private var showCards = [false, false, false, false, false]
+    
+    let onContinueFree: () -> Void   // ✅ NEU
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 24) {
+                VStack(spacing: 12) {
+                    Text("🌟 Movo Pro")
+                        .font(.largeTitle.bold())
+                    
+                    Text("Unlock powerful features\nfor serious athletes.")
+                        .font(.title3)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, 20)
+                
+                VStack(spacing: 12) {
+                    PremiumFeatureCard(
+                        icon: "chart.xyaxis.line",
+                        title: "Advanced Statistics",
+                        description: "Custom date ranges, exercise PRs, body composition",
+                        color: .blue,
+                        show: showCards[0]
+                    )
+                    
+                    PremiumFeatureCard(
+                        icon: "square.grid.2x2.fill",
+                        title: "Home & Lock Screen Widgets",
+                        description: "Quick glance at your stats from anywhere",
+                        color: .purple,
+                        show: showCards[1]
+                    )
+                    
+                    PremiumFeatureCard(
+                        icon: "clock.badge.fill",
+                        title: "Live Activities",
+                        description: "Real-time workout tracking on Dynamic Island",
+                        color: .indigo,
+                        show: showCards[2]
+                    )
+                    
+                    PremiumFeatureCard(
+                        icon: "heart.fill",
+                        title: "Heart Rate Training",
+                        description: "Zone tracking, recovery insights, real-time monitoring",
+                        color: .red,
+                        show: showCards[3]
+                    )
+                    
+                    PremiumFeatureCard(
+                        icon: "sparkles",
+                        title: "Premium Features",
+                        description: "Unlock all pro features and future updates",
+                        color: .orange,
+                        show: showCards[4]
+                    )
+                }
+                .padding(.horizontal, 24)
+                
+                VStack(spacing: 16) {
+                    Button {
+                        Task {
+                            await purchaseManager.purchase(plan: .monthly)
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "crown.fill")
+                                .font(.body)
+                            Text("Unlock Movo Premium Features")
+                                .font(.body.weight(.semibold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            LinearGradient(
+                                colors: [brand, brandTintA],
+                                startPoint: .leading,
+                                endPoint: .trailing
                             )
                         )
-                        .rotationEffect(.degrees(-90))
+                        .cornerRadius(12)
+                    }
+                    .buttonStyle(.plain)
+                    
+                    Text("3.49€/month • Cancel anytime")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    
+                    Button {
+                        
+                        // Just continue
+                        onContinueFree()     // ✅ statt currentStep += 1
+                    } label: {
+                        Text("Continue with free version")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-                .frame(width: 44, height: 44)
-                VStack(alignment: .leading) {
-                    Text(title)
-                        .font(.subheadline.weight(.semibold))
-                    ProgressView(value: progress)
-                        .tint(brand)
-                }
-                Spacer()
+                .padding(.horizontal, 24)
+                .padding(.bottom, 20)
             }
-            Text(info)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
         }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.04))
-        )
+        .onAppear {
+            showCards.enumerated().forEach { index, _ in
+                withAnimation(.spring(duration: 0.5).delay(Double(index) * 0.1)) {
+                    showCards[index] = true
+                }
+            }
+        }
     }
+}
 
-    private func historyRow(emoji: String,
-                            title: String,
-                            date: String,
-                            meta: String) -> some View {
-        HStack(spacing: 12) {
+private struct PremiumFeatureCard: View {
+    let icon: String
+    let title: String
+    let description: String
+    let color: Color
+    let show: Bool
+    
+    var body: some View {
+        HStack(spacing: 16) {
             ZStack {
                 Circle()
-                    .fill(brand.opacity(0.16))
-                Text(emoji)
+                    .fill(color.opacity(0.2))
+                    .frame(width: 50, height: 50)
+                
+                Image(systemName: icon)
                     .font(.title3)
+                    .foregroundStyle(color)
             }
-            .frame(width: 44, height: 44)
+            
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.headline)
-                Text(date)
+                
+                Text(description)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                Text(meta)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
             }
+            
             Spacer()
-            Image(systemName: "trash")
-                .foregroundStyle(.red)
-                .font(.title3)
-        }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.04))
-        )
-    }
-}
-
-// MARK: - Reusable building blocks
-
-private struct RingProgress: View {
-    var progress: CGFloat     // 0...1
-    var size: CGFloat = 88
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(0.08),
-                            Color.white.opacity(0.03)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-            Circle()
-                .stroke(Color.white.opacity(0.15),
-                        lineWidth: 12)
-            Circle()
-                .trim(from: 0,
-                      to: max(0.001, min(progress, 1)))
-                .stroke(
-                    AngularGradient(
-                        colors: [brand, brand.opacity(0.9)],
-                        center: .center
-                    ),
-                    style: StrokeStyle(
-                        lineWidth: 12,
-                        lineCap: .round
-                    )
-                )
-                .rotationEffect(.degrees(-90))
-                .shadow(color: brand.opacity(0.35),
-                        radius: 6)
-        }
-        .frame(width: size, height: size)
-    }
-}
-
-private struct GoalChip: View {
-    let value: Int
-    let selected: Bool
-    var action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(value.formatted(.number.grouping(.automatic)))
-                .font(.caption.weight(.semibold))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(
-                    Capsule().fill(
-                        selected
-                        ? brand.opacity(0.22)
-                        : Color.white.opacity(0.06)
-                    )
-                )
-                .overlay(
-                    Capsule().stroke(
-                        selected ? brand : Color.white.opacity(0.12),
-                        lineWidth: selected ? 1.2 : 0.8
-                    )
-                )
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-// Slider-Snap-Helpers
-private func roundTo500(_ v: Int) -> Int {
-    let step = 500
-    let r = Int((Double(v) / Double(step)).rounded()) * step
-    return r
-}
-
-private func clampToRange(_ v: Int, min: Int, max: Int) -> Int {
-    Swift.max(min, Swift.min(max, v))
-}
-
-// MARK: - Utilities
-
-private struct TitleBlock: View {
-    let title: String
-    let highlight: String
-    let subtitle: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            (Text(title)
-             + (highlight.isEmpty
-                ? Text("")
-                : Text(" ") + Text(highlight)))
-            .font(.system(size: 34,
-                          weight: .heavy,
-                          design: .rounded))
-            .multilineTextAlignment(.leading)
-            .lineLimit(3)
-            .minimumScaleFactor(0.8)
-            .fixedSize(horizontal: false, vertical: true)
-            .layoutPriority(1)
-
-            if !subtitle.isEmpty {
-                Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .frame(maxWidth: .infinity,
-               alignment: .leading)
-    }
-}
-
-private struct IconHero: View {
-    let name: String
-    let tint: Color
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(tint.opacity(0.18))
-            Image(systemName: name)
-                .font(.system(size: 48,
-                              weight: .bold))
-                .foregroundStyle(tint)
-        }
-        .frame(width: 132, height: 132)
-        .padding(.vertical, 8)
-        .accessibilityHidden(true)
-    }
-}
-
-private struct DemoCard<Content: View>: View {
-    @Environment(\.designTokens) private var t
-    @ViewBuilder var content: Content
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            content
         }
         .padding(16)
-        .frame(maxWidth: 620)
-        .background(
-            RoundedRectangle(cornerRadius: 18,
-                             style: .continuous)
-                .fill(Color.white.opacity(0.06))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(t.palette.outline,
-                        lineWidth: 0.8)
-        )
-        .shadow(color: .black.opacity(0.18),
-                radius: 12,
-                y: 6)
-    }
-}
-
-private struct FeatureRow: View {
-    let icon: String
-    let title: String
-    let text: String
-
-    var body: some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(Color.white.opacity(0.08))
-                Image(systemName: icon)
-            }
-            .frame(width: 34, height: 34)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                Text(text)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-        }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white.opacity(0.04))
-        )
-    }
-}
-
-private struct UnitCard: View {
-    let selected: Bool
-    let icon: String
-    let title: String
-    var action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.title2)
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-            }
-            .frame(maxWidth: .infinity,
-                   minHeight: 110)
-            .background(
-                RoundedRectangle(cornerRadius: 16,
-                                 style: .continuous)
-                    .fill(
-                        Color.white.opacity(
-                            selected ? 0.14 : 0.06
-                        )
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16,
-                                 style: .continuous)
-                    .stroke(
-                        selected
-                        ? .white.opacity(0.6)
-                        : .white.opacity(0.12),
-                        lineWidth: selected ? 1.2 : 0.8
-                    )
-            )
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-private struct PermissionRow: View {
-    let icon: String
-    let title: String
-    let desc: String
-    var action: () -> Void
-
-    var body: some View {
-        HStack(spacing: 12) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.white.opacity(0.08))
-                Image(systemName: icon)
-            }
-            .frame(width: 44, height: 44)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                Text(desc)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            Button("Erlauben", action: action)
-                .buttonStyle(.bordered)
-        }
-        .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.04))
+                .fill(Color.white.opacity(0.05))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .strokeBorder(color.opacity(0.3), lineWidth: 1)
+                )
         )
+        .scaleEffect(show ? 1 : 0.8)
+        .opacity(show ? 1 : 0)
     }
 }
 
-private struct Dots: View {
-    let count: Int
-    let index: Int
-    let accent: Color
+// MARK: - Screen 7: XRP System
 
+private struct XRPSystemScreen: View {
+    @State private var coins: [CGPoint] = []
+    @State private var level: CGFloat = 0
+    
     var body: some View {
-        HStack(spacing: 8) {
-            ForEach(0..<count, id: \.self) { i in
-                Capsule()
-                    .fill(
-                        i == index
-                        ? accent
-                        : .white.opacity(0.2)
+        VStack(spacing: 32) {
+            VStack(spacing: 12) {
+                Text("🪙 XRP Rewards")
+                    .font(.largeTitle.bold())
+                
+                Text("Your fitness journey, rewarded.\nEarn coins, level up, unlock perks.")
+                    .font(.title3)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+            }
+            
+            VStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .stroke(Color.white.opacity(0.1), lineWidth: 8)
+                        .frame(width: 120, height: 120)
+                    
+                    Circle()
+                        .trim(from: 0, to: level)
+                        .stroke(
+                            LinearGradient(colors: [.yellow, .orange], startPoint: .topLeading, endPoint: .bottomTrailing),
+                            style: StrokeStyle(lineWidth: 8, lineCap: .round)
+                        )
+                        .frame(width: 120, height: 120)
+                        .rotationEffect(.degrees(-90))
+                    
+                    VStack(spacing: 4) {
+                        Text("Level")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text("12")
+                            .font(.system(size: 32, weight: .bold))
+                    }
+                }
+                
+                // Better coin drop animation
+                GeometryReader { geo in
+                    ForEach(0..<coins.count, id: \.self) { index in
+                        if index < coins.count {
+                            Image(systemName: "bitcoinsign.circle.fill")
+                                .font(.title)
+                                .foregroundStyle(.yellow)
+                                .position(x: coins[index].x, y: coins[index].y)
+                                .opacity(coins[index].y > 20 && coins[index].y < 80 ? 1 : 0)
+                        }
+                    }
+                }
+                .frame(height: 100)
+            }
+            .onAppear {
+                withAnimation(.spring(duration: 1.5).delay(0.3)) {
+                    level = 0.35
+                }
+                
+                // Drop coins with better spacing
+                for i in 0..<5 {
+                    let delay = Double(i) * 0.25
+                    DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                        let startX = CGFloat(80 + i * 45)
+                        let startY: CGFloat = 10
+                        let endY: CGFloat = 50
+                        
+                        coins.append(CGPoint(x: startX, y: startY))
+                        
+                        withAnimation(.easeOut(duration: 0.6)) {
+                            if i < coins.count {
+                                coins[i] = CGPoint(x: startX, y: endY)
+                            }
+                        }
+                    }
+                }
+            }
+            
+            VStack(alignment: .leading, spacing: 12) {
+                FeatureBullet(icon: "checkmark.circle.fill", text: "Earn XRP for completing workouts")
+                FeatureBullet(icon: "flame.fill", text: "Streak bonuses and daily multipliers")
+                FeatureBullet(icon: "trophy.fill", text: "Level up to unlock profile badges")
+            }
+            .padding(.horizontal, 24)
+        }
+    }
+}
+
+// MARK: - Screen 8: Personal Setup
+
+private struct PersonalSetupScreen: View {
+    @Binding var weightUnit: WeightUnit
+    @Binding var heightCm: Double
+    @Binding var stepsGoal: Int
+    
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 32) {
+                VStack(spacing: 12) {
+                    Text("Personalize")
+                        .font(.largeTitle.bold())
+                    
+                    Text("Quick setup for better recommendations.")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, 20)
+                
+                VStack(spacing: 16) {
+                    Text("Weight Unit")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    HStack(spacing: 12) {
+                        UnitButton(title: "Kilograms", isSelected: weightUnit == .kg) {
+                            weightUnit = .kg
+                        }
+                        UnitButton(title: "Pounds", isSelected: weightUnit == .lb) {
+                            weightUnit = .lb
+                        }
+                    }
+                }
+                .padding(20)
+                .background(RoundedRectangle(cornerRadius: 20).fill(Color.white.opacity(0.05)))
+                
+                VStack(spacing: 16) {
+                    Text("Height")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    Text("\(Int(heightCm)) cm")
+                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                    
+                    Slider(value: $heightCm, in: 140...220, step: 1)
+                        .tint(brand)
+                }
+                .padding(20)
+                .background(RoundedRectangle(cornerRadius: 20).fill(Color.white.opacity(0.05)))
+                
+                VStack(spacing: 16) {
+                    Text("Daily Steps Goal")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    Text("\(stepsGoal.formatted(.number.grouping(.automatic)))")
+                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                    
+                    Slider(
+                        value: Binding(get: { Double(stepsGoal) }, set: { stepsGoal = Int($0) }),
+                        in: 3000...20000,
+                        step: 500
                     )
-                    .frame(width: i == index ? 22 : 6,
-                           height: 6)
-                    .animation(
-                        .spring(response: 0.35,
-                                dampingFraction: 0.8),
-                        value: index
-                    )
+                    .tint(brand)
+                    
+                    HStack(spacing: 8) {
+                        ForEach([8000, 10000, 15000], id: \.self) { preset in
+                            Button(String(preset)) {
+                                withAnimation(.spring()) { stepsGoal = preset }
+                            }
+                            .font(.caption.weight(.semibold))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Capsule().fill(stepsGoal == preset ? brand : Color.white.opacity(0.1)))
+                            .foregroundColor(stepsGoal == preset ? .white : .secondary)
+                        }
+                    }
+                }
+                .padding(20)
+                .background(RoundedRectangle(cornerRadius: 20).fill(Color.white.opacity(0.05)))
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 20)
+        }
+    }
+}
+
+private struct UnitButton: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(RoundedRectangle(cornerRadius: 12).fill(isSelected ? brand : Color.white.opacity(0.1)))
+                .foregroundColor(isSelected ? .white : .secondary)
+        }
+    }
+}
+
+// MARK: - Screen 9: Permissions
+
+private struct PermissionsScreen: View {
+    @State private var pulseHealth = false
+    @State private var pulseBell = false
+    
+    var body: some View {
+        VStack(spacing: 32) {
+            VStack(spacing: 12) {
+                Text("Enable Features")
+                    .font(.largeTitle.bold())
+                
+                Text("Grant permissions to unlock\nthe full Movo experience.")
+                    .font(.title3)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+            }
+            
+            VStack(spacing: 16) {
+                PermissionCard(
+                    icon: "heart.fill",
+                    title: "Apple Health",
+                    description: "Sync steps, calories, workouts, and more.",
+                    iconColor: .red,
+                    pulse: pulseHealth
+                )
+                
+                PermissionCard(
+                    icon: "bell.badge.fill",
+                    title: "Notifications",
+                    description: "Get reminders for rest timers and streaks.",
+                    iconColor: .blue,
+                    pulse: pulseBell
+                )
+            }
+            .padding(.horizontal, 24)
+            
+            Text("Tap Continue to grant permissions")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1).repeatForever(autoreverses: true)) {
+                pulseHealth = true
+                pulseBell = true
             }
         }
-        .padding(.vertical, 6)
     }
 }
 
-// MARK: - Color util
+private struct PermissionCard: View {
+    let icon: String
+    let title: String
+    let description: String
+    let iconColor: Color
+    let pulse: Bool
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .fill(iconColor.opacity(0.2))
+                    .frame(width: 60, height: 60)
+                    .scaleEffect(pulse ? 1.1 : 1.0)
+                
+                Image(systemName: icon)
+                    .font(.title2)
+                    .foregroundStyle(iconColor)
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.headline)
+                
+                Text(description)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            
+            Spacer()
+        }
+        .padding(20)
+        .background(RoundedRectangle(cornerRadius: 16).fill(Color.white.opacity(0.05)))
+    }
+}
 
-private extension Color {
-    init(hex: UInt, alpha: Double = 1.0) {
+// MARK: - Screen 10: Final
+
+private struct FinalScreen: View {
+    @State private var scale: CGFloat = 0.5
+    @State private var showConfetti = false
+    
+    var body: some View {
+        VStack(spacing: 32) {
+            Spacer()
+            
+            VStack(spacing: 16) {
+                Text("You're All Set!")
+                    .font(.largeTitle.bold())
+                
+                Text("Welcome to Movo.\nLet's build something amazing.")
+                    .font(.title3)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+            }
+            
+            ZStack {
+                Circle()
+                    .fill(brand.opacity(0.2))
+                    .frame(width: 140, height: 140)
+                    .scaleEffect(scale)
+                
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.system(size: 64))
+                    .foregroundStyle(LinearGradient(colors: [brand, brandTintA], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .scaleEffect(scale)
+                
+                if showConfetti {
+                    ForEach(0..<20, id: \.self) { index in
+                        Circle()
+                            .fill([Color.yellow, Color.orange, brand, Color.purple, Color.pink].randomElement() ?? brand)
+                            .frame(width: CGFloat.random(in: 4...8))
+                            .offset(
+                                x: cos(Double(index) * .pi / 10) * 100,
+                                y: sin(Double(index) * .pi / 10) * 100
+                            )
+                            .opacity(0)
+                    }
+                }
+            }
+            .frame(height: 180)
+            .onAppear {
+                withAnimation(.spring(duration: 0.8)) {
+                    scale = 1.0
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    withAnimation {
+                        showConfetti = true
+                    }
+                }
+            }
+            
+            Text("Tap 'Let's Go!' to start your fitness journey")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 40)
+                .multilineTextAlignment(.center)
+            
+            Spacer()
+        }
+    }
+}
+
+
+private struct FeatureBullet: View {
+    let icon: String
+    let text: String
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(brand)
+                .frame(width: 28)
+            
+            Text(text)
+                .font(.body)
+        }
+    }
+}
+
+// Helper extension for Color from hex
+extension Color {
+    init(hex: UInt, alpha: Double = 1) {
         self.init(
             .sRGB,
-            red:   Double((hex >> 16) & 0xFF) / 255.0,
-            green: Double((hex >> 8) & 0xFF) / 255.0,
-            blue:  Double(hex & 0xFF) / 255.0,
+            red: Double((hex >> 16) & 0xff) / 255,
+            green: Double((hex >> 8) & 0xff) / 255,
+            blue: Double(hex & 0xff) / 255,
             opacity: alpha
         )
     }
 }
-
-// MARK: - iPad width helper
-
-struct ConstrainedWidth: ViewModifier {
-    @Environment(\.horizontalSizeClass) private var hSize
-
-    func body(content: Content) -> some View {
-        let isPad = hSize == .regular
-        return content
-            .frame(
-                maxWidth: isPad ? 560 : .infinity,
-                alignment: .center
-            )
-            .padding(.horizontal, isPad ? 32 : 16)
-    }
-}
-
-extension View {
-    func iPadConstrained() -> some View {
-        modifier(ConstrainedWidth())
-    }
-}
-
-// MARK: - Adaptive page wrapper
-
-private struct AdaptivePage<Content: View>: View {
-    @Environment(\.verticalSizeClass) private var vSize
-    @ViewBuilder var content: Content
-
-    var body: some View {
-        GeometryReader { proxy in
-            let shouldScroll =
-                vSize == .compact || proxy.size.height < 700
-
-            Group {
-                if shouldScroll {
-                    ScrollView(.vertical, showsIndicators: false) {
-                        VStack(spacing: 24) {
-                            content
-                        }
-                        .padding(.top, 12)
-                        .padding(.bottom, 140) // Platz für Weiter-Button + Dots
-                        .iPadConstrained()
-                    }
-                } else {
-                    VStack(spacing: 24) {
-                        content
-                    }
-                    .iPadConstrained()
-                    .frame(
-                        maxWidth: .infinity,
-                        maxHeight: .infinity,
-                        alignment: .top
-                    )
-                }
-            }
-            .frame(
-                width: proxy.size.width,
-                height: proxy.size.height,
-                alignment: .top
-            )
-        }
-    }
-}
-
-private extension View {
-    /// Einheitlicher Wrapper für alle Onboarding-Seiten.
-    func onboardingPage() -> some View {
-        AdaptivePage { self }
-    }
-}
-// Ganz unten in der Datei (oder in eine Utils-Datei)
-

@@ -4,8 +4,9 @@ import SwiftUI
 @main
 struct MovoWidgetsBundle: WidgetBundle {
     var body: some Widget {
-        StepsWidget()        // ← dein bestehendes Heute-Widget (unverändert lassen)
-        StepsWeeklyWidget()  // ← das neue 7-Tage-Widget
-        TrainingWeeklyWidget()     // NEU: Trainings/Woche
+        StepsWidget()               // ← bestehendes Heute-Widget
+        StepsWeeklyWidget()         // ← 7‑Tage‑Widget Schritte
+        TrainingWeeklyWidget()      // ← Trainings/Woche
+        TrainingHeatmapWidget()     // ← NEU: Aktivitäts‑Heatmap
     }
 }

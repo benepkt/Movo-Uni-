@@ -155,15 +155,26 @@ struct TrainingDetailView: View {
 
     private var runSection: some View {
         VStack(alignment: .leading, spacing: 20) {
-            // Header + Meta
-            VStack(alignment: .leading, spacing: 10) {
-                // z.B. „Outdoor Walk“
-                Text(cardioTypeText)
-                    .font(.system(size: 32, weight: .heavy, design: .rounded))
-                    .foregroundColor(appSettings.accentColor)
-
-                DetailMetaChips(items: runMetaItems)
+            // LARGE Distance at top with icon
+            if let dist = runDistanceKm {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(String(format: "%.2f", dist).replacingOccurrences(of: ".", with: ","))
+                        .font(.system(size: 64, weight: .bold))
+                        .monospacedDigit()
+                        .foregroundStyle(.primary)
+                    
+                    Image(systemName: "figure.run")
+                        .font(.system(size: 48, weight: .medium))
+                        .foregroundStyle(.green)
+                }
             }
+            
+            // Activity type
+            Text(cardioTypeText)
+                .font(.title2.weight(.semibold))
+            
+            // Date/time badges
+            DetailMetaChips(items: runMetaItems)
 
             // 4 Summary-Karten im 2×2 Grid
             if let analytics = runAnalytics {
@@ -530,38 +541,33 @@ private struct RunMetricCard: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .imageScale(.medium)
+        HStack(spacing: 12) {
+            // Icon on the left
+            Image(systemName: icon)
+                .font(.system(size: 18))
+                .foregroundStyle(.secondary)
+                .frame(width: 24)
+            
+            // VALUE above label (inverted from before)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(value)
+                    .font(.system(size: 28, weight: .bold))
                     .foregroundColor(appSettings.accentColor)
-
-                Text(title)
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
                     .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+                    .minimumScaleFactor(0.6)
+                
+                Text(title)
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(.secondary)
             }
-
-            Text(value)
-                .font(.title3.weight(.bold))
-                .foregroundColor(appSettings.accentColor)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
+            
+            Spacer(minLength: 0)
         }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 12)
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color(.systemBackground))
-                .shadow(
-                    color: .black.opacity(scheme == .dark ? 0.35 : 0.08),
-                    radius: 10,
-                    x: 0,
-                    y: 4
-                )
-        )
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 

@@ -46,23 +46,26 @@ struct LoginView: View {
                 pageBackground.ignoresSafeArea()
 
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: 28) {
 
                         // Logo / Hero
                         Image("fitness_robot_blue")
                             .resizable()
                             .scaledToFit()
-                            .frame(height: 120)
-                            .padding(.top, 12)
+                            .frame(height: 100)
+                            .padding(.top, 20)
 
                         Text("Movo Login")
-                            .font(.largeTitle.weight(.semibold))
+                            .font(.system(size: 34, weight: .bold))
+                            .padding(.bottom, 8)
 
                         // Eingabefelder
-                        VStack(spacing: 16) {
-                            HStack {
-                                Image(systemName: "envelope")
+                        VStack(spacing: 14) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "envelope.fill")
                                     .foregroundColor(accent)
+                                    .font(.title3)
+                                    .frame(width: 24)
                                 TextField("E-Mail", text: $email)
                                     .keyboardType(.emailAddress)
                                     .textInputAutocapitalization(.never)
@@ -70,29 +73,31 @@ struct LoginView: View {
                                     .submitLabel(.next)
                             }
                             .padding()
+                            .padding(.vertical, 6)
                             .background(fieldBackground)
-                            .cornerRadius(12)
-                            .shadow(color: .black.opacity(fieldShadowOpacity),
-                                    radius: 3)
+                            .cornerRadius(14)
+                            .shadow(color: .black.opacity(fieldShadowOpacity), radius: 4, y: 2)
 
-                            HStack {
-                                Image(systemName: "lock")
+                            HStack(spacing: 12) {
+                                Image(systemName: "lock.fill")
                                     .foregroundColor(accent)
+                                    .font(.title3)
+                                    .frame(width: 24)
                                 SecureField("Passwort", text: $password)
                                     .submitLabel(.go)
                             }
                             .padding()
+                            .padding(.vertical, 6)
                             .background(fieldBackground)
-                            .cornerRadius(12)
-                            .shadow(color: .black.opacity(fieldShadowOpacity),
-                                    radius: 3)
+                            .cornerRadius(14)
+                            .shadow(color: .black.opacity(fieldShadowOpacity), radius: 4, y: 2)
                         }
 
                         // Hinweise / Fehler
                         if let infoMessage {
                             Text(infoMessage)
                                 .foregroundColor(.secondary)
-                                .font(.caption)
+                                .font(.callout)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal)
                         }
@@ -100,7 +105,7 @@ struct LoginView: View {
                         if let errorMessage {
                             Text(errorMessage)
                                 .foregroundColor(.red)
-                                .font(.caption)
+                                .font(.callout)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal)
                         }
@@ -112,50 +117,55 @@ struct LoginView: View {
                                     .progressViewStyle(.circular)
                                     .tint(.white)
                                     .frame(maxWidth: .infinity)
-                                    .padding()
+                                    .padding(.vertical, 16)
                             } else {
                                 Text("Einloggen")
-                                    .bold()
+                                    .font(.body.weight(.semibold))
                                     .frame(maxWidth: .infinity)
-                                    .padding()
+                                    .padding(.vertical, 16)
                             }
                         }
                         .background(canAuth ? accent : accent.opacity(0.35))
                         .foregroundColor(.white)
-                        .cornerRadius(12)
+                        .cornerRadius(14)
                         .disabled(!canAuth)
 
-                        // Registrieren Sheet
-                        Button {
-                            showRegister = true
-                        } label: {
-                            Text("Noch kein Konto? Registrieren")
-                                .font(.footnote)
-                                .foregroundColor(accent)
+                        // Registrieren + Passwort zurücksetzen
+                        HStack(spacing: 24) {
+                            Button {
+                                showRegister = true
+                            } label: {
+                                Text("Noch kein Konto? Registrieren")
+                                    .font(.subheadline.weight(.medium))
+                                    .foregroundColor(accent)
+                            }
+                            .disabled(isLoading)
+                            
+                            Spacer()
+                            
+                            Button(action: resetPassword) {
+                                Text("Passwort vergessen?")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            .disabled(isLoading || email.isEmpty)
                         }
-                        .disabled(isLoading)
-
-                        // Passwort zurücksetzen
-                        Button(action: resetPassword) {
-                            Text("Passwort vergessen?")
-                                .font(.footnote)
-                                .underline()
-                        }
-                        .disabled(isLoading || email.isEmpty)
+                        .padding(.horizontal, 4)
 
                         // Divider
                         HStack {
                             Rectangle()
-                                .frame(height: 1)
-                                .foregroundColor(.gray.opacity(0.3))
+                                .frame(height: 0.5)
+                                .foregroundColor(.gray.opacity(0.4))
                             Text("ODER")
-                                .font(.caption)
+                                .font(.caption2.weight(.medium))
                                 .foregroundColor(.secondary)
+                                .padding(.horizontal, 12)
                             Rectangle()
-                                .frame(height: 1)
-                                .foregroundColor(.gray.opacity(0.3))
+                                .frame(height: 0.5)
+                                .foregroundColor(.gray.opacity(0.4))
                         }
-                        .padding(.top, 4)
+                        .padding(.vertical, 8)
 
                         // Apple Login
                         SignInWithAppleButton(
@@ -166,39 +176,36 @@ struct LoginView: View {
                         .signInWithAppleButtonStyle(
                             scheme == .dark ? .white : .black
                         )
-                        .frame(height: 48)
-                        .cornerRadius(12)
-                        .padding(.horizontal)
+                        .frame(height: 54)
+                        .cornerRadius(14)
                         .disabled(isLoading)
 
-                        // Google Login – weißer Button mit Outline
+                        // Google Login
                         Button(action: loginWithGoogle) {
                             HStack(spacing: 12) {
                                 if UIImage(named: "google_g") != nil {
                                     Image("google_g")
                                         .resizable()
-                                        .frame(width: 18, height: 18)
+                                        .frame(width: 20, height: 20)
                                         .cornerRadius(3)
                                 } else {
                                     Image(systemName: "g.circle")
                                         .font(.title3)
                                 }
-                                Text(isAnon
-                                     ? "Konto verknüpfen mit Google"
-                                     : "Mit Google anmelden")
-                                    .fontWeight(.semibold)
+                                Text(isAnon ? "Konto verknüpfen mit Google" : "Mit Google anmelden")
+                                    .font(.body.weight(.semibold))
                                 Spacer()
                             }
-                            .frame(height: 45)
-                            .padding(.horizontal, 16)
+                            .padding()
+                            .padding(.vertical, 4)
                         }
                         .buttonStyle(GoogleOutlineButtonStyle(isLoading: isLoading))
-                        .padding(.horizontal)
                         .disabled(isLoading)
 
-                        Spacer(minLength: 8)
+                        Spacer(minLength: 20)
                     }
                     .iPadConstrained()
+                    .padding(.horizontal, 24)
                     .padding(.vertical, 20)
                 }
                 .scrollDismissesKeyboard(.interactively)
@@ -366,20 +373,19 @@ private struct GoogleOutlineButtonStyle: ButtonStyle {
         configuration.label
             .background(Color.white)
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 14)
                     .stroke(
-                        Color.gray.opacity(configuration.isPressed ? 0.5 : 0.35),
-                        lineWidth: 1
+                        Color.gray.opacity(configuration.isPressed ? 0.5 : 0.3),
+                        lineWidth: 1.5
                     )
             )
-            .cornerRadius(10)
+            .cornerRadius(14)
             .shadow(
                 color: Color.black.opacity(
-                    configuration.isPressed ? 0.05 : 0.08
+                    configuration.isPressed ? 0.03 : 0.06
                 ),
-                radius: 4,
-                x: 0,
-                y: 1
+                radius: 3,
+                y: 2
             )
             .opacity(isLoading ? 0.7 : 1.0)
             .foregroundColor(.black)
@@ -438,14 +444,14 @@ struct RegisterView: View {
                 pageBackground.ignoresSafeArea()
 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 22) {
+                    VStack(alignment: .leading, spacing: 24) {
 
                         Text(isAnon ? "Konto verknüpfen" : "Registrieren")
-                            .font(.system(size: 32, weight: .heavy))
-                            .padding(.top, 8)
+                            .font(.system(size: 34, weight: .bold))
+                            .padding(.top, 20)
 
-                        VStack(spacing: 16) {
-                            inputRow(icon: "envelope") {
+                        VStack(spacing: 14) {
+                            inputRow(icon: "envelope.fill") {
                                 TextField("E-Mail", text: $email)
                                     .keyboardType(.emailAddress)
                                     .textInputAutocapitalization(.never)
@@ -453,7 +459,7 @@ struct RegisterView: View {
                                     .foregroundStyle(.primary)
                             }
 
-                            inputRow(icon: "lock") {
+                            inputRow(icon: "lock.fill") {
                                 SecureField("Passwort (min. 6 Zeichen)", text: $password)
                                     .foregroundStyle(.primary)
                             }
@@ -474,22 +480,22 @@ struct RegisterView: View {
                             Spacer()
                         }
                         .padding()
+                        .padding(.vertical, 4)
                         .background(fieldBackground)
-                        .cornerRadius(12)
-                        .shadow(color: .black.opacity(fieldShadowOpacity),
-                                radius: 4, x: 0, y: 1)
+                        .cornerRadius(14)
+                        .shadow(color: .black.opacity(fieldShadowOpacity), radius: 4, y: 2)
 
                         // Hinweise
                         if let infoMessage {
                             Text(infoMessage)
-                                .font(.caption)
+                                .font(.callout)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.leading)
                         }
 
                         if let errorMessage {
                             Text(errorMessage)
-                                .font(.caption)
+                                .font(.callout)
                                 .foregroundColor(.red)
                                 .multilineTextAlignment(.leading)
                         }
@@ -500,24 +506,23 @@ struct RegisterView: View {
                                 ProgressView()
                                     .tint(.white)
                                     .frame(maxWidth: .infinity)
-                                    .padding()
+                                    .padding(.vertical, 16)
                             } else {
-                                Text(isAnon
-                                     ? "Konto verknüpfen"
-                                     : "Konto erstellen")
-                                    .bold()
+                                Text(isAnon ? "Konto verknüpfen" : "Konto erstellen")
+                                    .font(.body.weight(.semibold))
                                     .frame(maxWidth: .infinity)
-                                    .padding()
+                                    .padding(.vertical, 16)
                             }
                         }
                         .background(canSubmit ? accent : accent.opacity(0.35))
                         .foregroundColor(.white)
-                        .cornerRadius(12)
+                        .cornerRadius(14)
                         .disabled(!canSubmit)
 
-                        Spacer(minLength: 0)
+                        Spacer(minLength: 20)
                     }
                     .iPadConstrained()
+                    .padding(.horizontal, 24)
                     .padding(.vertical, 20)
                 }
                 .scrollDismissesKeyboard(.interactively)
@@ -538,17 +543,19 @@ struct RegisterView: View {
     @ViewBuilder
     private func inputRow<Content: View>(icon: String,
                                          @ViewBuilder content: () -> Content) -> some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 12) {
             Image(systemName: icon)
                 .foregroundColor(accent)
+                .font(.title3)
+                .frame(width: 24)
             content()
                 .tint(accent)
         }
         .padding()
+        .padding(.vertical, 6)
         .background(fieldBackground)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(fieldShadowOpacity),
-                radius: 4, x: 0, y: 1)
+        .cornerRadius(14)
+        .shadow(color: .black.opacity(fieldShadowOpacity), radius: 4, y: 2)
     }
 
     // MARK: - Actions

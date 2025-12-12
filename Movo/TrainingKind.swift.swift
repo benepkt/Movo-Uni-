@@ -1,122 +1,138 @@
 import SwiftUI
+import UIKit
 
 struct TrainingStartMenu: View {
-    /// Verschachtelter Typ, kollidiert nicht mit anderen Enums
-    enum Kind: String {
+    enum TrainingType {
         case strength
         case running
+        case manual
     }
-
-    let onSelect: (Kind) -> Void
-
-    @Environment(\.designTokens) private var t
+    
+    let onSelect: (TrainingType) -> Void
+    
+    @EnvironmentObject var appSettings: AppSettings
     @Environment(\.dismiss) private var dismiss
-
-    // System-adaptive Farben
-    private let sheetBackground = Color(uiColor: .systemBackground)
-    private let cardBackground  = Color(uiColor: .secondarySystemBackground)
-    private let cardStroke      = Color(uiColor: .separator)
-
+    @Environment(\.designTokens) private var t
+    
     var body: some View {
-        VStack(spacing: 16) {
-            // Grabber
-            Capsule()
-                .frame(width: 40, height: 4)
-                .foregroundStyle(.secondary.opacity(0.4))
-                .padding(.top, 8)
-
-            // Titel
-            Text("Training starten")
-                .font(.headline)
-                .padding(.top, 4)
-
-            // Optionen
+        VStack(spacing: 18) {
+            
+            // 👇 extra Freiraum oben im Sheet
+            Color.clear
+                .frame(height: 80)
+            
+            // — Titel ----------------------------------------------------
+            Text(appSettings.localized("startMenu.title"))
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .center)
+            
+            // — Menü-Items ----------------------------------------------
             VStack(spacing: 12) {
-                button(
-                    kind: .strength,
-                    title: "Krafttraining",
-                    subtitle: "Sätze, Gewichte & Pausen",
-                    icon: "dumbbell.fill"
-                )
-
-                button(
-                    kind: .running,
-                    title: "Joggen",
-                    subtitle: "Distanz & Dauer tracken",
-                    icon: "figure.run"
-                )
+                // ✅ Strength: normal aktiv
+                menuItem(
+                    iconName: "dumbbell.fill",
+                    iconColor: .blue,
+                    title: appSettings.localized("startMenu.strength.title"),
+                    subtitle: appSettings.localized("startMenu.strength.subtitle"),
+                    locked: false
+                ) {
+                    onSelect(.strength)
+                    dismiss()
+                }
+                
+                // 🟡 Running: COMING SOON + Lock
+                menuItem(
+                    iconName: "figure.run",
+                    iconColor: .orange,
+                    title: appSettings.localized("startMenu.running.title"),
+                    subtitle: appSettings.localized("startMenu.comingSoon"),
+                    locked: true
+                ) {
+                    // Aktion wird wegen locked NIE ausgeführt
+                    onSelect(.running)
+                    dismiss()
+                }
+                
+                // 🟡 Manual: COMING SOON + Lock
+                menuItem(
+                    iconName: "clipboard.fill",
+                    iconColor: .purple,
+                    title: appSettings.localized("startMenu.manual.title"),
+                    subtitle: appSettings.localized("startMenu.comingSoon"),
+                    locked: true
+                ) {
+                    // Aktion wird wegen locked NIE ausgeführt
+                    onSelect(.manual)
+                    dismiss()
+                }
             }
-            .padding(.horizontal)
-
-            // Abbrechen
-            Button(role: .cancel) {
+            
+            // — Cancel ---------------------------------------------------
+            Button(appSettings.localized("startMenu.cancel")) {
                 dismiss()
-            } label: {
-                Text("Abbrechen")
-                    .font(.subheadline.weight(.semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .foregroundStyle(t.palette.primary)
             }
-            .padding(.horizontal)
-
-            Spacer(minLength: 8)
+            .font(.system(size: 17, weight: .semibold))
+            .foregroundColor(t.palette.primary)
+            .padding(.top, 8)
+            .padding(.bottom, 4)
         }
-        .padding(.bottom, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(sheetBackground)
-                .shadow(color: .black.opacity(0.18), radius: 20, x: 0, y: -6)
-        )
+        .padding(.horizontal, 16)
+        .padding(.bottom, 10)
     }
+    
+    
+    // MARK: - Menu Item
 
-    // MARK: - Button-Baustein
-
-    private func button(
-        kind: Kind,
+    private func menuItem(
+        iconName: String,
+        iconColor: Color,
         title: String,
         subtitle: String,
-        icon: String
+        locked: Bool = false,
+        action: @escaping () -> Void
     ) -> some View {
         Button {
-            onSelect(kind)
-            dismiss()
+            // Safety: nur ausführen, wenn NICHT gesperrt
+            guard !locked else { return }
+            action()
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: 16) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(t.palette.primary.opacity(0.12))
-                    Image(systemName: icon)
-                        .font(.title2)
-                        .foregroundStyle(t.palette.primary)
-                }
-                .frame(width: 40, height: 40)
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(iconColor.opacity(0.2))
+                        .frame(width: 56, height: 56)
 
-                VStack(alignment: .leading, spacing: 2) {
+                    Image(systemName: iconName)
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundColor(iconColor)
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
                     Text(title)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.primary)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.primary)
+
                     Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
                 }
 
                 Spacer()
 
-                Image(systemName: "chevron.right")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                Image(systemName: locked ? "lock.fill" : "chevron.right")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(locked ? .secondary : Color(.tertiaryLabel))
             }
-            .padding(12)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
             .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(cardBackground)
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(Color(.secondarySystemGroupedBackground))
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(cardStroke.opacity(0.6), lineWidth: 0.5)
-            )
+            .opacity(locked ? 0.6 : 1.0)   // leicht ausgegraut bei „Coming soon“
         }
         .buttonStyle(.plain)
+        .disabled(locked)                  // System-weit als „disabled“ markiert
     }
 }

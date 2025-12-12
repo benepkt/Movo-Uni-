@@ -1,328 +1,327 @@
-// =====================================================
-// QR View + DTOs etc. (dein unveränderter Code unten falls benötigt)
-// =====================================================
+import SwiftUI
 
-import Foundation
-import FirebaseFirestore
-
-// MARK: - Firestore <-> Swift Date Conversion
-enum FSConv {
-    static func ts(_ date: Date) -> Timestamp { Timestamp(date: date) }
-    static func date(_ raw: Any?) -> Date {
-        if let t = raw as? Timestamp { return t.dateValue() }
-        if let d = raw as? Date { return d }
-        if let s = raw as? String, let d = ISO8601DateFormatter().date(from: s) { return d }
-        if let secs = raw as? Double { return Date(timeIntervalSince1970: secs) }
-        if let secs = raw as? Int { return Date(timeIntervalSince1970: TimeInterval(secs)) }
-        return .distantPast
+struct LastTrainingDetailView: View {
+    @EnvironmentObject var appSettings: AppSettings
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.designTokens) private var t
+    
+    let trainingHistory: [TrainingEntry]
+    let lastTrainingDate: Date?
+    
+    // Stats
+    private var totalSessions: Int {
+        trainingHistory.count
+    }
+    
+    private var thisWeekSessions: Int {
+        let calendar = Calendar.current
+        let now = Date()
+        guard let startOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: now)) else { return 0 }
+        return trainingHistory.filter { $0.date >= startOfWeek }.count
+    }
+    
+    private var currentStreak: Int {
+        var streak = 0
+        let calendar = Calendar.current
+        var checkDate = calendar.startOfDay(for: Date())
+        
+        while true {
+            let hasTraining = trainingHistory.contains { entry in
+                calendar.isDate(entry.date, inSameDayAs: checkDate)
+            }
+            
+            if hasTraining {
+                streak += 1
+                guard let previousDay = calendar.date(byAdding: .day, value: -1, to: checkDate) else { break }
+                checkDate = previousDay
+            } else {
+                break
+            }
+        }
+        
+        return streak
+    }
+    
+    private var recentTrainings: [TrainingEntry] {
+        trainingHistory.sorted { $0.date > $1.date }.prefix(10).map { $0 }
+    }
+    
+    private var appLocale: Locale {
+        let code = appSettings.language.lowercased().hasPrefix("de") ? "de_DE" : "en_US"
+        return Locale(identifier: code)
+    }
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 24) {
+                    // 1. Header / Last Training
+                    VStack(spacing: 8) {
+                        Text(appSettings.localized("lastTraining.header"))
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                        
+                        if let lastDate = lastTrainingDate {
+                            VStack(spacing: 4) {
+                                Text(formatLastTrainingDate(lastDate))
+                                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                                    .foregroundStyle(.purple)
+                                
+                                Text(lastDate.formatted(date: .abbreviated, time: .shortened))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        } else {
+                            Text(appSettings.localized("lastTraining.none"))
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.top, 20)
+                    
+                    // 2. Stats Grid
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                        StatBox(
+                            title: appSettings.localized("lastTraining.stat.totalSessions"),
+                            value: "\(totalSessions)",
+                            icon: "dumbbell.fill",
+                            color: .purple
+                        )
+                        StatBox(
+                            title: appSettings.localized("lastTraining.stat.thisWeek"),
+                            value: "\(thisWeekSessions)",
+                            icon: "calendar",
+                            color: .blue
+                        )
+                        StatBox(
+                            title: appSettings.localized("lastTraining.stat.currentStreak"),
+                            value: String(
+                                format: appSettings.localized("lastTraining.stat.currentStreak.value"),
+                                currentStreak
+                            ),
+                            icon: "flame.fill",
+                            color: .orange
+                        )
+                        StatBox(
+                            title: appSettings.localized("lastTraining.stat.avgPerWeek"),
+                            value: String(
+                                format: appSettings.localized("lastTraining.stat.avgPerWeek.value"),
+                                Double(totalSessions) / max(1, Double(weeksActive()))
+                            ),
+                            icon: "chart.bar.fill",
+                            color: .green
+                        )
+                    }
+                    .padding(.horizontal)
+                    
+                    // 3. Recent Trainings
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(appSettings.localized("lastTraining.recent.title"))
+                            .font(.headline)
+                            .padding(.horizontal)
+                        
+                        if recentTrainings.isEmpty {
+                            ContentUnavailableView(
+                                appSettings.localized("lastTraining.empty.title"),
+                                systemImage: "dumbbell",
+                                description: Text(appSettings.localized("lastTraining.empty.description"))
+                            )
+                            .frame(height: 200)
+                        } else {
+                            VStack(spacing: 12) {
+                                ForEach(recentTrainings, id: \.id) { training in
+                                    TrainingRowView(training: training, appSettings: appSettings, t: t)
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                    }
+                    
+                    // 4. Motivation Section
+                    if totalSessions > 0 {
+                        VStack(spacing: 12) {
+                            Image(systemName: currentStreak >= 7 ? "trophy.fill" : "star.fill")
+                                .font(.system(size: 40))
+                                .foregroundStyle(currentStreak >= 7 ? .yellow : .purple)
+                            
+                            Text(getMotivationalMessage())
+                                .font(.headline)
+                                .multilineTextAlignment(.center)
+                                .foregroundStyle(.primary)
+                            
+                            Text(getMotivationalSubtext())
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            LinearGradient(
+                                colors: [Color.purple.opacity(0.1), Color.purple.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        .padding(.horizontal)
+                    }
+                }
+                .padding(.bottom, 30)
+            }
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle(appSettings.localized("lastTraining.title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(appSettings.localized("settings.done")) { dismiss() }
+                }
+            }
+        }
+    }
+    
+    private func formatLastTrainingDate(_ date: Date) -> String {
+        let calendar = Calendar.current
+        if calendar.isDateInToday(date) {
+            return appSettings.localized("date.today")
+        } else if calendar.isDateInYesterday(date) {
+            return appSettings.localized("date.yesterday")
+        } else {
+            let days = calendar.dateComponents([.day],
+                                               from: calendar.startOfDay(for: date),
+                                               to: calendar.startOfDay(for: Date())).day ?? 0
+            if days < 7 {
+                return String(format: appSettings.localized("date.daysAgo"), days)
+            } else {
+                let weeks = max(1, days / 7)
+                if weeks == 1 {
+                    return appSettings.localized("date.oneWeekAgo")
+                } else {
+                    return String(format: appSettings.localized("date.weeksAgo"), weeks)
+                }
+            }
+        }
+    }
+    
+    private func weeksActive() -> Int {
+        guard let firstTraining = trainingHistory.min(by: { $0.date < $1.date })?.date else { return 1 }
+        let calendar = Calendar.current
+        let weeks = calendar.dateComponents([.weekOfYear], from: firstTraining, to: Date()).weekOfYear ?? 1
+        return max(1, weeks)
+    }
+    
+    private func getMotivationalMessage() -> String {
+        if currentStreak >= 30 {
+            return appSettings.localized("lastTraining.motivation.30")
+        } else if currentStreak >= 14 {
+            return appSettings.localized("lastTraining.motivation.14")
+        } else if currentStreak >= 7 {
+            return appSettings.localized("lastTraining.motivation.7")
+        } else if totalSessions >= 50 {
+            return appSettings.localized("lastTraining.motivation.50")
+        } else if totalSessions >= 20 {
+            return appSettings.localized("lastTraining.motivation.20")
+        } else {
+            return appSettings.localized("lastTraining.motivation.default")
+        }
+    }
+    
+    private func getMotivationalSubtext() -> String {
+        if currentStreak >= 7 {
+            return appSettings.localized("lastTraining.motivation.sub.streak7")
+        } else if thisWeekSessions >= 3 {
+            return appSettings.localized("lastTraining.motivation.sub.weekGood")
+        } else {
+            return appSettings.localized("lastTraining.motivation.sub.default")
+        }
     }
 }
 
-// MARK: - DTOs
+// MARK: - Training Row
 
-// Training Entry DTO
-struct TrainingEntryDTO: Identifiable, Codable {
-    var docId: String?
-    var entryId: String
-    var date: Date
-    var title: String
-    var exercises: [ExerciseDTO]
-    var duration: TimeInterval
-    var totalWeight: Double
-    var emoji: String?
-    var updatedAt: Date
-    var id: String { entryId }
-    var cardioType: String?      // "Outdoor Walk", "Outdoor Run", ...
+struct TrainingRowView: View {
+    let training: TrainingEntry
+    let appSettings: AppSettings
+    let t: DesignTokens
 
-
-    // optional route polyline
-    var routePolyline: String?
-
-    init(
-        docId: String?,
-        entryId: String,
-        date: Date,
-        title: String,
-        exercises: [ExerciseDTO],
-        duration: TimeInterval,
-        totalWeight: Double,
-        emoji: String?,
-        updatedAt: Date,
-        routePolyline: String? = nil, // optional param
-        cardioType: String? = nil
-
-    ) {
-        self.docId = docId
-        self.entryId = entryId
-        self.date = date
-        self.title = title
-        self.exercises = exercises
-        self.duration = duration
-        self.totalWeight = totalWeight
-        self.emoji = emoji
-        self.updatedAt = updatedAt
-        self.routePolyline = routePolyline
-        self.cardioType = cardioType
-
+    private var isCardio: Bool {
+        if let ct = training.cardioType, !ct.isEmpty {
+            return true
+        }
+        return training.exercises.isEmpty
     }
 
-    // Converts TrainingEntry to DTO
-    init(from e: TrainingEntry) {
-        self.init(
-            docId: nil,
-            entryId: e.id.uuidString,
-            date: e.date,
-            title: e.title,
-            exercises: e.exercises.map(ExerciseDTO.init),
-            duration: e.duration,
-            totalWeight: e.totalWeight,
-            emoji: e.emoji,
-            updatedAt: e.updatedAt,
-            routePolyline: e.routePolyline,
-            cardioType: e.cardioType
-
-        )
+    private var iconName: String {
+        isCardio ? "figure.run" : "dumbbell.fill"
     }
-    static func fromSnapshot(_ doc: DocumentSnapshot) throws -> TrainingEntryDTO {
-            guard let data = doc.data() else { throw NSError(domain: "decode.trainingEntry", code: 0) }
-            return TrainingEntryDTO(
-                docId: doc.documentID,
-                entryId: data["entryId"] as? String ?? doc.documentID,
-                date: FSConv.date(data["date"]),
-                title: data["title"] as? String ?? "",
-                exercises: (data["exercises"] as? [[String: Any]] ?? []).map(ExerciseDTO.fromDict),
-                duration: data["duration"] as? TimeInterval ?? 0,
-                totalWeight: data["totalWeight"] as? Double ?? 0,
-                emoji: data["emoji"] as? String,
-                updatedAt: FSConv.date(data["updatedAt"]),
-                routePolyline: data["routePolyline"] as? String,
-                cardioType: data["cardioType"] as? String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(Color.purple.opacity(0.15))
+                    .frame(width: 44, height: 44)
+                Image(systemName: iconName)
+                    .foregroundStyle(.purple)
+            }
+
+            // Content
+            VStack(alignment: .leading, spacing: 4) {
+                Text(training.title.isEmpty ? appSettings.localized("training.training") : training.title)
+                    .font(.body.weight(.semibold))
+                    .lineLimit(1)
+
+                HStack(spacing: 8) {
+                    Text(training.date.formatted(date: .abbreviated, time: .shortened))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    if !training.exercises.isEmpty {
+                        Text("•")
+                            .foregroundStyle(.secondary)
+                        Text("\(training.exercises.count) \(appSettings.localized("history.exercises"))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        let seconds = Int(training.duration)
+                        if seconds > 0 {
+                            Text("•")
+                                .foregroundStyle(.secondary)
+                            Text(formatDuration(seconds))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+        }
+        .padding()
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func formatDuration(_ seconds: Int) -> String {
+        let minutes = seconds / 60
+        if minutes < 60 {
+            return String(
+                format: appSettings.localized("time.minutes.short"),
+                minutes
+            )
+        } else {
+            let hours = minutes / 60
+            let mins = minutes % 60
+            return String(
+                format: appSettings.localized("time.hoursMinutes.short"),
+                hours,
+                mins
             )
         }
-
-        func toDict() -> [String: Any] {
-            var dict: [String: Any] = [
-                "entryId": entryId,
-                "date": FSConv.ts(date),
-                "title": title,
-                "exercises": exercises.map { $0.toDict() },
-                "duration": duration,
-                "totalWeight": totalWeight,
-                "emoji": emoji as Any,
-                "updatedAt": FieldValue.serverTimestamp()
-            ]
-
-            if let routePolyline {
-                dict["routePolyline"] = routePolyline
-            }
-            if let cardioType {
-                dict["cardioType"] = cardioType
-            }
-            return dict
-        }
-    }
-
-
-// Exercise DTO
-struct ExerciseDTO: Codable {
-    var name: String
-    var sets: [ExerciseSetDTO]
-
-    init(name: String, sets: [ExerciseSetDTO]) {
-        self.name = name
-        self.sets = sets
-    }
-
-    init(from e: Exercise) {
-        self.name = e.name
-        self.sets = e.sets.map { .init(weight: $0.weight, reps: $0.reps, isCompleted: $0.isCompleted) }
-    }
-
-    static func fromDict(_ d: [String: Any]) -> ExerciseDTO {
-        ExerciseDTO(
-            name: d["name"] as? String ?? "",
-            sets: (d["sets"] as? [[String: Any]] ?? []).map(ExerciseSetDTO.fromDict)
-        )
-    }
-
-    func toDict() -> [String: Any] {
-        ["name": name, "sets": sets.map { $0.toDict() }]
-    }
-}
-
-// ExerciseSet DTO
-struct ExerciseSetDTO: Codable {
-    var weight: String
-    var reps: String
-    var isCompleted: Bool
-
-    init(weight: String, reps: String, isCompleted: Bool) {
-        self.weight = weight
-        self.reps = reps
-        self.isCompleted = isCompleted
-    }
-
-    static func fromDict(_ d: [String: Any]) -> ExerciseSetDTO {
-        .init(
-            weight: d["weight"] as? String ?? "",
-            reps: d["reps"] as? String ?? "",
-            isCompleted: d["isCompleted"] as? Bool ?? false
-        )
-    }
-
-    func toDict() -> [String: Any] {
-        ["weight": weight, "reps": reps, "isCompleted": isCompleted]
-    }
-}
-
-// TrainingTemplate DTO
-struct TrainingTemplateDTO: Identifiable, Codable {
-    var docId: String?
-    var templateId: String
-    var name: String
-    var exercises: [String]
-    var updatedAt: Date
-
-    var id: String { templateId }
-
-    init(docId: String?, templateId: String, name: String, exercises: [String], updatedAt: Date) {
-        self.docId = docId
-        self.templateId = templateId
-        self.name = name
-        self.exercises = exercises
-        self.updatedAt = updatedAt
-    }
-
-    init(from t: TrainingTemplate, updatedAt: Date = Date()) {
-        self.init(docId: nil, templateId: t.id, name: t.name, exercises: t.exercises, updatedAt: updatedAt)
-    }
-
-    static func fromSnapshot(_ doc: DocumentSnapshot) throws -> TrainingTemplateDTO {
-        guard let data = doc.data() else { throw NSError(domain: "decode.template", code: 0) }
-        return TrainingTemplateDTO(
-            docId: doc.documentID,
-            templateId: data["templateId"] as? String ?? doc.documentID,
-            name: data["name"] as? String ?? "",
-            exercises: data["exercises"] as? [String] ?? [],
-            updatedAt: FSConv.date(data["updatedAt"])
-        )
-    }
-
-    func toDict() -> [String: Any] {
-        [
-            "templateId": templateId,
-            "name": name,
-            "exercises": exercises,
-            "updatedAt": FieldValue.serverTimestamp()
-        ]
-    }
-}
-
-// ChallengeState DTO
-struct ChallengeStateDTO: Identifiable, Codable {
-    var docId: String?
-    var challenges: [Challenge]
-    var trainingUnits: [TrainingUnit]
-    var liftLog: [LiftEntry]
-    var stepsLog: [String: Int]
-    var updatedAt: Date
-
-    var id: String { docId ?? "active" }
-
-    init(
-        docId: String?,
-        challenges: [Challenge],
-        trainingUnits: [TrainingUnit],
-        liftLog: [LiftEntry],
-        stepsLog: [String: Int],
-        updatedAt: Date
-    ) {
-        self.docId = docId
-        self.challenges = challenges
-        self.trainingUnits = trainingUnits
-        self.liftLog = liftLog
-        self.stepsLog = stepsLog
-        self.updatedAt = updatedAt
-    }
-
-    static func fromSnapshot(_ doc: DocumentSnapshot) throws -> ChallengeStateDTO {
-        guard let data = doc.data() else { throw NSError(domain: "decode.challengeState", code: 0) }
-        let decoder = JSONDecoder()
-        func decode<T: Decodable>(_ any: Any, as: T.Type) -> T? {
-            guard JSONSerialization.isValidJSONObject(any),
-                  let json = try? JSONSerialization.data(withJSONObject: any)
-            else { return nil }
-            return try? decoder.decode(T.self, from: json)
-        }
-        return .init(
-            docId: doc.documentID,
-            challenges: decode(data["challenges"] as Any, as: [Challenge].self) ?? [],
-            trainingUnits: decode(data["trainingUnits"] as Any, as: [TrainingUnit].self) ?? [],
-            liftLog: decode(data["liftLog"] as Any, as: [LiftEntry].self) ?? [],
-            stepsLog: data["stepsLog"] as? [String: Int] ?? [:],
-            updatedAt: FSConv.date(data["updatedAt"])
-        )
-    }
-
-    func toDict() -> [String: Any] {
-        let encoder = JSONEncoder()
-        func enc<E: Encodable>(_ v: E) -> Any {
-            (try? JSONSerialization.jsonObject(with: encoder.encode(v))) ?? NSNull()
-        }
-        return [
-            "challenges": enc(challenges),
-            "trainingUnits": enc(trainingUnits),
-            "liftLog": enc(liftLog),
-            "stepsLog": stepsLog,
-            "updatedAt": FieldValue.serverTimestamp()
-        ]
-    }
-}
-
-// MARK: - Domain-Mapping (Mapping DTOs to Domain Model)
-
-extension TrainingEntry {
-    static func fromRemote(_ r: TrainingEntryDTO) -> TrainingEntry {
-        TrainingEntry(
-            id: UUID(uuidString: r.entryId) ?? UUID(),
-            date: r.date,
-            title: r.title,
-            exercises: r.exercises.map { dto in
-                Exercise(
-                    name: dto.name,
-                    sets: dto.sets.map {
-                        ExerciseSet(weight: $0.weight, reps: $0.reps, isCompleted: $0.isCompleted)
-                    }
-                )
-            },
-            duration: r.duration,
-            totalWeight: r.totalWeight,
-            emoji: r.emoji,
-            updatedAt: r.updatedAt,
-            routePolyline: r.routePolyline,
-            cardioType: r.cardioType
-        )
-    }
-
-    func withRemote(_ r: TrainingEntryDTO) -> TrainingEntry {
-        TrainingEntry(
-            id: UUID(uuidString: r.entryId) ?? self.id,
-            date: r.date,
-            title: r.title,
-            exercises: r.exercises.map { dto in
-                Exercise(
-                    name: dto.name,
-                    sets: dto.sets.map {
-                        ExerciseSet(weight: $0.weight, reps: $0.reps, isCompleted: $0.isCompleted)
-                    }
-                )
-            },
-            duration: r.duration,
-            totalWeight: r.totalWeight,
-            emoji: r.emoji,
-            updatedAt: r.updatedAt,
-            routePolyline: r.routePolyline ?? self.routePolyline,
-            cardioType: r.cardioType ?? self.cardioType
-        )
     }
 }

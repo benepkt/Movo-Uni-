@@ -7,7 +7,8 @@ struct AddTemplateView: View {
     @EnvironmentObject var appSettings: AppSettings
 
     @State private var name: String
-    @State private var selectedExercises: Set<String>
+    // WICHTIG: Reihenfolge beibehalten -> Array statt Set
+    @State private var selectedExercises: [String]
     @State private var searchText: String = ""
 
     var onSave: (TrainingTemplate) -> Void
@@ -19,7 +20,8 @@ struct AddTemplateView: View {
         self.onSave = onSave
         if let template = existingTemplate {
             _name = State(initialValue: template.name)
-            _selectedExercises = State(initialValue: Set(template.exercises))
+            // Reihenfolge aus bestehender Vorlage übernehmen
+            _selectedExercises = State(initialValue: template.exercises)
         } else {
             _name = State(initialValue: "")
             _selectedExercises = State(initialValue: [])
@@ -55,6 +57,25 @@ struct AddTemplateView: View {
 
                     ForEach(filteredExercises, id: \.name) { exercise in
                         exerciseRow(exercise.name)
+                    }
+                }
+
+                // Optional: ausgewählte Übungen anzeigen (in Reihenfolge)
+                if !selectedExercises.isEmpty {
+                    Section(appSettings.localized("template.selected")) {
+                        ForEach(Array(selectedExercises.enumerated()), id: \.offset) { idx, name in
+                            HStack {
+                                Text("\(idx + 1). \(name)")
+                                Spacer()
+                                Button(role: .destructive) {
+                                    removeSelection(name)
+                                } label: {
+                                    Image(systemName: "minus.circle.fill")
+                                        .foregroundColor(.red)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
                     }
                 }
             }
@@ -93,7 +114,12 @@ struct AddTemplateView: View {
             HStack {
                 Text(exerciseName)
                 Spacer()
-                if selectedExercises.contains(exerciseName) {
+                if let idx = selectedExercises.firstIndex(of: exerciseName) {
+                    // Nummer anzeigen, um Reihenfolge sichtbar zu machen
+                    Text("\(idx + 1)")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundColor(.blue)
+                        .padding(.trailing, 6)
                     Image(systemName: "checkmark")
                         .foregroundColor(.blue)
                 }
@@ -103,10 +129,16 @@ struct AddTemplateView: View {
     }
 
     private func toggleSelection(_ exerciseName: String) {
-        if selectedExercises.contains(exerciseName) {
-            selectedExercises.remove(exerciseName)
+        if let idx = selectedExercises.firstIndex(of: exerciseName) {
+            selectedExercises.remove(at: idx)
         } else {
-            selectedExercises.insert(exerciseName)
+            selectedExercises.append(exerciseName)
+        }
+    }
+
+    private func removeSelection(_ exerciseName: String) {
+        if let idx = selectedExercises.firstIndex(of: exerciseName) {
+            selectedExercises.remove(at: idx)
         }
     }
 
@@ -116,9 +148,9 @@ struct AddTemplateView: View {
         let template = TrainingTemplate(
             id: existingTemplate?.id ?? UUID().uuidString,
             name: name,
-            exercises: Array(selectedExercises),
+            exercises: selectedExercises,     // Reihenfolge beibehalten
             ownerId: owner,
-            updatedAt: Date()                 // <— wichtig: Zeitstempel für späteren Push/Merge
+            updatedAt: Date()                 // wichtig für späteren Push/Merge
         )
         onSave(template)                      // Parent schreibt in TrainingStore (lokal)
         dismiss()

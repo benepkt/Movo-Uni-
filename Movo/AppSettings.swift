@@ -75,6 +75,22 @@ final class AppSettings: ObservableObject {
         didSet { UserDefaults.standard.set(language, forKey: "language") }
     }
 
+    // User name for personalization (optional)
+    @Published var userName: String {
+        didSet { UserDefaults.standard.set(userName, forKey: "userName") }
+    }
+
+    // Goal weight in kg for motivation (optional)
+    @Published var goalWeightKg: Double? {
+        didSet {
+            if let goal = goalWeightKg {
+                UserDefaults.standard.set(goal, forKey: "goalWeightKg")
+            } else {
+                UserDefaults.standard.removeObject(forKey: "goalWeightKg")
+            }
+        }
+    }
+
     init() {
         // Theme laden
         if let raw = UserDefaults.standard.string(forKey: "themeMode"),
@@ -97,6 +113,16 @@ final class AppSettings: ObservableObject {
 
         // Sprache laden
         self.language = UserDefaults.standard.string(forKey: "language") ?? "de"
+
+        // User name laden
+        self.userName = UserDefaults.standard.string(forKey: "userName") ?? ""
+        
+        // Goal weight laden
+        if UserDefaults.standard.object(forKey: "goalWeightKg") != nil {
+            self.goalWeightKg = UserDefaults.standard.double(forKey: "goalWeightKg")
+        } else {
+            self.goalWeightKg = nil
+        }
     }
 }
 
@@ -106,6 +132,20 @@ extension AppSettings {
         switch language {
         case "en": LocalizedStrings.en[key] ?? key
         default:   LocalizedStrings.de[key] ?? key
+        }
+    }
+}
+
+extension View {
+    /// Zentriert den Content auf iPad und begrenzt die Breite (wie ein "Card"-Layout).
+    @ViewBuilder
+    func iPadConstrained(maxWidth: CGFloat = 520) -> some View {
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            self
+                .frame(maxWidth: maxWidth)
+                .frame(maxWidth: .infinity, alignment: .center)
+        } else {
+            self
         }
     }
 }

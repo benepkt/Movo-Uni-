@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Wir nutzen deine Herzfrequenz, um sie während des Trainings anzuzeigen.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Wir speichern Trainingsdaten, um dein Workout auf der Apple Watch zu erfassen.</string>
+</dict>
+</plist>
