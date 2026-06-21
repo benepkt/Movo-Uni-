@@ -586,6 +586,8 @@ struct RegisterView: View {
         .background(Color(hex: 0x1C1C1E))
         .cornerRadius(16)
     }
+    
+    //Test//
 
     // MARK: - Actions
 
