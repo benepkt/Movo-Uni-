@@ -1,0 +1,55 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode user state
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+
+# Xcode build artifacts
+DerivedData/
+build/
+Build/
+*.ipa
+*.dSYM/
+*.dSYM.zip
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# CocoaPods / Carthage, falls spaeter genutzt
+Pods/
+Carthage/Build/
+
+# Fastlane output
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*.lock
+
+# Firebase / Google service config
+# Diese Datei enthaelt projektbezogene IDs und API-Konfigurationen.
+# Lokal behalten, aber nicht in ein oeffentliches Repository committen.
+GoogleService-Info.plist
+**/GoogleService-Info.plist
+
+# Local secrets and environment overrides
+.env
+.env.*
+*.local
+Secrets.plist
+Config.local.plist
+
+# Generated previews or scratch exports
+Screenshots/
+Recordings/
+*.xcresult
