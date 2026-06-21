@@ -71,6 +71,419 @@ struct L10n {
 
 struct LocalizedStrings {
     static let de: [String: String] = [
+        "tab.feed": "Plan", // ADDED
+        "tab.body": "Körper", // NEW
+        "body.muscle_map.title": "Muskel-Level", // ADDED
+        "body.title": "Körperstatus",
+        "body.metrics.restingHR": "Ruhepuls",
+        "body.metrics.vo2": "VO₂ Max",
+        "body.metrics.respRate": "Atemfrequenz",
+        "body.metrics.spo2": "Blutsauerstoff",
+        "body.metrics.wristTemp": "Handgelenkstemp.",
+        "body.recovery.title": "Recovery Zone",
+        "body.recovery.muscleStatus": "Muskelstatus",
+        "body.status.recovered": "Erholt",
+        "body.status.recovering": "Erholung",
+        "body.status.hours": "h",
+        
+        // BodyView Metrics
+        "body.metric.weight": "Gewicht",
+        "body.metric.bmi": "BMI",
+        "body.metric.hr": "Ruhepuls",
+        "body.metric.fat": "Körperfett",
+        "body.metric.leanMass": "Magermasse",
+        "body.metric.vo2": "VO₂ Max",
+        "body.metric.resp": "Atemfrequenz",
+        "body.metric.spo2": "Blutsauerstoff",
+        "body.metric.temp": "Handgelenkstemp.",
+        "body.metric.fitness": "Fitnessniveau",
+        
+        // BodyView Score
+        "body.score.excellent": "Hervorragend",
+        "body.score.strong": "Stark",
+        "body.score.good": "Gut",
+        "body.score.recovery_needed": "Erholung nötig",
+        "body.score.optimal": "Optimal",
+        "body.score.okay": "Okay",
+        "body.score.low": "Niedrig",
+        
+        // BodyView Sleep
+        "body.sleep.title": "SCHLAF",
+        "body.sleep.tip": "Konsistenz ist der Schlüssel. Versuche, jeden Tag zur gleichen Zeit ins Bett zu gehen.",
+        
+        // BodyView Load
+        "body.load.high": "Hoch",
+        "body.load.medium": "Mittel",
+        "body.load.low": "Niedrig",
+        
+        // BodyView Status
+        "body.status.underweight": "Untergewicht",
+        "body.status.normal": "Normalgewicht",
+        "body.status.overweight": "Übergewicht",
+        "body.status.obese": "Adipositas",
+        
+        // Common
+        "common.today": "Heute",
+        "common.yesterday": "Gestern",
+        "common.last": "Zuletzt",
+        "common.first_measurement": "Erste Messung",
+        
+        // BodyView Recovery
+        "body.recovery.info": "Tippe auf die Liste für Details",
+        "body.recovery.noData": "Keine Trainingsdaten gefunden.",
+        "body.recovery.status.recovering": "Erholung",
+        "body.recovery.status.good": "Regeneration",
+        "body.recovery.status.ready": "Bereit",
+        "body.recovery.status.peak": "Topform",
+        "body.recovery.status.idle": "Trainieren",
+        
+        "body.recovery.progress": "Erholung",
+        "body.recovery.lastTraining": "Letztes Training",
+        "body.recovery.statusLabel": "Status",
+        
+        
+        "body.recovery.infoTitle": "Information",
+        
+        "body.recovery.desc.recovering": "Dieser Muskel wurde kürzlich stark beansprucht. Gib ihm Zeit zur Erholung, damit er wachsen kann.",
+        "body.recovery.desc.good": "Die Erholung ist im Gange. Leichtes Training ist möglich, aber intensive Belastung sollte vermieden werden.",
+        "body.recovery.desc.ready": "Der Muskel ist fast vollständig erholt. Du kannst ihn wieder trainieren, aber achte auf dein Gefühl.",
+        "body.recovery.desc.peak": "Idealer Zeitpunkt! Der Muskel ist vollständig erholt und bereit für maximale Leistung.",
+        "body.recovery.desc.idle": "Es ist schon länger her. Ein Trainingsreiz wäre jetzt optimal, um Kraftverluste zu vermeiden.",
+        
+        // Muscles
+        "muscle.chest": "Brust",
+        "muscle.back": "Rücken",
+        "muscle.legs": "Beine",
+        "muscle.shoulders": "Schultern",
+        "muscle.biceps": "Bizeps",
+        "muscle.triceps": "Trizeps",
+        "muscle.abs": "Bauch",
+        "muscle.calves": "Waden",
+        "muscle.forearms": "Unterarme",
+        "muscle.traps": "Nacken",
+        "muscle.unknown": "Unbekannt",
+        
+        "muscle.glutes": "Gesäß",
+        "muscle.fullbody": "Ganzkörper",
+        "muscle.cardio": "Ausdauer",
+        "muscle.lowerback": "Unterer Rücken",
+        "muscle.posteriorchain": "Hintere Kette",
+        "muscle.grip": "Griffkraft",
+        "muscle.adductors": "Adduktoren",
+        "muscle.quads": "Quadrizeps",
+        "muscle.hamstrings": "Oberschenkelrückseite",
+        "muscle.lats": "Latissimus",
+        "muscle.obliques": "Seitliche Bauchmuskeln",
+        "muscle.erector_spinae": "Rückenstrecker",
+        "muscle.rhomboids": "Rautenmuskel",
+        "muscle.glutes_medius": "Mittlerer Gesäßmuskel",
+        "muscle.brachialis": "Armbeuger",
+        "muscle.heart": "Herz",
+        "muscle.deltoids": "Deltamuskel",
+        "muscle.core": "Rumpf",
+        "muscle.hip_flexors": "Hüftbeuger",
+        "muscle.rotator_cuff": "Rotatorenmanschette",
+        "muscle.arms": "Arme",
+        
+        // Add Metric Sheet
+        "addMetric.value": "Wert",
+        "addMetric.date": "Datum",
+        "addMetric.newEntry": "Neuer Eintrag",
+        "addMetric.invalidNumber": "Bitte gültige Zahl eingeben",
+        "addMetric.errorSave": "Speichern für diesen Typ nicht unterstützt.",
+        "addMetric.add": "hinzufügen",
+        
+        // Movo Score
+        "score.title": "MOVO SCORE",
+        "score.breakdown": "Zusammensetzung",
+        "score.recovery": "Erholung",
+        "score.load": "Belastung",
+        "score.sleep": "Schlaf",
+        "score.activity": "Aktivität",
+        "score.training": "Training",
+        
+        "score.detail.durationQuality": "Dauer & Qualität",
+        "score.detail.stepsMovement": "Schritte & Bewegung",
+        "score.detail.workouts": "Workouts",
+        "score.detail.stressRegeneration": "Stress & Regeneration",
+        "score.detail.baseline": "Basiswert",
+        
+        "score.detail.slept": "%.1fh geschlafen",
+        "score.detail.steps": "%d Schritte",
+        "score.detail.trainingDone": "Training absolviert",
+        "score.detail.noTraining": "Kein Training",
+        "score.loading": "Lade...",
+        "score.enterSleep": "Schlaf eintragen",
+        
+        "score.detail.description": "Dein Movo Score basiert auf deinen täglichen Aktivitäten, deinem Schlaf und deiner Erholung. Versuche alle Ringe zu füllen!",
+        "score.detail.navTitle": "Score Details",
+        
+        // BodyView Edit
+        "body.edit.title": "Bearbeiten",
+        "body.edit.done": "Fertig",
+        "body.edit.description": "Wähle die Metriken aus, die im Dashboard angezeigt werden sollen.",
+        
+        // Metric Details & Info
+        "body.detail.verlauf": "Verlauf",
+        "body.detail.trend": "Trend",
+        "body.detail.avg": "Ø 7 Tage",
+        "body.detail.max": "Max",
+        "body.detail.about": "Über",
+        "body.detail.understood": "Verstanden",
+        "body.detail.measuredAt": "Gemessen um:",
+        "body.detail.noData": "Keine Daten in diesem Zeitraum",
+        "body.detail.trend.stable": "Stabil",
+        "body.detail.trend.up": "Steigend",
+        "body.detail.trend.down": "Sinkend",
+        
+        "body.detail.info1": "Diese Metrik gibt Aufschluss über deine körperliche Verfassung.",
+        "body.detail.info2": "Die Werte werden aus deinen HealthKit-Daten oder manuellen Eingaben gesammelt.",
+        "body.detail.fitnessCalcTitle": "Berechnung Fitnessniveau:",
+        "body.detail.fitnessCalcDesc": "Dein Fitnessniveau (0-100 Pkt) berechnet sich aus deiner täglichen Aktivität (Schritte) und deinen absolvierten Trainings.",
+        
+        // Manual Sleep
+        "sleep.manual.title": "Schlaf eintragen",
+        "sleep.manual.desc": "Schlafdauer für heute nachtragen",
+        "sleep.manual.save": "Speichern",
+        "sleep.manual.cancel": "Abbrechen",
+        "sleep.manual.hours": "%.1f Std.",
+        
+        // Login Screen
+        "login.welcome": "Willkommen bei",
+        "login.tagline": "Trainingslog, Schritte & Challenges\nohne Schnickschnack.",
+        "login.feature.training": "Training",
+        "login.feature.steps": "Schritte",
+        "login.feature.analysis": "Analyse",
+        "login.apple.signin": "Mit Apple anmelden",
+        "login.google.continue": "Weiter mit Google",
+        "login.email.signin": "Mit E-Mail anmelden",
+        "login.back": "Zurück",
+        "login.link.account": "Account verknüpfen",
+        "login.signin": "Anmelden",
+        "login.email.placeholder": "E-Mail",
+        "login.password.placeholder": "Passwort",
+        "login.button.login": "Einloggen",
+        "login.create.account": "Konto erstellen",
+        "login.forgot.password": "Passwort vergessen?",
+        "login.error.email.required": "Bitte gib zuerst deine E-Mail ein.",
+        "login.error.presenter": "Konnte Präsentationscontroller nicht finden.",
+        "login.error.apple.failed": "Apple Login fehlgeschlagen. Bitte erneut versuchen.",
+        "login.password.reset.sent": "E-Mail zum Zurücksetzen wurde gesendet.",
+        
+        // Register Screen
+        "register.link.account": "Konto verknüpfen",
+        "register.create.account": "Konto erstellen",
+        "register.password.min": "Passwort (min. 6 Zeichen)",
+        "register.password.repeat": "Passwort wiederholen",
+        "register.accept.terms": "Ich akzeptiere die Nutzungsbedingungen",
+        "register.success.linked": "Konto verknüpft. Viel Spaß!",
+        "register.success.created": "Konto erstellt. Willkommen!",
+        "register.cancel": "Abbrechen",
+        
+        // Streaks
+        "streak.title": "Streak",
+        "streak.days": "Tage",
+        "streak.weeks": "Wochen",
+        "streak.current": "Aktuelle Streak",
+        "streak.best": "Beste Streak",
+        "streak.share": "Streak teilen",
+        "streak.keepGoing": "Weiter so!",
+        
+        // Common
+        "common.done": "Fertig",
+        "common.save": "Speichern",
+        "common.delete": "Löschen",
+        "common.back": "Zurück",
+        "common.days": "Tage",
+        "common.weeks": "Wochen",
+        "time.daysAgo": "Vor %d Tagen",
+        
+        // Screen 1: Welcome + Name
+        "onboarding.welcome": "Willkommen bei",
+        "onboarding.welcome.subtitle": "Lass uns deine Fitnessreise personalisieren",
+        "onboarding.welcome.message": "Dein persönlicher Fitness-Tracker",
+        "onboarding.welcome.description": "Erreiche deine Ziele mit personalisierten Trainingsplänen und detaillierten Statistiken",
+        "onboarding.name.question": "Wie sollen wir dich nennen?",
+        "onboarding.name.placeholder": "Dein Name",
+        "onboarding.letsgo": "Los geht's!",
+        
+        // Screen 2: Fitness Goals
+        "onboarding.goals.title": "Was sind deine Fitnessziele?",
+        "onboarding.goals.subtitle": "Wähle alle aus, die auf dich zutreffen",
+        "onboarding.goal.loseWeight": "Abnehmen",
+        "onboarding.goal.loseWeight.desc": "Körperfett reduzieren und schlanker werden",
+        "onboarding.goal.buildMuscle": "Muskeln aufbauen",
+        "onboarding.goal.buildMuscle.desc": "Muskelmasse und Definition steigern",
+        "onboarding.goal.stayFit": "Fit bleiben",
+        "onboarding.goal.stayFit.desc": "Gesundheit und Fitness erhalten",
+        "onboarding.goal.gainStrength": "Kraft steigern",
+        "onboarding.goal.gainStrength.desc": "Maximalkraft und Power verbessern",
+        "onboarding.goal.improveEndurance": "Ausdauer verbessern",
+        "onboarding.goal.improveEndurance.desc": "Kondition und Durchhaltevermögen steigern",
+        
+        // Screen 3: Experience Level
+        "onboarding.level.title": "Wie ist dein Trainingslevel?",
+        "onboarding.level.subtitle": "Hilft uns, passende Empfehlungen zu geben",
+        "onboarding.level.beginner": "Anfänger",
+        "onboarding.level.beginner.desc": "Neu im Fitness oder nach längerer Pause",
+        "onboarding.level.intermediate": "Fortgeschritten",
+        "onboarding.level.intermediate.desc": "Trainiere regelmäßig seit 6+ Monaten",
+        "onboarding.level.advanced": "Profi",
+        "onboarding.level.advanced.desc": "Erfahrener Athlet mit konstantem Training",
+        
+        // Screen 4: Training Frequency
+        "onboarding.frequency.title": "Lass uns deine Ziele erreichen!",
+        "onboarding.frequency.subtitle": "Wie oft wirst du pro Woche trainieren?",
+        "onboarding.frequency.perweek": "pro Woche",
+        "onboarding.frequency.times": "%dx pro Woche",
+        
+        // Screen 5: Personal Questions
+        "onboarding.personal.title": "Noch ein paar Details",
+        "onboarding.personal.subtitle": "Für bessere Empfehlungen (optional)",
+        "onboarding.personal.age": "Alter",
+        "onboarding.personal.gender": "Geschlecht",
+        "onboarding.personal.equipment": "Verfügbares Equipment",
+        "onboarding.personal.location": "Trainingsort",
+        "onboarding.gender.male": "Männlich",
+        "onboarding.gender.female": "Weiblich",
+        "onboarding.gender.other": "Divers",
+        "onboarding.gender.preferNotToSay": "Keine Angabe",
+        "onboarding.equipment.fullGym": "Fitnessstudio",
+        "onboarding.equipment.dumbbells": "Kurzhanteln",
+        "onboarding.equipment.barbell": "Langhantel",
+        "onboarding.equipment.kettlebell": "Kettlebell",
+        "onboarding.equipment.resistanceBands": "Widerstandsbänder",
+        "onboarding.equipment.bodyweight": "Nur Körpergewicht",
+        "onboarding.location.gym": "Fitnessstudio",
+        "onboarding.location.home": "Zuhause",
+        "onboarding.location.outdoor": "Draußen",
+        
+        // Screen 6: Muscle Focus
+        "onboarding.focus.title": "Welche Bereiche möchtest du trainieren?",
+        "onboarding.focus.subtitle": "Tippe auf die Muskelgruppen",
+        "onboarding.focus.fullbody": "Ganzkörper-Training",
+        "onboarding.focus.selected": "%d Muskelgruppen ausgewählt",
+        
+        // Screen 7: Ranked System Showcase
+        "onboarding.ranked.title": "Werde stärker",
+        "onboarding.ranked.subtitle": "Verfolge deinen Fortschritt für jede Muskelgruppe",
+        "onboarding.ranked.start": "Start",
+        "onboarding.ranked.now": "Jetzt",
+        "onboarding.ranked.progress": "12 Monate Fortschritt",
+        "onboarding.ranked.feature1": "Individuelle Ranks für jede Muskelgruppe",
+        "onboarding.ranked.feature2": "Verfolge deine Entwicklung über Zeit",
+        "onboarding.ranked.feature3": "Schalte Badges und Levels frei",
+        
+        
+        "templates.empty.createButton" : "Vorlage erstellen",
+        // Screen 8: Apple Watch Showcase
+        "onboarding.watch.title": "Trainiere smarter mit Apple Watch",
+        "onboarding.watch.subtitle": "Perfekte Integration für dein Handgelenk",
+        "onboarding.watch.sets": "Sätze",
+        "onboarding.watch.kg": "kg",
+        "onboarding.watch.time": "Zeit",
+        "onboarding.watch.feature1": "Echtzeit-Herzfrequenz-Tracking",
+        "onboarding.watch.feature2": "Live Activities auf Dynamic Island",
+        "onboarding.watch.feature3": "Nahtlose Synchronisation zwischen Geräten",
+        
+        // Screen 9: Templates Showcase
+        "onboarding.templates.title": "Erstelle deine erste Trainingsvorlage",
+        "onboarding.templates.subtitle": "Spare Zeit mit vorgefertigten Workouts",
+        "onboarding.templates.create": "Vorlagenname",
+        "onboarding.templates.name": "z.B. Oberkörper-Tag",
+        "onboarding.templates.exercises": "Übungen auswählen",
+        "onboarding.templates.selected": "%d Übungen ausgewählt",
+        "onboarding.templates.feature1": "Schnellstart für deine Lieblingsworkouts",
+        "onboarding.templates.feature2": "Unbegrenzt eigene Vorlagen erstellen",
+        "onboarding.templates.feature3": "Teile Vorlagen mit Freunden",
+        
+        // Screen 10: Activity Window Showcase
+        "onboarding.activity.title": "Entdecke deine Trainingsmuster",
+        "onboarding.activity.subtitle": "Finde heraus, wann du am besten trainierst",
+        "onboarding.activity.heatmap": "Aktivitäts-Heatmap",
+        "onboarding.activity.feature1": "Erkenne deine besten Trainingszeiten",
+        "onboarding.activity.feature2": "Visualisiere trainierte Muskelgruppen",
+        "onboarding.activity.feature3": "Detaillierte Statistiken und Insights",
+        
+        // Screen 11: Social Proof
+        "onboarding.social.badge": "7K+ 5★ Bewertungen",
+        "onboarding.social.mission": "Unsere Mission ist es, 10 Millionen Menschen zu helfen, ihre Fitnessziele zu erreichen",
+        "onboarding.social.review1.title": "Diese App ist fantastisch",
+        "onboarding.social.review1.text": "Diese App ist wirklich unterschätzt. Es gibt keine andere App, die das Workout-Logging so gut macht!",
+        "onboarding.social.review2.title": "Bester Workout-Tracker",
+        "onboarding.social.review2.text": "Ich nutze Movo seit 3 Monaten. Habe Jefit, Strong und Hevy ausprobiert, aber Movo ist der klare Gewinner!",
+        
+        // Screen 12: Hard Paywall
+        "onboarding.paywall.title": "Gestalte deine Testphase",
+        "onboarding.paywall.subtitle": "7 Tage kostenlos, dann entscheidest du",
+        "onboarding.paywall.timeline.title": "Das erwartet dich in deiner Testwoche:",
+        "onboarding.paywall.timeline.today": "Heute – Alle Features freischalten",
+        "onboarding.paywall.timeline.today.desc": "Sofortiger Zugriff auf alle Pro-Features",
+        "onboarding.paywall.timeline.day5": "Tag 5 – Erinnerung",
+        "onboarding.paywall.timeline.day5.desc": "Wir erinnern dich rechtzeitig vor Ablauf",
+        "onboarding.paywall.timeline.day7": "Tag 7 – Deine Entscheidung",
+        "onboarding.paywall.timeline.day7.desc": "Du wirst nur belastet, wenn du nicht kündigst",
+        "onboarding.paywall.recommended": "EMPFOHLEN",
+        "onboarding.paywall.onetime": "EINMALIG",
+        "onboarding.paywall.peryear": "pro Jahr",
+        "onboarding.paywall.permonth": "pro Monat",
+        "onboarding.paywall.lifetime": "einmalig",
+        "onboarding.paywall.trial.desc": "7 Tage kostenlos, dann %@/Jahr",
+        "onboarding.paywall.yearly.desc": "Bestes Preis-Leistungs-Verhältnis",
+        "onboarding.paywall.monthly.desc": "Maximale Flexibilität, jederzeit kündbar",
+        "onboarding.paywall.lifetime.desc": "Einmal zahlen, für immer nutzen",
+        "onboarding.paywall.disclaimer": "Einmaliger In-App-Kauf oder Abo. Kündigung jederzeit möglich. Preise können variieren.",
+        "onboarding.paywall.cta.trial": "7-Tage-Trial starten",
+        "onboarding.paywall.cta.yearly": "Jahresabo abschließen",
+        "onboarding.paywall.cta.monthly": "Monatsabo abschließen",
+        "onboarding.paywall.cta.lifetime": "Lifetime kaufen",
+        "onboarding.paywall.cancel": "Jederzeit kündbar • Kein Risiko",
+        
+        // Screen 13: Subscription Confirmation
+        "onboarding.confirm.title": "Starte deine Reise",
+        "onboarding.confirm.subtitle": "Bestätige deine Auswahl",
+        "onboarding.confirm.plan": "Gewählter Plan",
+        "onboarding.confirm.feature1": "Unbegrenzter Zugriff auf alle Features",
+        "onboarding.confirm.feature2": "Erweiterte Statistiken & PR-Tracking",
+        "onboarding.confirm.feature3": "Apple Watch Integration",
+        "onboarding.confirm.feature4": "Widgets & Live Activities",
+        "onboarding.confirm.feature5": "Muscle Ranking System",
+        "onboarding.confirm.starttrial": "7-Tage-Trial starten",
+        "onboarding.confirm.subscribe": "Jetzt abonnieren",
+        "onboarding.confirm.buy": "Jetzt kaufen",
+        "onboarding.confirm.secure": "Sichere Zahlung über Apple",
+        "onboarding.confirm.error": "Kauf fehlgeschlagen. Bitte versuche es erneut.",
+        "onboarding.plan.yearly": "Jahresabo",
+        "onboarding.plan.monthly": "Monatsabo",
+        "onboarding.plan.lifetime": "Lifetime",
+        
+        // Screen 14: Personal Setup
+        "onboarding.setup.title": "Personalisiere dein Erlebnis",
+        "onboarding.setup.subtitle": "Fast fertig, %@!",
+        "onboarding.setup.unit": "Gewichtseinheit",
+        "onboarding.setup.weight": "Aktuelles Gewicht",
+        "onboarding.setup.height": "Körpergröße",
+        "onboarding.setup.steps": "Tägliches Schrittziel",
+        
+        // Screen 15: Permissions
+        "onboarding.permissions.title": "Features aktivieren",
+        "onboarding.permissions.subtitle": "Erlaube Zugriff für das volle Movo-Erlebnis",
+        "onboarding.permissions.health": "Apple Health",
+        "onboarding.permissions.health.desc": "Synchronisiere Schritte, Kalorien, Workouts und mehr",
+        "onboarding.permissions.notifications": "Benachrichtigungen",
+        "onboarding.permissions.notifications.desc": "Erhalte Erinnerungen für Pausen-Timer und Streaks",
+        "onboarding.permissions.tap": "Tippe auf 'Weiter' um Berechtigungen zu erteilen",
+        
+        // Screen 16: Final
+        "onboarding.final.title": "Alles bereit, %@!",
+        "onboarding.final.subtitle": "Willkommen bei Movo.\\nLass uns gemeinsam Großes erreichen.",
+        "onboarding.final.goals": "Deine Ziele: %d ausgewählt",
+        "onboarding.final.frequency": "Trainingsfrequenz: %dx pro Woche",
+        "onboarding.final.plan.yearly": "Movo Pro (7-Tage-Trial)",
+        "onboarding.final.plan.monthly": "Movo Pro (Monatlich)",
+        "onboarding.final.plan.lifetime": "Movo Pro (Lifetime)",
+        "onboarding.final.motivation": "Lass uns gemeinsam Großes erreichen 💪",
+        
         // Workout & Flow
         "rest": "Pause",
         "round.of": "Runde %d von %d",
@@ -138,6 +551,12 @@ struct LocalizedStrings {
         "cloud.syncNow" : "Jetzt synchronisieren",
         "cloud.explainer" : "Tippe auf „Jetzt synchronisieren“, um Trainings und Einstellungen in der Cloud zu sichern oder auf andere Geräte zu übertragen.",
 
+        // Profile Redesign
+        "profile.stats.volume": "Last", // or Volumen
+        "profile.friends.add": "Freunde hinzufügen",
+        "settings.title.short": "Einstellungen", 
+        "profile.stats.minutes": "Min", // Suffix
+      
 
         // (Optionaler Alias, falls du dich mal vertippst)
         "skip.reset": "Pause überspringen",
@@ -187,18 +606,15 @@ struct LocalizedStrings {
         "reps": "Wiederholungen",
         "equipment": "Geräte",
         "warmup": "Aufwärmen",
-        "exercises": "Übungen",
         "cooldown": "Abkühlen",
         "training.units": "Trainingseinheiten",
         "duration": "Dauer",
         "calories": "Kalorien",
-        "privacy.public" : "Öffentlich",
         "focus": "Fokus",
         "start": "Starten",
         "level": "Level",
         "days": "Tage",                    // ⬅️ ergänzt
         "common.viewAll": "Alle ansehen",  // ⬅️ schon genutzt
-        "common.edit": "Bearbeiten",       // ⬅️ neu
         
         "time.mmss" : "%dmin %02ds",       // DE: "%dmin %02ds"
 
@@ -208,26 +624,277 @@ struct LocalizedStrings {
         "templates.empty.title": "Noch keine Vorlagen",
         "templates.empty.subtitle": "Tippe auf das ➕, um deine erste Vorlage zu erstellen.",
         "templates.empty.button": "Neue Vorlage erstellen",
-        "templates.section.default": "Standardvorlagen",
+        "templates.section.default": "Movo Vorlagen",
         "templates.section.custom": "Eigene Vorlagen",
         "templates.edit": "Bearbeiten",
+        "templates.share": "Teilen",
         "templates.delete": "Löschen",
+        "templates.pin": "Auf Home anpinnen",
+        "templates.unpin": "Vom Home lösen",
         "templates.exercisesCount": "%d Übungen",
+
+        "templates.favorites.title": "Favoriten auf Home",
+        "templates.favorites.desc": "Pinne deine wichtigsten Routinen an, um sie hier direkt zu starten.",
+        "templates.favorites.select": "Routinen auswählen",
         
+        // QR Code View
+        "template.qr.scan": "Scanne diesen Code mit deiner Kamera",
+        "template.qr.step1": "Öffne die Kamera-App",
+        "template.qr.step2": "Richte die Kamera auf den QR-Code",
+        "template.qr.step3": "Tippe auf 'In Movo öffnen'",
+        "template.qr.share": "QR-Code teilen",
+        "template.qr.sharetext": "Trainingsvorlage",
+        "template.qr.scaninstruction": "Scanne diesen QR-Code mit deiner Kamera, um die Vorlage in Movo zu importieren.",
+        "exercise": "Übung",
+        "exercises": "Übungen",
+
         // ---- Ergänzungen DE ----
 
-        // Challenges
-        "challenges.hint.longpress": "Lange drücken für Details & Optionen",
+        // Onboarding Phase 2 (Corrected)
+        "onboarding.easyLogging.title": "Starte ein Training",
+        "onboarding.easyLogging.subtitle": "Wähle eine Vorlage zum Starten.",
+        "onboarding.trackIt.title": "Tracke es",
+        "onboarding.trackIt.subtitle": "Logge Sätze. Konzentriere dich aufs Training.",
+        "onboarding.finished.title": "Überprüfen & Abschließen",
+        "onboarding.finished.subtitle": "Deine Reise geht weiter.",
+        
+        // Template Names
+        "Push": "Push",
+        "Pull": "Pull",
+        "Legs": "Beine",
+        "Upper Body": "Oberkörper",
+        "Lower Body": "Unterkörper",
+        "Full Body A": "Ganzkörper A",
+        "Full Body B": "Ganzkörper B",
+        "Cardio & Core": "Cardio & Core",
+        "Arms": "Arme",
+        
+        "training.addExercise.new": "Neue Übung hinzufügen \"%@\"",
+        
+        // Onboarding Phase 2 - Statistics & Permissions
+        "onboarding.statistics.title": "Visualisiere dein Wachstum",
+        "onboarding.statistics.subtitle": "Tiefe Einblicke in deine Trainingsgewohnheiten und Muskelerholung.",
+        "onboarding.statistics.activityStreak": "Aktivitäts-Serie",
+        "onboarding.notifications.title": "Bleib konsequent",
+        "onboarding.notifications.subtitle": "Erhalte Erinnerungen zum Trainieren und Fortschritt verfolgen.",
+        "onboarding.health.title": "Mit Health synchronisieren",
+        "onboarding.health.subtitle": "Importiere deine Workouts und Biometrie automatisch.",
+        
+        // Onboarding - Social Feed
+        "onboarding.social.title": "Werde Teil der Community",
+        "onboarding.social.subtitle": "Verbinde dich mit Freunden und teile deine Erfolge.",
+        "onboarding.social.you": "Du",
+        "onboarding.social.post1": "hat ein Training abgeschlossen",
+        "onboarding.social.post2": "hat Level 10 erreicht",
+        "onboarding.social.post3": "hat Movo gestartet",
+        "onboarding.social.post4": "hat einen PR geschafft",
+        "onboarding.social.post5": "hat eine Challenge beendet",
+        "onboarding.social.time1": "vor 2 Std.",
+        "onboarding.social.time2": "vor 4 Std.",
+        "onboarding.social.time3": "Gerade eben",
+        "onboarding.social.time4": "vor 5 Std.",
+        "onboarding.social.time5": "vor 1 Tag",
+        
+        // Onboarding - Reviews
+        "onboarding.reviews.title": "Unterstütze einen Solo-Entwickler",
+        "onboarding.reviews.subtitle": "Hi! Dein Feedback hilft uns, Movo jeden Tag ein Stückchen besser zu machen.",
+        
+        // Rest Timer
+        "rest.pause": "Pause",
+        "rest.minutes": "Minuten",
+        "rest.seconds": "Sekunden",
+        "rest.start": "Start",
+        "rest.resume": "Weiter",
+        "rest.reset": "Zurücksetzen",
+        "rest.cancel": "Abbrechen",
+        "rest.done": "Fertig",
+        
+        // Home - Resume Training
+        "home.resume.title": "Training fortsetzen?",
+        "home.resume.discard": "Verwerfen",
+        "home.resume.continue": "Fortsetzen",
+
+        // MARK: - New Exercises (Gym)
+
 
         // History
         "history.empty": "Noch keine Trainings – starte dein erstes Workout!",
 
+        // Friends & Social
+        "Friends": "Freunde",
+        "Requests": "Anfragen",
+        "Search": "Suche",
+        "Incoming": "Eingehend",
+        "Outgoing": "Gesendet",
+        "Suggested": "Vorschläge",
+        "Search Users": "Nutzer suchen...",
+        "common.close": "Schließen",
+        "common.edit": "Bearbeiten",
+        "No Friends": "Keine Freunde",
+        "Add friends via search": "Füge Freunde über die Suche hinzu.",
+        "No incoming requests": "Keine offenen Anfragen",
+        "exercise.hip_thrust_barbell.instr": "Oberen Rücken auf Bank, Hantel über Hüfte. Hüfte heben.",
+        "exercise.cable_crossover": "Cable Crossover",
+        "exercise.cable_crossover.instr": "Stehe mittig zwischen den Türmen. Ziehe die Griffe vor dem Körper zusammen.",
+        "exercise.pec_deck": "Pec Deck Machine",
+        "exercise.pec_deck.instr": "Setze dich mit geradem Rücken hin. Führe die Polster vor der Brust zusammen.",
+        "exercise.decline_bench_press": "Decline Bench Press",
+        "exercise.decline_bench_press.instr": "Lege dich auf die Negativbank. Drücke die Hantel nach oben.",
+        "exercise.tbar_row": "T-Bar Row",
+        "exercise.tbar_row.instr": "Stelle dich über die Hantel, Brust gestützt oder vorgebeugt. Ziehe das Gewicht zur Brust.",
+        "exercise.lat_pulldown_close": "Lat Pulldown (Close Grip)",
+        "exercise.lat_pulldown_close.instr": "Verwende den V-Griff. Ziehe zur Brust und lehne dich leicht zurück.",
+        "exercise.single_arm_row": "Single Arm Row",
+        "exercise.single_arm_row.instr": "Knie auf Bank. Ziehe die Hantel zur Hüfte.",
+        "exercise.back_extension": "Back Extension",
+        "exercise.back_extension.instr": "Hüfte auf dem Polster. Oberkörper absenken und wieder aufrichten.",
+        "exercise.hack_squat": "Hack Squat",
+        "exercise.hack_squat.instr": "Schultern unter die Polster. Tief beugen und wieder hochdrücken.",
+        "exercise.goblet_squat": "Goblet Squat",
+        "exercise.goblet_squat.instr": "Halte Gewicht vor der Brust. Tief beugen.",
+        "exercise.sumo_deadlift": "Sumo Deadlift",
+        "exercise.sumo_deadlift.instr": "Breiter Stand. Griff innerhalb der Knie. Heben.",
+        "exercise.seated_calf_raise": "Seated Calf Raise",
+        "exercise.seated_calf_raise.instr": "Sitzen, Polster auf Oberschenkel. Fersen anheben.",
+        "exercise.hip_abduction": "Hip Abduction Machine",
+        "exercise.hip_abduction.instr": "Drücke die Beine gegen den Widerstand nach außen.",
+        "exercise.hip_adduction": "Hip Adduction Machine",
+        "exercise.hip_adduction.instr": "Drücke die Beine gegen den Widerstand zusammen.",
+        "exercise.upright_row": "Upright Row",
+        "exercise.upright_row.instr": "Ziehe die Stange bis zur Brusthöhe, Ellbogen führen.",
+        "exercise.front_raise": "Front Raise",
+        "exercise.front_raise.instr": "Hebe die Hantel vor dem Körper bis auf Schulterhöhe.",
+        "exercise.reverse_fly_machine": "Reverse Fly (Machine)",
+        "exercise.reverse_fly_machine.instr": "Blick zur Maschine. Drücke die Griffe nach hinten außen.",
+        "exercise.preacher_curl": "Preacher Curl",
+        "exercise.preacher_curl.instr": "Arme über das Polster legen. Gewicht curlen.",
+        "exercise.concentration_curl": "Concentration Curl",
+        "exercise.concentration_curl.instr": "Sitzend, Ellbogen am Innenoberschenkel. Curlen.",
+        "exercise.triceps_extension_overhead": "Triceps Extension (Overhead)",
+        "exercise.triceps_extension_overhead.instr": "Hantel über Kopf halten. Hinter den Kopf absenken und strecken.",
+        "exercise.woodchopper": "Cable Woodchopper",
+        "exercise.woodchopper.instr": "Rotiere den Oberkörper und ziehe das Kabel diagonal.",
+        "exercise.russian_twist": "Russian Twist",
+        "exercise.russian_twist.instr": "Sitzend, zurücklehnen. Oberkörper von Seite zu Seite drehen.",
+        "exercise.ab_wheel": "Ab Wheel Rollout",
+        "exercise.ab_wheel.instr": "Knien. Rad nach vorne rollen, Spannung halten. Zurückrollen.",
+        "exercise.smith_squat": "Smith Machine Squat",
+        "exercise.smith_squat.instr": "Kniebeuge in der geführten Multipresse.",
+        "exercise.smith_bench": "Smith Machine Bench Press",
+        "exercise.smith_bench.instr": "Bankdrücken in der geführten Multipresse.",
+        "exercise.cable_curl": "Cable Curl",
+        "exercise.cable_curl.instr": "Curls am tiefen Block des Kabelzugs.",
+        "exercise.cable_lateral_raise": "Cable Lateral Raise",
+        "exercise.cable_lateral_raise.instr": "Griff vom tiefen Block seitlich anheben.",
+        "exercise.shrug_dumbbell": "Shrug (Dumbbell)",
+        "exercise.shrug_dumbbell.instr": "Schwere Hanteln halten. Schultern zu den Ohren ziehen.",
+        "exercise.wrist_curl": "Wrist Curl",
+        "exercise.wrist_curl.instr": "Unterarme auf Bank ablegen. Handgelenke beugen.",
+        "exercise.dead_bug": "Dead Bug",
+        "exercise.dead_bug.instr": "Rückenlage. Arm und gegenüberliegendes Bein absenken.",
+        "exercise.elliptical": "Elliptical",
+        "exercise.elliptical.instr": "Benutze den Crosstrainer.",
+        "exercise.stair_climber": "Stair Climber",
+        "exercise.stair_climber.instr": "Stufen steigen.",
+        "exercise.trap_bar_deadlift": "Trap Bar Deadlift",
+        "exercise.trap_bar_deadlift.instr": "In der Trap Bar stehen. In die Knie gehen und heben.",
+        "exercise.landmine_press": "Landmine Press",
+        "exercise.landmine_press.instr": "Drücke die verankerte Langhantel einarmig über Kopf.",
+        "exercise.box_jump": "Box Jump",
+        "exercise.box_jump.instr": "Springe auf die Box.",
+        "exercise.kettlebell_swing": "Kettlebell Swing",
+        "exercise.kettlebell_swing.instr": "Aus der Hüfte schwingen, Kettlebell bis auf Augenhöhe.",
+        "exercise.farmers_walk.instr": "Gehe mit schweren Gewichten in den Händen.",
+        "exercise.close_grip_bench.instr": "Bankdrücken mit schulterbreitem Griff.",
+        "exercise.side_plank.instr": "Seitlich auf Stützarm halten. Körper gerade.",
+        "exercise.good_morning.instr": "Hantel im Nacken. Oberkörper vorbeugen, Beine leicht gebeugt.",
+        "exercise.arnold_press_dumbbell": "Arnold Press (Kurzhanteln)",
+        "exercise.bench_press_barbell": "Bankdrücken (Langhantel)",
+        "exercise.incline_bench_press_barbell": "Schrägbankdrücken (Langhantel)",
+        "exercise.bench_press_dumbbell": "Bankdrücken (Kurzhanteln)",
+        "exercise.incline_bench_press_dumbbell": "Schrägbankdrücken (Kurzhanteln)",
+        "exercise.chest_fly_cable": "Fliegende (Kabelzug)",
+        "exercise.chest_press_machine": "Brustpresse (Maschine)",
+        "exercise.push_up": "Liegestütze",
+        "exercise.dip": "Dips",
+        "exercise.squat_barbell": "Kniebeugen (Langhantel)",
+        "exercise.front_squat_barbell": "Front-Kniebeugen (Langhantel)",
+        "exercise.leg_press": "Beinpresse",
+        "exercise.leg_extension": "Beinstrecker",
+        "exercise.leg_curl_lying": "Beinbeuger (Liegend)",
+        "exercise.deadlift_barbell": "Kreuzheben (Langhantel)",
+        "exercise.romanian_deadlift_dumbbell": "Rumänisches Kreuzheben (Kurzhanteln)",
+        "exercise.bulgarian_split_squat": "Bulgarische Split Kniebeugen",
+        "exercise.calf_raise_standing": "Wadenheben (Stehend)",
+        "exercise.pull_up": "Klimmzüge",
+        "exercise.lat_pulldown_cable": "Latzug (Kabel)",
+        "exercise.seated_row_cable": "Rudern sitzend (Kabel)",
+        "exercise.bent_over_row_barbell": "Langhantelrudern",
+        "exercise.face_pull": "Face Pulls",
+        "exercise.overhead_press_barbell": "Schulterdrücken (Langhantel)",
+        "exercise.shoulder_press_dumbbell": "Schulterdrücken (Kurzhantel)",
+        "exercise.lateral_raise_dumbbell": "Seitheben (Kurzhantel)",
+        "exercise.bicep_curl_barbell": "Bizeps Curls (Langhantel)",
+        "exercise.bicep_curl_dumbbell": "Bizeps Curls (Kurzhantel)",
+        "exercise.hammer_curl": "Hammer Curls",
+        "exercise.triceps_pushdown_cable": "Trizepsdrücken (Kabel)",
+        "exercise.skullcrusher_ez_bar": "Skullcrusher (SZ-Stange)",
+        "exercise.plank": "Unterarmstütz (Plank)",
+        "exercise.crunch": "Crunches",
+        "exercise.hanging_leg_raise": "Hängendes Beinheben",
+        "exercise.running_treadmill": "Laufen (Laufband)",
+        "exercise.cycling_indoor": "Radfahren (Indoor)",
+        "exercise.rowing_machine": "Rudermaschine",
+        "exercise.jump_rope": "Seilspringen",
+        "exercise.yoga": "Yoga",
+        "exercise.stretching": "Dehnen",
+        "exercise.hip_thrust_barbell": "Hip Thrust (Langhantel)",
 
+        "exercise.close_grip_bench": "Enges Bankdrücken",
+        "exercise.side_plank": "Seitstütz (Side Plank)",
+        "exercise.good_morning": "Good Mornings",
+        "exercise.farmers_walk": "Farmer's Walk",
+
+        "exercise.ab_crunch_machine": "Bauchpresse (Maschine)",
+        "exercise.ab_crunch_machine.instr": "Setze dich in die Maschine. Beuge den Oberkörper mit den Bauchmuskeln nach vorne.",
+
+
+        // Missing Translations (Audit Fix)
+        "exercise.instructions.shoulder_press_dumbbell": "Drücke die Kurzhanteln über Kopf.",
+        "exercise.instructions.bench_press_incline": "Bankdrücken auf der Schrägbank mit der Langhantel.",
+        "exercise.instructions.bench_press_incline_dumbbell": "Bankdrücken auf der Schrägbank mit Kurzhanteln.",
+        "exercise.instructions.chest_fly_cable": "Führe die Kabel vor der Brust zusammen.",
+        "exercise.instructions.dip": "Beuge und strecke die Arme am Barren.",
+        "exercise.instructions.front_squat": "Kniebeuge mit der Hantel vor der Brust.",
+        "exercise.instructions.leg_extension": "Strecke die Beine gegen den Widerstand.",
+        "exercise.instructions.leg_curl_lying": "Beuge die Beine im Liegen.",
+        "exercise.instructions.rdl_dumbbell": "Rumänisches Kreuzheben mit Kurzhanteln.",
+        "exercise.instructions.calf_raise_standing": "Wadenheben im Stehen.",
+        "exercise.instructions.lat_pulldown": "Ziehe die Stange zur Brust.",
+        "exercise.instructions.seated_row": "Rudern im Sitzen am Kabelzug.",
+        "exercise.instructions.face_pull": "Ziehe das Seil zum Gesicht.",
+        "exercise.instructions.lateral_raise": "Seitheben mit Kurzhanteln.",
+        "exercise.instructions.hammer_curl": "Curls mit Hammergriff.",
+        "exercise.instructions.triceps_pushdown": "Drücke das Kabel nach unten.",
+        "exercise.instructions.skullcrusher": "Trizepsstrecken im Liegen (Stirndrücken).",
+        "exercise.instructions.plank": "Halte die Unterarmstütz-Position.",
+        "exercise.instructions.crunch": "Crunches für die Bauchmuskeln.",
+        "exercise.instructions.leg_raise": "Beinheben hängend oder liegend.",
+        "exercise.instructions.cycling_indoor": "Fahre auf dem Ergometer.",
+        "exercise.instructions.jump_rope": "Springseil springen.",
+        "exercise.instructions.yoga": "Führe Yoga-Posen aus.",
+        "exercise.instructions.stretching": "Dehne die Muskeln.",
+        "exercise.instructions.triceps_dip_machine": "Drücke die Griffe der Trizepsmaschine nach unten.",
         
         "paywall.h1": "Training. Einfach. Jeden Tag.",
            "paywall.h2": "„Wir sind in der Beta – alle Pro-Features sind aktuell kostenlos.",
            "paywall.bullet.plan": "Personalisierte Pläne & Empfehlungen",
            "paywall.bullet.stats": "Erweiterte Statistiken & PR-Verlauf",
+        
+        "premium.active.title": "Movo Premium Aktiv",
+        "premium.manage": "Verwalten",
+        "premium.upgrade.title": "Upgrade auf Pro",
+        "premium.upgrade.desc": "Nutze das volle Potenzial",
            "paywall.bullet.motivation": "Motivation durch Ziele & Badges",
 
            "paywall.timeline.title": "Das erwartet dich in deiner Testwoche:",
@@ -265,6 +932,7 @@ struct LocalizedStrings {
            "paywall.plan.beta.price": "0,00 €",
            "paywall.plan.badge.best": "BESTES ANGEBOT",
            "paywall.plan.badge.beta": "BETA",
+        
 
            "paywall.disclaimer": "Einmaliger In-App-Kauf oder Abo. Kündigung jederzeit möglich. Preise können variieren.",
            "paywall.cta": "Kostenlos starten",
@@ -407,6 +1075,10 @@ struct LocalizedStrings {
         "settings.logout": "Abmelden",
         "settings.about": "Über",
         "settings.version": "Version",
+        "settings.units.metric": "Metrisch",
+        "settings.units.imperial": "Imperial",
+        "settings.goals.trainingDays": "Trainingstage",
+        "settings.goals.daysPerWeek": "%dx/Woche",
 
         // Training
         "training.title.placeholder": "Titel eingeben …",
@@ -414,6 +1086,7 @@ struct LocalizedStrings {
         "training.addExerciseNav": "Übung hinzufügen",
         "training.cancel": "Abbrechen",
         "training.save": "Speichern",
+        "start.training": "Training starten",
         "training.completeAll": "Abschließen",
         "training.resetAll": "Zurücksetzen",
         "training.addExercise": "Übung hinzufügen",
@@ -563,8 +1236,7 @@ struct LocalizedStrings {
 
         "settings.aboutApp.title" : "Über die App",
         "settings.aboutApp.subtitle" : "Was sie dir bringt",
-        "settings.support.title" : "Support",
-        "settings.support.subtitle" : "Schnelle Hilfe per E-Mail",
+       
 
         "alert.logout.message" : "Möchtest du dich wirklich abmelden?",
 
@@ -2075,7 +2747,7 @@ struct LocalizedStrings {
         "howto.childs_pose.skalierung_varianten.3" : "Schwerer: aktive Endrange oder Contract-Relax.",
 
         
-        "home.training.inProgress.prefix" : "Training läuft",
+        "home.training.inProgress.prefix" : "Aktives Training",
           "startMenu.title" : "Neues Training starten",
           "startMenu.strength.title" : "Krafttraining",
           "startMenu.strength.subtitle" : "Sätze, Gewichte & Pausen",
@@ -2234,7 +2906,6 @@ struct LocalizedStrings {
         "exercises.search" : "Übungen durchsuchen",
         "exercises.addNew" : "Neue Übung hinzufügen",
         "search.clear" : "Suche löschen",
-        "common.ok" : "OK",
         "common.cancel" : "Abbrechen",
         "common.send" : "Senden",
     
@@ -2586,8 +3257,7 @@ struct LocalizedStrings {
         "tpl.streak.5.title": "5-Tage-Streak",
         "tpl.streak.5.desc": "Trainiere 5 Tage hintereinander.",
 
-        "statistics.musclemap.title" : "Trainierte Bereiche",
-        "statistics.musclemap.thisweek" : "Diese Woche",
+
         "statistics.musclemap.title.thisweek.format" : "%@ · %@",
         "statistics.musclemap.legend.trained" : "trainiert",
 
@@ -2634,8 +3304,6 @@ struct LocalizedStrings {
         "sleep.quality.poor": "Schlecht",
 
         
-        "settings.account.delete" : "Konto löschen",
-        "settings.account.delete.confirm" : "Endgültig löschen",
         "settings.account.delete.message" : "Das löscht dein Profil, Trainingsdaten und das Login-Konto irreversibel.",
         "settings.account.delete.failed" : "Löschen fehlgeschlagen",
         "settings.account.delete.progress" : "Konto wird gelöscht …",
@@ -2651,21 +3319,628 @@ struct LocalizedStrings {
         "dashboard.goalSettings.weeklyWorkouts" : "Workouts pro Woche",
         "dashboard.goalSettings.weeklyWorkouts.value" : "%d/Woche",
         "dashboard.goalSettings.weight" : "Gewichtsziel",
+        "rank.0": "Holz",
+        "rank.1": "Bronze",
+        "rank.2": "Gold",
+        "rank.3": "Platin",
+        "rank.4": "Diamant",
+        "rank.5": "Champion",
+        "rank.6": "Titan",
+        "rank.7": "Olymp",
 
+        // Legend / Statistics texts
+        "statistics.level.yours": "Dein Level",
+        "statistics.compare": "Vergleichen",
+        "statistics.compare.hide": "Vergleich ausblenden",
+        "statistics.compare.start": "Start",
+        "statistics.compare.now": "Jetzt",
+
+        "statistics.legend.title": "Legende",
+        "statistics.legend.info": "Die farbigen Bereiche zeigen, welche Muskelgruppen du wie oft trainiert hast.",
+        "statistics.legend.close": "Schließen",
+        "statistics.rank.start": "Start",
+        "statistics.rank.threshold": "ab %d Punkten",
+
+        // Muscle regions
+        "muscle.region.chest": "Brust",
+        "muscle.region.shoulders": "Schultern",
+        "muscle.region.biceps": "Bizeps",
+        "muscle.region.triceps": "Trizeps",
+        "muscle.region.lats": "Lat",
+        "muscle.region.abs": "Bauch",
+        "muscle.region.quads": "Quadrizeps",
+        "muscle.region.hamstrings": "Beinbeuger",
+        "muscle.region.glutes": "Gesäß",
+        "muscle.region.calves": "Waden",
+        "muscle.region.calvesBack": "Waden (hinten)",
+        "muscle.region.forearms": "Unterarme",
+        "muscle.region.traps": "Nacken",
+        "muscle.region.lowerBack": "Unterer Rücken",
+
+        // Home – next rank card
+        "home.nextLevel": "Nächstes Level",
+        "home.until": "bis",
+        "home.training.singular": "Training",
+        "home.training.plural": "Trainings",
+        // ➜ Add to LocalizedStrings.de
+        "tab.training"  : "Training",
+        "tab.exercises" : "Übungen",
+        "tab.challenges": "Challenges",
+        "tab.history"   : "Verlauf",
+        "tab.stats"     : "Statistik",
+
+        // Common
+        "common.more" : "Mehr",
+        "common.less" : "Weniger",
+
+        // Statistics: Locked messages
+        "statistics.locked.duration"        : "Mit Movo Pro siehst du hier deine Trainingsdauer pro Tag.",
+        "statistics.locked.workoutsPerWeek" : "Mit Movo Pro siehst du, wie viele Workouts du pro Woche schaffst.",
+        "statistics.locked.topExercises"    : "Mit Movo Pro siehst du deine Top-Übungen und ihr Gesamtvolumen.",
+        "statistics.locked.exerciseStats"   : "Wähle eine Übung und sieh alle Details mit Movo Pro.",
+
+        // Statistics: Premium Teaser
+        "statistics.premium.title"           : "Premium-Statistiken",
+        "statistics.premium.subtitle"        : "Beta: Alle Pro-Features sind aktuell kostenlos.",
+        "statistics.premium.feature.charts"  : "Erweiterte Diagramme & Trends",
+        "statistics.premium.feature.records" : "Bestes Training & Rekorde",
+        "statistics.premium.feature.duration": "Dauer, Volumen, Top-Übungen",
+        "statistics.premium.feature.widgets" : "Widgets auf dem Homescreen",
+        "statistics.premium.cta"             : "Kostenlos freischalten",
+
+        // Paywall / Toolbar
+        "paywall.openPremium" : "Premium öffnen",
+
+        // MuscleMapSummary
+        "statistics.musclemap.title": "Muskelkarte",
         "sleep.unit.hours" : "Stunden ",
-        "sleep.noData.short" : "Keine Daten"
-
-
-
-
-
+        "sleep.noData.short" : "Keine Daten",
+        "statistics.musclemap.current" : "Diese Woche",
+        "statistics.musclemap.previous" : "Letzte Woche",
+        "statistics.musclemap.last7.prevWeek" : "Letzte 7 Tage (letzte Woche)",
+        "statistics.musclemap.thisweek" : "Letzte 7 Tage (diese Woche)",
+        
+        // Settings - Account
+        "settings.account.changePassword": "Passwort ändern",
+        "settings.account.resetPassword": "Passwort zurücksetzen",
+        "settings.account.delete": "Konto löschen",
+        "settings.account.delete.confirm": "Dauerhaft löschen",
+        "settings.account.delete.warning": "Diese Aktion kann nicht rückgängig gemacht werden. Alle deine Daten werden dauerhaft gelöscht.",
+        "settings.account.currentPassword": "Aktuelles Passwort",
+        "settings.account.newPassword": "Neues Passwort",
+        "settings.account.confirmPassword": "Passwort bestätigen",
+        "settings.account.passwordMismatch": "Passwörter stimmen nicht überein",
+        "settings.account.email": "E-Mail",
+        "settings.account.resetPassword.info": "Gib deine E-Mail-Adresse ein, um einen Link zum Zurücksetzen deines Passworts zu erhalten.",
+        "settings.account.sendResetLink": "Link senden",
+        "settings.account.resetPassword.sent": "Ein Link zum Zurücksetzen wurde an deine E-Mail gesendet.",
+        
+        // Settings - Legal
+        "settings.legal.privacy": "Datenschutz",
+        "settings.legal.imprint": "Impressum",
+        "settings.legal.terms": "AGB",
+        "settings.legal.support": "Support",
+        
+        // Settings - Support
+        "settings.support.title": "Support kontaktieren",
+        "settings.support.subtitle": "Schreib uns eine E-Mail und wir helfen dir gerne weiter.",
+        "settings.support.sendEmail": "E-Mail senden",
+        
+        // Common
+        "common.success": "Erfolg",
+        "common.error": "Fehler",
+        "common.ok": "OK",
+        
+        // Profile Stats
+        "profile.stats.time": "Zeit",
+        "profile.stats.workouts": "Workouts",
+        "profile.weekOverview": "Wochenübersicht",
+        "profile.levelProgress": "Level-Fortschritt",
+        
+        
     ]
 
     static let en: [String: String] = [
+        "tab.feed": "Plan", // ADDED
+        "tab.body": "Body", // NEW
+        "body.muscle_map.title": "Muscle Level", // ADDED
+        "body.title": "Body Status",
+        "body.metrics.restingHR": "Resting HR",
+        "body.metrics.vo2": "VO₂ Max",
+        "body.metrics.respRate": "Respiratory Rate",
+        "body.metrics.spo2": "Blood Oxygen",
+        "body.metrics.wristTemp": "Wrist Temp",
+        "body.recovery.title": "Recovery Zone",
+        "body.recovery.muscleStatus": "Muscle Status",
+        "body.status.recovered": "Recovered",
+        "body.status.recovering": "Recovering",
+        "body.status.hours": "h",
         
+        // BodyView Metrics
+        "body.metric.weight": "Weight",
+        "body.metric.bmi": "BMI",
+        "body.metric.hr": "Resting HR",
+        "body.metric.fat": "Body Fat",
+        "body.metric.leanMass": "Lean Mass",
+        "body.metric.vo2": "VO₂ Max",
+        "body.metric.resp": "Resp. Rate",
+        "body.metric.spo2": "SpO₂",
+        "body.metric.temp": "Wrist Temp",
+        "body.metric.fitness": "Fitness Level",
         
-        "sleep.noData.short" : "No data",
+        // BodyView Score
+        "body.score.excellent": "Excellent",
+        "body.score.strong": "Strong",
+        "body.score.good": "Good",
+        "body.score.recovery_needed": "Recovery Needed",
+        "body.score.optimal": "Optimal",
+        "body.score.okay": "Okay",
+        "body.score.low": "Low",
+        
+        // BodyView Sleep
+        "body.sleep.title": "SLEEP",
+        "body.sleep.tip": "Consistency is key. Try to go to bed at the same time every day.",
+        
+        "premium.active.title": "Movo Premium Active",
+        "premium.manage": "Manage",
+        "premium.upgrade.title": "Upgrade to Pro",
+        "premium.upgrade.desc": "Unlock full potential",
+        
+        // BodyView Load
+        "body.load.high": "High",
+        "body.load.medium": "Medium",
+        "body.load.low": "Low",
+        
+         // BodyView Status
+        "body.status.underweight": "Underweight",
+        "body.status.normal": "Normal Weight",
+        "body.status.overweight": "Overweight",
+        "body.status.obese": "Obese",
+        
+        // Common
+        "common.today": "Today",
+        "common.yesterday": "Yesterday",
+        "common.last": "Last",
+        "common.first_measurement": "First Measurement",
+        
+        // MARK: - Enhanced Onboarding Strings
+        // BodyView Recovery
+        "body.recovery.info": "Tap list for details",
+        "body.recovery.noData": "No training data found.",
+        "body.recovery.status.recovering": "Recovering",
+        "body.recovery.status.good": "Good",
+        "body.recovery.status.ready": "Ready",
+        "body.recovery.status.peak": "Peak",
+        "body.recovery.status.idle": "Train",
+        
+        "body.recovery.progress": "Recovery",
+        "body.recovery.lastTraining": "Last Training",
+        "body.recovery.statusLabel": "Status",
+        "body.recovery.infoTitle": "Information",
+        
+        "body.recovery.desc.recovering": "This muscle was recently heavily used. Give it time to recover so it can grow.",
+        "body.recovery.desc.good": "Recovery is underway. Light training is possible, but avoid intense load.",
+        "body.recovery.desc.ready": "The muscle is almost fully recovered. You can train it again, but listen to your body.",
+        "body.recovery.desc.peak": "Ideal time! The muscle is fully recovered and ready for max performance.",
+        "body.recovery.desc.idle": "It's been a while. A training stimulus would be optimal now to prevent strength loss.",
+        
+        // Muscles
+        "muscle.chest": "Chest",
+        "muscle.back": "Back",
+        "muscle.legs": "Legs",
+        "muscle.shoulders": "Shoulders",
+        "muscle.biceps": "Biceps",
+        "muscle.triceps": "Triceps",
+        "muscle.abs": "Abs",
+        "muscle.calves": "Calves",
+        "muscle.forearms": "Forearms",
+        "muscle.traps": "Traps",
+        "muscle.unknown": "Unknown",
+        
+        "muscle.glutes": "Glutes",
+        "muscle.fullbody": "Full Body",
+        "muscle.cardio": "Cardio",
+        "muscle.lowerback": "Lower Back",
+        "muscle.posteriorchain": "Posterior Chain",
+        "muscle.grip": "Grip",
+        "muscle.adductors": "Adductors",
+        "muscle.quads": "Quads",
+        "muscle.hamstrings": "Hamstrings",
+        "muscle.lats": "Lats",
+        "muscle.obliques": "Obliques",
+        "muscle.erector_spinae": "Erector Spinae",
+        "muscle.rhomboids": "Rhomboids",
+        "muscle.glutes_medius": "Glutes (Medius)",
+        "muscle.brachialis": "Brachialis",
+        "muscle.heart": "Heart",
+        "muscle.deltoids": "Deltoids",
+        "muscle.core": "Core",
+        "muscle.hip_flexors": "Hip Flexors",
+        "muscle.rotator_cuff": "Rotator Cuff",
+        "muscle.arms": "Arms",
+        
+        // Add Metric Sheet
+        "addMetric.value": "Value",
+        "addMetric.date": "Date",
+        "addMetric.newEntry": "New Entry",
+        "addMetric.invalidNumber": "Please enter a valid number",
+        "addMetric.errorSave": "Saving not supported for this type.",
+        "addMetric.add": "Add",
+        
+        // Movo Score
+        "score.title": "MOVO SCORE",
+        "score.breakdown": "Breakdown",
+        "score.recovery": "Recovery",
+        "score.load": "Load",
+        "score.sleep": "Sleep",
+        "score.activity": "Activity",
+        "score.training": "Training",
+        
+        "score.detail.durationQuality": "Duration & Quality",
+        "score.detail.stepsMovement": "Steps & Movement",
+        "score.detail.workouts": "Workouts",
+        "score.detail.stressRegeneration": "Stress & Regeneration",
+        "score.detail.baseline": "Baseline",
+        
+        "score.detail.slept": "%.1fh slept",
+        "score.detail.steps": "%d Steps",
+        "score.detail.trainingDone": "Training done",
+        "score.detail.noTraining": "No Training",
+        "score.loading": "Loading...",
+        "score.enterSleep": "Log Sleep",
+        
+        "score.detail.description": "Your Movo Score is based on your daily activity, sleep, and recovery. Try to fill all rings!",
+        "score.detail.navTitle": "Score Details",
+        
+        // BodyView Edit
+        "body.edit.title": "Edit",
+        "body.edit.done": "Done",
+        "body.edit.description": "Select metrics to display on the dashboard.",
+        
+        // Metric Details & Info
+        "body.detail.verlauf": "History",
+        "body.detail.trend": "Trend",
+        "body.detail.avg": "Ø 7 Days",
+        "body.detail.max": "Max",
+        "body.detail.about": "About",
+        "body.detail.understood": "Got it",
+        "body.detail.measuredAt": "Measured at:",
+        "body.detail.noData": "No data in this period",
+        "body.detail.trend.stable": "Stable",
+        "body.detail.trend.up": "Rising",
+        "body.detail.trend.down": "Falling",
+        
+        "body.detail.info1": "This metric provides insight into your physical condition.",
+        "body.detail.info2": "Values are collected from your HealthKit data or manual entries.",
+        "body.detail.fitnessCalcTitle": "Fitness Level Calculation:",
+        "body.detail.fitnessCalcDesc": "Your fitness level (0-100 pts) is calculated from your daily activity (steps) and completed workouts.",
+        
+        // Manual Sleep
+        "sleep.manual.title": "Log Sleep",
+        "sleep.manual.desc": "Log sleep duration for today",
+        "sleep.manual.save": "Save",
+        "sleep.manual.cancel": "Cancel",
+        "sleep.manual.hours": "%.1f hrs",
+        
+        // Login Screen (EN)
+        "login.welcome": "Welcome to",
+        "login.tagline": "Training log, steps & challenges\nwithout frills.",
+        "login.feature.training": "Training",
+        "login.feature.steps": "Steps",
+        "login.feature.analysis": "Analysis",
+        "login.apple.signin": "Sign in with Apple",
+        "login.google.continue": "Continue with Google",
+        "login.email.signin": "Sign in with email",
+        "login.back": "Back",
+        "login.link.account": "Link account",
+        "login.signin": "Sign in",
+        "login.email.placeholder": "Email",
+        "login.password.placeholder": "Password",
+        "login.button.login": "Log in",
+        "login.create.account": "Create account",
+        "login.forgot.password": "Forgot password?",
+        "login.error.email.required": "Please enter your email first.",
+        "login.error.presenter": "Could not find presentation controller.",
+        "login.error.apple.failed": "Apple login failed. Please try again.",
+        "login.password.reset.sent": "Password reset email sent.",
+        
+        // Register Screen (EN)
+        "register.link.account": "Link account",
+        "register.create.account": "Create account",
+        "register.password.min": "Password (min. 6 characters)",
+        "register.password.repeat": "Repeat password",
+        "register.accept.terms": "I accept the terms of service",
+        "register.success.linked": "Account linked. Have fun!",
+        "register.success.created": "Account created. Welcome!",
+        "register.cancel": "Cancel",
+        
+        // Streaks
+        "streak.title": "Streak",
+        "streak.days": "Days",
+        "streak.weeks": "Weeks",
+        "streak.current": "Current Streak",
+        "streak.best": "Best Streak",
+        "streak.share": "Share Streak",
+        "streak.keepGoing": "Keep it up!",
+        
+        // Common
+        "common.done": "Done",
+        "common.save": "Save",
+        "common.delete": "Delete",
+        "common.back": "Back",
+        "common.days": "Days",
+        "common.weeks": "Weeks",
+        "time.daysAgo": "%d days ago",
+        
 
+        // MARK: - Enhanced Onboarding Strings
+        
+        // Screen 1: Welcome + Name
+        "onboarding.welcome": "Welcome to",
+        "onboarding.welcome.subtitle": "Let's personalize your fitness journey",
+        "onboarding.welcome.message": "Your Personal Fitness Tracker",
+        "onboarding.welcome.description": "Achieve your goals with personalized training plans and detailed statistics",
+        "onboarding.name.question": "What should we call you?",
+        "onboarding.name.placeholder": "Your name",
+        "onboarding.letsgo": "Let's Go!",
+        
+        // Screen 2: Fitness Goals
+        "onboarding.goals.title": "What are your fitness goals?",
+        "onboarding.goals.subtitle": "Select all that apply",
+        "onboarding.goal.loseWeight": "Lose Weight",
+        "onboarding.goal.loseWeight.desc": "Reduce body fat and get leaner",
+        "onboarding.goal.buildMuscle": "Build Muscle",
+        "onboarding.goal.buildMuscle.desc": "Increase muscle mass and definition",
+        "onboarding.goal.stayFit": "Stay Fit",
+        "onboarding.goal.stayFit.desc": "Maintain health and fitness",
+        "onboarding.goal.gainStrength": "Gain Strength",
+        "onboarding.goal.gainStrength.desc": "Improve maximum strength and power",
+        "onboarding.goal.improveEndurance": "Improve Endurance",
+        "onboarding.goal.improveEndurance.desc": "Boost stamina and conditioning",
+        
+        // Screen 3: Experience Level
+        "onboarding.level.title": "What's your experience level?",
+        "onboarding.level.subtitle": "Helps us give you better recommendations",
+        "onboarding.level.beginner": "Beginner",
+        "onboarding.level.beginner.desc": "New to fitness or getting back into it",
+        "onboarding.level.intermediate": "Intermediate",
+        "onboarding.level.intermediate.desc": "Training regularly for 6+ months",
+        "onboarding.level.advanced": "Advanced",
+        "onboarding.level.advanced.desc": "Experienced athlete with consistent training",
+        
+        // Screen 4: Training Frequency
+        "onboarding.frequency.title": "Let's commit to achieving your goals!",
+        "onboarding.frequency.subtitle": "How many times per week will you train?",
+        "onboarding.frequency.perweek": "per week",
+        "onboarding.frequency.times": "%dx per week",
+        
+        // Screen 5: Personal Questions
+        "onboarding.personal.title": "A few more details",
+        "onboarding.personal.subtitle": "For better recommendations (optional)",
+        "onboarding.personal.age": "Age",
+        "onboarding.personal.gender": "Gender",
+        "onboarding.personal.equipment": "Available Equipment",
+        "onboarding.personal.location": "Training Location",
+        "onboarding.gender.male": "Male",
+        "onboarding.gender.female": "Female",
+        "onboarding.gender.other": "Other",
+        "onboarding.gender.preferNotToSay": "Prefer not to say",
+        "onboarding.equipment.fullGym": "Full Gym",
+        "onboarding.equipment.dumbbells": "Dumbbells",
+        "onboarding.equipment.barbell": "Barbell",
+        "onboarding.equipment.kettlebell": "Kettlebell",
+        "onboarding.equipment.resistanceBands": "Resistance Bands",
+        "onboarding.equipment.bodyweight": "Bodyweight Only",
+        "onboarding.location.gym": "Gym",
+        "onboarding.location.home": "Home",
+        "onboarding.location.outdoor": "Outdoor",
+        
+        // Screen 6: Muscle Focus
+        "onboarding.focus.title": "Which areas do you want to focus on?",
+        "onboarding.focus.subtitle": "Tap on muscle groups",
+        "onboarding.focus.fullbody": "Full Body Training",
+        "onboarding.focus.selected": "%d muscle groups selected",
+        
+        // Screen 7: Ranked System Showcase
+        "onboarding.ranked.title": "Get Stronger",
+        "onboarding.ranked.subtitle": "Track your progress for every muscle group",
+        "onboarding.ranked.start": "Start",
+        "onboarding.ranked.now": "Now",
+        "onboarding.ranked.progress": "12 months progress",
+        "onboarding.ranked.feature1": "Individual ranks for each muscle group",
+        "onboarding.ranked.feature2": "Track your development over time",
+        "onboarding.ranked.feature3": "Unlock badges and levels",
+        
+        // Screen 8: Apple Watch Showcase
+        "onboarding.watch.title": "Train Smarter with Apple Watch",
+        "onboarding.watch.subtitle": "Perfect integration for your wrist",
+        "onboarding.watch.sets": "Sets",
+        "onboarding.watch.kg": "kg",
+        "onboarding.watch.time": "Time",
+        "onboarding.watch.feature1": "Real-time heart rate tracking",
+        "onboarding.watch.feature2": "Live Activities on Dynamic Island",
+        "onboarding.watch.feature3": "Seamless sync across devices",
+        
+        // Screen 9: Templates Showcase
+        "onboarding.templates.title": "Create Your First Training Template",
+        "onboarding.templates.subtitle": "Save time with pre-made workouts",
+        "onboarding.templates.create": "Template Name",
+        "onboarding.templates.name": "e.g. Upper Body Day",
+        "onboarding.templates.exercises": "Select Exercises",
+        "onboarding.templates.selected": "%d exercises selected",
+        "onboarding.templates.feature1": "Quick start your favorite workouts",
+        "onboarding.templates.feature2": "Create unlimited custom templates",
+        "onboarding.templates.feature3": "Share templates with friends",
+        
+        // Screen 10: Activity Window Showcase
+        "onboarding.activity.title": "Discover Your Training Patterns",
+        "onboarding.activity.subtitle": "Find out when you train best",
+        "onboarding.activity.heatmap": "Activity Heatmap",
+        "onboarding.activity.feature1": "Identify your best training times",
+        "onboarding.activity.feature2": "Visualize trained muscle groups",
+        "onboarding.activity.feature3": "Detailed statistics and insights",
+        
+        // Screen 11: Social Proof
+        "onboarding.social.badge": "7K+ 5★ Reviews",
+        "onboarding.social.mission": "Our mission is to help 10 million people achieve their fitness goals",
+        "onboarding.social.review1.title": "This app is amazing",
+        "onboarding.social.review1.text": "This app is genuinely so underrated. There is no other app that does workout logging this well!",
+        "onboarding.social.review2.title": "Best workout tracker",
+        "onboarding.social.review2.text": "I've been using Movo for 3 months now. Tried Jefit, Strong and Hevy, but Movo is the clear winner!",
+        
+        // Screen 12: Hard Paywall
+        "onboarding.paywall.title": "Design Your Trial Experience",
+        "onboarding.paywall.subtitle": "7 days free, then you decide",
+        "onboarding.paywall.timeline.title": "What to expect in your trial week:",
+        "onboarding.paywall.timeline.today": "Today – Unlock All Features",
+        "onboarding.paywall.timeline.today.desc": "Immediate access to all Pro features",
+        "onboarding.paywall.timeline.day5": "Day 5 – Reminder",
+        "onboarding.paywall.timeline.day5.desc": "We'll remind you before trial ends",
+        "onboarding.paywall.timeline.day7": "Day 7 – Your Decision",
+        "onboarding.paywall.timeline.day7.desc": "You're only charged if you don't cancel",
+        "onboarding.paywall.recommended": "RECOMMENDED",
+        "onboarding.paywall.onetime": "ONE-TIME",
+        "onboarding.paywall.peryear": "per year",
+        "onboarding.paywall.permonth": "per month",
+        "onboarding.paywall.lifetime": "one-time",
+        "onboarding.paywall.trial.desc": "7 days free, then %@/year",
+        "onboarding.paywall.yearly.desc": "Best value for money",
+        "onboarding.paywall.monthly.desc": "Maximum flexibility, cancel anytime",
+        "onboarding.paywall.lifetime.desc": "Pay once, use forever",
+        "onboarding.paywall.disclaimer": "One-time purchase or subscription. Cancel anytime. Prices may vary.",
+        "onboarding.paywall.cta.trial": "Start 7-Day Trial",
+        "onboarding.paywall.cta.yearly": "Subscribe Yearly",
+        "onboarding.paywall.cta.monthly": "Subscribe Monthly",
+        "onboarding.paywall.cta.lifetime": "Buy Lifetime",
+        "onboarding.paywall.cancel": "Cancel anytime • No risk",
+        
+        // Screen 13: Subscription Confirmation
+        "onboarding.confirm.title": "Start Your Journey",
+        "onboarding.confirm.subtitle": "Confirm your selection",
+        "onboarding.confirm.plan": "Selected Plan",
+        "onboarding.confirm.feature1": "Unlimited access to all features",
+        "onboarding.confirm.feature2": "Advanced statistics & PR tracking",
+        "onboarding.confirm.feature3": "Apple Watch integration",
+        "onboarding.confirm.feature4": "Widgets & Live Activities",
+        "onboarding.confirm.feature5": "Muscle Ranking System",
+        "onboarding.confirm.starttrial": "Start 7-Day Trial",
+        "onboarding.confirm.subscribe": "Subscribe Now",
+        "onboarding.confirm.buy": "Buy Now",
+        "onboarding.confirm.secure": "Secure payment via Apple",
+        "onboarding.confirm.error": "Purchase failed. Please try again.",
+        "onboarding.plan.yearly": "Yearly",
+        "onboarding.plan.monthly": "Monthly",
+        "onboarding.plan.lifetime": "Lifetime",
+        
+        // Screen 14: Personal Setup
+        "onboarding.setup.title": "Personalize Your Experience",
+        "onboarding.setup.subtitle": "Almost done, %@!",
+        "onboarding.setup.unit": "Weight Unit",
+        "onboarding.setup.weight": "Current Weight",
+        "onboarding.setup.height": "Height",
+        "onboarding.setup.steps": "Daily Steps Goal",
+        
+        // Screen 15: Permissions
+        "onboarding.permissions.title": "Enable Features",
+        "onboarding.permissions.subtitle": "Grant access for the full Movo experience",
+        "onboarding.permissions.health": "Apple Health",
+        "onboarding.permissions.health.desc": "Sync steps, calories, workouts and more",
+        "onboarding.permissions.notifications": "Notifications",
+        "onboarding.permissions.notifications.desc": "Get reminders for rest timers and streaks",
+        "onboarding.permissions.tap": "Tap 'Continue' to grant permissions",
+        
+        // Screen 16: Final
+        "onboarding.final.title": "You're All Set, %@!",
+        "onboarding.final.subtitle": "Welcome to Movo.\\nLet's build something amazing together.",
+        "onboarding.final.goals": "Your Goals: %d selected",
+        "onboarding.final.frequency": "Training Frequency: %dx per week",
+        "onboarding.final.plan.yearly": "Movo Pro (7-Day Trial)",
+        "onboarding.final.plan.monthly": "Movo Pro (Monthly)",
+        "onboarding.final.plan.lifetime": "Movo Pro (Lifetime)",
+        "onboarding.final.motivation": "Let's build something amazing together 💪",
+        
+        
+
+        "tab.training"  : "Workouts",
+        "tab.exercises" : "Exercises",
+        "tab.challenges": "Challenges",
+        "tab.history"   : "History",
+        "tab.stats"     : "Stats",
+
+        // Common
+        "common.more" : "More",
+        "common.less" : "Less",
+        "start.training": "Start Training",
+
+        // Statistics: Locked messages
+        "statistics.locked.duration"        : "With Movo Pro you can see your training duration per day here.",
+        "statistics.locked.workoutsPerWeek" : "With Movo Pro you can see how many workouts you complete per week.",
+        "statistics.locked.topExercises"    : "With Movo Pro you can see your top exercises and total volume.",
+        "statistics.locked.exerciseStats"   : "Pick an exercise and see all details with Movo Pro.",
+
+        // Statistics: Premium Teaser
+        "statistics.premium.title"           : "Premium stats",
+        "statistics.premium.subtitle"        : "Beta: All Pro features are currently free.",
+        "statistics.premium.feature.charts"  : "Advanced charts & trends",
+        "statistics.premium.feature.records" : "Best session & records",
+        "statistics.premium.feature.duration": "Duration, volume, top exercises",
+        "statistics.premium.feature.widgets" : "Home screen widgets",
+        "statistics.premium.cta"             : "Unlock for free",
+
+        // Paywall / Toolbar
+        "paywall.openPremium" : "Open Premium",
+
+        "sleep.noData.short" : "No data",
+        "rank.0": "Wood",
+        "rank.1": "Bronze",
+        "rank.2": "Gold",
+        "rank.3": "Platinum",
+        "rank.4": "Diamond",
+        "rank.5": "Champion",
+        "rank.6": "Titan",
+        "rank.7": "Olympian",
+
+        // Legend / Statistics texts
+        "statistics.level.yours": "Your Level",
+        "statistics.compare": "Compare",
+        "statistics.compare.hide": "Hide Comparison",
+        "statistics.compare.start": "Start",
+        "statistics.compare.now": "Now",
+
+        "statistics.legend.title": "Legend",
+        "statistics.legend.info": "Colored areas show which muscle groups you trained and how often.",
+        "statistics.legend.close": "Close",
+        "statistics.rank.start": "Start",
+        "statistics.rank.threshold": "from %d points",
+
+        // Muscle regions
+        "muscle.region.chest": "Chest",
+        "muscle.region.shoulders": "Shoulders",
+        "muscle.region.biceps": "Biceps",
+        "muscle.region.triceps": "Triceps",
+        "muscle.region.lats": "Lats",
+        "muscle.region.abs": "Abs",
+        "muscle.region.quads": "Quads",
+        "muscle.region.hamstrings": "Hamstrings",
+        "muscle.region.glutes": "Glutes",
+        "muscle.region.calves": "Calves",
+        "muscle.region.calvesBack": "Calves (back)",
+        "muscle.region.forearms": "Forearms",
+        "muscle.region.traps": "Traps",
+        "muscle.region.lowerBack": "Lower Back",
+
+        // Home – next rank card
+        "home.nextLevel": "Next Level",
+        "home.until": "until",
+        "home.training.singular": "training",
+        "home.training.plural": "trainings",
+
+        // MuscleMapSummary
+      
+        
+        "statistics.musclemap.current" : "This Week",
+        "statistics.musclemap.previous" : "Last Week",
+        "statistics.musclemap.last7.prevWeek" : "Last 7 days (last week)",
 
 
         "dashboard.goalSettings.title" : "Goals",
@@ -2682,9 +3957,7 @@ struct LocalizedStrings {
         // Workout & Flow
         "howto.neck_rolls.note.1" : "Be very gentle; avoid pushing into end range or pain.",
         
-        "settings.account.delete" : "Delete Account",
         
-        "settings.account.delete.confirm" : "Delete permanently",
         "settings.account.delete.message" : "This will permanently remove your profile, training data, and the login account.",
         "settings.account.delete.failed" : "Deletion failed",
         "settings.account.delete.progress" : "Deleting account…",
@@ -2732,6 +4005,13 @@ struct LocalizedStrings {
         "lastTraining.empty.title": "No trainings",
         "lastTraining.empty.description": "Start your first training to track your progress!",
 
+        
+        "templates.empty.createButton" : "Create template",
+        "templates.favorites.title": "Favorites on Home",
+        "templates.favorites.desc": "Pin your most important routines to start them directly here.",
+        "templates.favorites.select": "Select Routines",
+        
+        
         "lastTraining.motivation.30": "Unstoppable champion! 🏆",
         "lastTraining.motivation.14": "You're on fire! 🔥",
         "lastTraining.motivation.7": "One week streak! ⭐",
@@ -2956,7 +4236,56 @@ struct LocalizedStrings {
           "howto.bulgarian_split_squats_ohne_erhoehung.execution.1" : "Sit hips back and down; knees track in line with toes.",
           "howto.bulgarian_split_squats_ohne_erhoehung.execution.2" : "Stand up by driving through mid-foot/heels; stay tall.",
 
-        "home.training.inProgress.prefix" : "training in Progress",
+        "home.training.inProgress.prefix" : "Active workout",
+        "exercise.arnold_press_dumbbell": "Arnold Press (Dumbbell)",
+        "exercise.bench_press_barbell": "Bench Press (Barbell)",
+        "exercise.incline_bench_press_barbell": "Incline Bench Press (Barbell)",
+        "exercise.bench_press_dumbbell": "Bench Press (Dumbbell)",
+        "exercise.incline_bench_press_dumbbell": "Incline Bench Press (Dumbbell)",
+        "exercise.chest_fly_cable": "Chest Fly (Cable)",
+        "exercise.chest_press_machine": "Chest Press (Machine)",
+        "exercise.push_up": "Push Up",
+        "exercise.dip": "Dip",
+        "exercise.squat_barbell": "Squat (Barbell)",
+        "exercise.front_squat_barbell": "Front Squat (Barbell)",
+        "exercise.leg_press": "Leg Press",
+        "exercise.leg_extension": "Leg Extension",
+        "exercise.leg_curl_lying": "Leg Curl (Lying)",
+        "exercise.deadlift_barbell": "Deadlift (Barbell)",
+        "exercise.romanian_deadlift_dumbbell": "Romanian Deadlift (Dumbbell)",
+        "exercise.bulgarian_split_squat": "Bulgarian Split Squat",
+        "exercise.calf_raise_standing": "Calf Raise (Standing)",
+        "exercise.pull_up": "Pull Up",
+        "exercise.lat_pulldown_cable": "Lat Pulldown (Cable)",
+        "exercise.seated_row_cable": "Seated Row (Cable)",
+        "exercise.bent_over_row_barbell": "Bent Over Row (Barbell)",
+        "exercise.face_pull": "Face Pull",
+        "exercise.overhead_press_barbell": "Overhead Press (Barbell)",
+        "exercise.shoulder_press_dumbbell": "Shoulder Press (Dumbbell)",
+        "exercise.lateral_raise_dumbbell": "Lateral Raise (Dumbbell)",
+        "exercise.bicep_curl_barbell": "Bicep Curl (Barbell)",
+        "exercise.bicep_curl_dumbbell": "Bicep Curl (Dumbbell)",
+        "exercise.hammer_curl": "Hammer Curl",
+        "exercise.triceps_pushdown_cable": "Triceps Pushdown (Cable)",
+        "exercise.skullcrusher_ez_bar": "Skullcrusher (Ez-Bar)",
+        "exercise.plank": "Plank",
+        "exercise.crunch": "Crunch",
+        "exercise.hanging_leg_raise": "Hanging Leg Raise",
+        "exercise.running_treadmill": "Running (Treadmill)",
+        "exercise.cycling_indoor": "Cycling (Indoor)",
+        "exercise.rowing_machine": "Rowing Machine",
+        "exercise.jump_rope": "Jump Rope",
+        "exercise.yoga": "Yoga",
+        "exercise.stretching": "Stretching",
+        "exercise.hip_thrust_barbell": "Hip Thrust (Barbell)",
+        
+        "exercise.close_grip_bench": "Close-Grip Bench Press",
+        "exercise.side_plank": "Side Plank",
+        "exercise.good_morning": "Good Morning",
+        "exercise.farmers_walk": "Farmer's Walk",
+
+        "exercise.ab_crunch_machine": "Ab Crunch Machine",
+        "exercise.ab_crunch_machine.instr": "Sit in machine, crunch forward using abdominals.",
 
         
         "weight.details.title": "Weight details",
@@ -3303,7 +4632,6 @@ struct LocalizedStrings {
 
         
     
-        "common.cancel": "Cancel",
 
         
           /* High Knees */
@@ -4616,7 +5944,6 @@ struct LocalizedStrings {
         "exercise.instructions.wrist_roller": "Roll a weight up using the wrists (wrist roller).",
         "exercise.instructions.zercher_squat_barbell": "Hold the barbell in the elbow creases and squat.",
 
-        "rest": "Rest",
         "round.of": "Round %d of %d",
         "exercise.tapForDetails": "Tap for details",
         "round.number": "Round %d/%d",
@@ -4791,7 +6118,6 @@ struct LocalizedStrings {
         "reps": "Reps",
         "equipment": "Equipment",
         "warmup": "Warm-up",
-        "exercises": "Exercises",
         "cooldown": "Cool-down",
         "training.units": "Training Units",
         "duration": "Duration",
@@ -4809,8 +6135,87 @@ struct LocalizedStrings {
         "templates.section.default": "Default Templates",
         "templates.section.custom": "My Templates",
         "templates.edit": "Edit",
+        "templates.share": "Share",
         "templates.delete": "Delete",
         "templates.exercisesCount": "%d exercises",
+        "templates.pin": "Pin to Home",
+        "templates.unpin": "Unpin from Home",
+        
+        // Onboarding Phase 2 (English)
+        "onboarding.easyLogging.title": "Start a Workout",
+        "onboarding.easyLogging.subtitle": "Choose a template to begin.",
+        "onboarding.trackIt.title": "Track it",
+        "onboarding.trackIt.subtitle": "Log sets. Focus on lifting.",
+        "onboarding.finished.title": "Review & Finish",
+        "onboarding.finished.subtitle": "Your journey continues.",
+        
+        // Template Names (English)
+        "Push": "Push",
+        "Pull": "Pull",
+        "Legs": "Legs",
+        "Upper Body": "Upper Body",
+        "Lower Body": "Lower Body",
+        "Full Body A": "Full Body A",
+        "Full Body B": "Full Body B",
+        "Cardio & Core": "Cardio & Core",
+        "Arms": "Arms",
+        
+        "training.addExercise.new": "Add new exercise \"%@\"",
+        "rest": "Rest",
+        
+        // Onboarding Phase 2 - Statistics & Permissions
+        "onboarding.statistics.title": "Visualize Your Growth",
+        "onboarding.statistics.subtitle": "Deep insights into your training habits and muscle recovery.",
+        "onboarding.statistics.activityStreak": "Activity Streak",
+        "onboarding.notifications.title": "Stay Consistent",
+        "onboarding.notifications.subtitle": "Get reminders to workout and track your progress.",
+        "onboarding.health.title": "Sync with Health",
+        "onboarding.health.subtitle": "Import your workouts and biometrics automatically.",
+        
+        // Onboarding - Social Feed
+        "onboarding.social.title": "Join the Community",
+        "onboarding.social.subtitle": "Connect with friends and share your journey.",
+        "onboarding.social.you": "You",
+        "onboarding.social.post1": "completed a workout",
+        "onboarding.social.post2": "reached Level 10",
+        "onboarding.social.post3": "started Movo",
+        "onboarding.social.post4": "hit a PR",
+        "onboarding.social.post5": "finished a challenge",
+        "onboarding.social.time1": "2h ago",
+        "onboarding.social.time2": "4h ago",
+        "onboarding.social.time3": "Just now",
+        "onboarding.social.time4": "5h ago",
+        "onboarding.social.time5": "1d ago",
+        
+        // Onboarding - Reviews
+        "onboarding.reviews.title": "Support a Solo Developer",
+        "onboarding.reviews.subtitle": "Hi! Your feedback helps us make Movo better every day.",
+        
+        // Rest Timer
+        "rest.pause": "Pause",
+        "rest.minutes": "Minutes",
+        "rest.seconds": "Seconds",
+        "rest.start": "Start",
+        "rest.resume": "Resume",
+        "rest.reset": "Reset",
+        "rest.cancel": "Cancel",
+        "rest.done": "Done",
+        
+        // Home - Resume Training
+        "home.resume.title": "Resume training?",
+        "home.resume.discard": "Discard",
+        "home.resume.continue": "Continue",
+        
+        // QR Code View
+        "template.qr.scan": "Scan this code with your camera",
+        "template.qr.step1": "Open the Camera app",
+        "template.qr.step2": "Point your camera at the QR code",
+        "template.qr.step3": "Tap 'Open in Movo'",
+        "template.qr.share": "Share QR Code",
+        "template.qr.sharetext": "Training Template",
+        "template.qr.scaninstruction": "Scan this QR code with your camera to import the template in Movo.",
+        "exercise": "Exercise",
+        "exercises": "Exercises",
         
         "common.goal": "Goal",
         "common.category": "Category",
@@ -4837,8 +6242,7 @@ struct LocalizedStrings {
         "home.currentTraining": "Current Training",
         "home.defaultTrainingTitle": "Your Training",
         "home.today": "Today",
-        "privacy.public" : "Public",
-        "privacy.private" : "Private",
+     
         
         // ➜ Add to LocalizedStrings.en
         "howto.header.subtitle"    : "Short & clear — technique, breathing, mistakes, and variations.",
@@ -4916,6 +6320,10 @@ struct LocalizedStrings {
         "settings.about": "About",
         "settings.version": "Version",
         "settings.done": "Done",
+        "settings.units.metric": "Metric",
+        "settings.units.imperial": "Imperial",
+        "settings.goals.trainingDays": "Training days",
+        "settings.goals.daysPerWeek": "%dx/week",
 
         // Training
         "training.title.placeholder": "Enter title …",
@@ -5042,7 +6450,6 @@ struct LocalizedStrings {
         "statistics.best.training": "Best session",
         "statistics.exercise.none": "No exercises found for this period.",
         "statistics.duration.chart": "Duration per day",
-        "common.ok" : "OK",
         "home.templates": "Training Templates",
         
         "home.streak.title": "STREAK",
@@ -5071,9 +6478,7 @@ struct LocalizedStrings {
 
         "settings.aboutApp.title" : "About the app",
         "settings.aboutApp.subtitle" : "What it does for you",
-        "settings.support.title" : "Support",
-        "settings.support.subtitle" : "Quick help via email",
-
+     
         "alert.logout.message" : "Do you really want to log out?",
 
         "statistics.musclemap.title" : "Trained areas",
@@ -5249,8 +6654,55 @@ struct LocalizedStrings {
                 "tpl.days.3.desc": "Train on 3 different days.",
                 "tpl.days.5.title": "5 active days/week",
                 "tpl.days.5.desc": "Train on 5 different days.",
-
-
+        
+        // Settings - Account
+        "settings.account.changePassword": "Change password",
+        "settings.account.resetPassword": "Reset password",
+        "settings.account.delete": "Delete account",
+        "settings.account.delete.confirm": "Delete permanently",
+        "settings.account.delete.warning": "This action cannot be undone. All your data will be permanently deleted.",
+        "settings.account.currentPassword": "Current password",
+        "settings.account.newPassword": "New password",
+        "settings.account.confirmPassword": "Confirm password",
+        "settings.account.passwordMismatch": "Passwords do not match",
+        "settings.account.email": "Email",
+        "settings.account.resetPassword.info": "Enter your email address to receive a password reset link.",
+        "settings.account.sendResetLink": "Send link",
+        "settings.account.resetPassword.sent": "A reset link has been sent to your email.",
+        
+        // Settings - Legal
+        "settings.legal.privacy": "Privacy Policy",
+        "settings.legal.imprint": "Imprint",
+        "settings.legal.terms": "Terms of Use",
+        "settings.legal.support": "Support",
+        
+        // Settings - Support
+        "settings.support.title": "Contact Support",
+        "settings.support.subtitle": "Send us an email and we'll be happy to help.",
+        "settings.support.sendEmail": "Send email",
+        
+        // Common
+        "common.success": "Success",
+        "common.error": "Error",
+        "common.ok": "OK",
+        "common.close": "Close",
+        "Friends": "Friends",
+        "Requests": "Requests",
+        "Search": "Search",
+        "Incoming": "Incoming",
+        "Outgoing": "Sent",
+        "Suggested": "Suggested",
+        "profile.friends.add": "Add friends",
+        "friends.empty.title": "No friends yet",
+        "friends.empty.message": "Add friends via search.",
+        
+        // Profile Stats
+        "profile.stats.time": "Time",
+        "profile.stats.workouts": "Workouts",
+        "profile.weekOverview": "Week Overview",
+        "profile.levelProgress": "Level Progress",
+        
+        "common.cancel": "Cancel"
 
     ]
 }

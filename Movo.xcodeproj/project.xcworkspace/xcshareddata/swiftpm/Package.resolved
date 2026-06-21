@@ -1,5 +1,5 @@
 {
-  "originHash" : "1a62ef141d8c84ff7d8292fa7fb165d7e1c34b0a263c93d9128f5bacbe970870",
+  "originHash" : "3dbbf57ee1af3965aadaf8498f4f43457930c5de1554e9bd858eadf91f58bdb3",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -155,12 +155,30 @@
       }
     },
     {
+      "identity" : "posthog-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/PostHog/posthog-ios.git",
+      "state" : {
+        "revision" : "ee5b5705b0038f0c44646cde5fe972bb65387596",
+        "version" : "3.61.0"
+      }
+    },
+    {
       "identity" : "promises",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/google/promises.git",
       "state" : {
         "revision" : "540318ecedd63d883069ae7f1ed811a2df00b6ac",
         "version" : "2.4.0"
+      }
+    },
+    {
+      "identity" : "purchases-ios-spm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/RevenueCat/purchases-ios-spm.git",
+      "state" : {
+        "revision" : "6676da5c4c6a61e53b3139216a775d1224bf056e",
+        "version" : "5.56.1"
       }
     },
     {

@@ -11,8 +11,10 @@ struct StatisticsView: View {
     @EnvironmentObject var appSettings: AppSettings
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var gm: GamificationManager
-    @EnvironmentObject var purchaseManager: PurchaseManager
+
+    @EnvironmentObject var exerciseLibrary: ExerciseLibrary
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.designTokens) private var t
 
     @AppStorage("units.weight") private var weightUnit: WeightUnit = .kg
 
@@ -22,10 +24,7 @@ struct StatisticsView: View {
     @State private var selectedFilter: TimeFilter = .month
     @State private var selectedExercise: String? = nil
 
-    // Paywall Overlay State
-    @State private var showPaywall = false
-    @State private var dim: CGFloat = 0          // 0…1
-    @State private var blur: CGFloat = 0         // leichter Hintergrund-Blur
+
 
     // Formatter
     private var appLocale: Locale {
@@ -131,9 +130,30 @@ struct StatisticsView: View {
     }
 
     private var muscleLoadThisWeek: [MuscleRegion: Double] {
-        var acc: [MuscleRegion: Double] = [:]
+        calculateMuscleLoad(from: historyThisWeek)
+    }
 
-        for entry in historyThisWeek {
+    private var historyLastWeek: [TrainingEntry] {
+        let now = Date()
+        let cal = Calendar.current
+        // This Week: [Now-7d ... Now]
+        // Last Week: [Now-14d ... Now-7d)
+        let end = cal.date(byAdding: .day, value: -7, to: now)!
+        let start = cal.date(byAdding: .day, value: -7, to: end)!
+        
+        let startOfDay = cal.startOfDay(for: start)
+        let endOfDay = cal.startOfDay(for: end)
+        
+        return trainingStore.history.filter { $0.date >= startOfDay && $0.date < endOfDay }
+    }
+
+    private var muscleLoadLastWeek: [MuscleRegion: Double] {
+        calculateMuscleLoad(from: historyLastWeek)
+    }
+
+    private func calculateMuscleLoad(from entries: [TrainingEntry]) -> [MuscleRegion: Double] {
+        var acc: [MuscleRegion: Double] = [:]
+        for entry in entries {
             for ex in entry.exercises {
                 let name = ex.name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
                 let volumeKg = ex.sets.reduce(0.0) { sum, s in
@@ -188,13 +208,15 @@ struct StatisticsView: View {
     var body: some View {
         let unit = weightUnit
         let nf = nfInt
-        let isPremium = purchaseManager.hasUnlockedStatistics
+        let isPremium = true
 
         return NavigationStack {
             ZStack {
+                statisticsBackground
                 // MAIN
                 ScrollView {
                     VStack(spacing: 24) {
+                        statisticsHero
                         // Zeitraum
                         Picker(appSettings.localized("statistics.period"), selection: $selectedFilter) {
                             ForEach(TimeFilter.allCases, id: \.self) { f in
@@ -238,21 +260,70 @@ struct StatisticsView: View {
                             icon: "scalemass"
                         )
                         .padding(.horizontal)
+                        
+             
 
-                        MuscleMapSummary(load: muscleLoadThisWeek)
+                        // Muscle Focus (Next Level)
+                        if let focus = muscleFocus {
+                            ChallengeStyleSectionCard(
+                                title: appSettings.localized("home.nextLevel"),
+                                icon: "arrow.up.circle.fill", // Use a relevant icon
+                                gradient: [focus.nextRank.color.opacity(0.25), focus.nextRank.color.opacity(0.15)]
+                            ) {
+                                HStack(spacing: 16) {
+                                    // Icon Circle
+                                    ZStack {
+                                        Circle()
+                                            .fill(LinearGradient(
+                                                colors: [focus.nextRank.color.opacity(0.8), focus.nextRank.color.opacity(0.4)],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ))
+                                            .frame(width: 56, height: 56)
+                                            .shadow(color: focus.nextRank.color.opacity(0.3), radius: 8, x: 0, y: 4)
+                                        
+                                        Image(systemName: iconName(for: focus.region))
+                                            .font(.system(size: 24, weight: .bold))
+                                            .foregroundStyle(.white)
+                                    }
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(localizedRegionName(focus.region))
+                                            .font(.headline)
+                                            .foregroundStyle(.primary)
+                                        
+                                        HStack(alignment: .firstTextBaseline, spacing: 4) {
+                                            Text("\(focus.needed)")
+                                                .font(.system(size: 24, weight: .bold, design: .rounded))
+                                                .foregroundStyle(.primary)
+                                            Text("\(trainingWord(focus.needed)) \(appSettings.localized("home.until"))")
+                                                .font(.body.weight(.medium))
+                                                .foregroundStyle(.secondary)
+                                            Text(localizedRankTitle(focus.nextRank))
+                                                .font(.body.weight(.bold))
+                                                .foregroundStyle(focus.nextRank.color)
+                                        }
+                                    }
+                                }
+                                .padding(.vertical, 4)
+                            }
                             .padding(.horizontal)
+                        }
+
+                        MuscleMapSummary(loadThisWeek: muscleLoadThisWeek, loadLastWeek: muscleLoadLastWeek)
+                            .padding(.horizontal)
+
+                        MuscleRankView()
+                            .padding(.horizontal)
+
+
 
                         // Aktivitätsverlauf – KOSTENLOS
                         ActivityHeatmap(entries: trainingStore.history)
                             .padding(.horizontal)
 
-                        // Premium-Teaser direkt darunter
-                        if !isPremium {
-                            PremiumStatsTeaser {
-                                openPaywall()
-                            }
-                            .padding(.horizontal)
-                        }
+
+
 
                         // Bestes Training – kostenlos (falls vorhanden)
                         if let best = bestSession {
@@ -315,13 +386,11 @@ struct StatisticsView: View {
                                     Text(appSettings.localized("common.ios16.required"))
                                 }
                             } else {
-                                LockedSectionMessage(
-                                    text: "Mit Movo Pro siehst du hier deine Trainingsdauer pro Tag."
-                                )
+                                LockedSectionMessage(text: appSettings.localized("statistics.locked.duration"))
+
                             }
                         }
                         .padding(.horizontal)
-                        .onTapGesture { if !isPremium { openPaywall() } }
 
                         // Workouts pro Woche
                         ChallengeStyleSectionCard(
@@ -365,13 +434,11 @@ struct StatisticsView: View {
                                     }
                                 }
                             } else {
-                                LockedSectionMessage(
-                                    text: "Mit Movo Pro siehst du, wie viele Workouts du pro Woche schaffst."
-                                )
+                                LockedSectionMessage(text: appSettings.localized("statistics.locked.workoutsPerWeek"))
+
                             }
                         }
                         .padding(.horizontal)
-                        .onTapGesture { if !isPremium { openPaywall() } }
 
                         // Top-Übungen
                         ChallengeStyleSectionCard(
@@ -401,13 +468,11 @@ struct StatisticsView: View {
                                     }
                                 }
                             } else {
-                                LockedSectionMessage(
-                                    text: "Mit Movo Pro siehst du deine Top-Übungen und ihr Gesamtvolumen."
-                                )
+                                LockedSectionMessage(text: appSettings.localized("statistics.locked.topExercises"))
+
                             }
                         }
                         .padding(.horizontal)
-                        .onTapGesture { if !isPremium { openPaywall() } }
 
                         // Übungs-Detail-Stats
                         ChallengeStyleSectionCard(
@@ -458,18 +523,18 @@ struct StatisticsView: View {
                                     }
                                 }
                             } else {
-                                LockedSectionMessage(
-                                    text: "Wähle eine Übung und sieh alle Details mit Movo Pro."
-                                )
+                                LockedSectionMessage(text: appSettings.localized("statistics.locked.exerciseStats"))
+
                             }
                         }
                         .padding(.horizontal)
-                        .onTapGesture { if !isPremium { openPaywall() } }
                     }
                     .padding(.vertical, 8)
                 }
-                .navigationTitle(appSettings.localized("statistics.title"))
+                .navigationTitle("")
                 .navigationBarTitleDisplayMode(.inline)
+                .toolbarColorScheme(.dark, for: .navigationBar)
+                .preferredColorScheme(.dark)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button { showProfile = true } label: {
@@ -481,7 +546,13 @@ struct StatisticsView: View {
                         .accessibilityLabel(appSettings.localized("profile.title"))
                     }
                 }
-                .background(navigationLinks())
+                .sheet(isPresented: $showProfile) {
+                    ProfileView(customProfileImageData: $profileImageData)
+                        .environmentObject(appSettings)
+                        .environmentObject(authService)
+                        .environmentObject(trainingStore)
+                        .environmentObject(gm)
+                }
                 .onAppear {
                     TrainingWeeklyShared.saveWeeks(from: trainingStore.history, goalPerWeek: 3) { $0.date }
                     WidgetCenter.shared.reloadTimelines(ofKind: "TrainingWeeklyWidget")
@@ -496,31 +567,51 @@ struct StatisticsView: View {
                     HeatmapShared.saveSnapshot(from: hist) { $0.date }
                     WidgetCenter.shared.reloadTimelines(ofKind: "TrainingHeatmapWidget")
                 }
-                .onChange(of: purchaseManager.hasUnlockedStatistics) { unlocked in
-                    if unlocked { closePaywall() }
-                }
-                .blur(radius: blur)
 
-                // ========= Paywall Overlay =========
-                if showPaywall || dim > 0.001 {
-                    Color.black
-                        .ignoresSafeArea()
-                        .opacity(dim)
-                        .onTapGesture { closePaywall() }
-                        .animation(currentAnimation, value: dim)
-
-                    if showPaywall {
-                        PaywallView(onRequestClose: { closePaywall() })
-                            .environmentObject(appSettings)
-                            .environmentObject(purchaseManager)
-                            .environment(\.colorScheme, .dark)
-                            .transition(.opacity.combined(with: .move(edge: .bottom)))
-                            .zIndex(1)
-                            .animation(currentAnimation, value: showPaywall)
-                    }
-                }
             }
         }
+    }
+
+    private var statisticsBackground: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            RadialGradient(
+                colors: [t.palette.primary.opacity(0.36), Color.blue.opacity(0.14), .clear],
+                center: .topLeading,
+                startRadius: 28,
+                endRadius: 440
+            )
+            .ignoresSafeArea()
+            RadialGradient(
+                colors: [Color.cyan.opacity(0.11), .clear],
+                center: .bottomTrailing,
+                startRadius: 30,
+                endRadius: 380
+            )
+            .ignoresSafeArea()
+        }
+    }
+
+    private var statisticsHero: some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(appSettings.localized("statistics.title"))
+                    .font(.system(size: 34, weight: .heavy, design: .rounded))
+                    .foregroundStyle(.white)
+                Text(appSettings.language.lowercased().hasPrefix("de") ? "Dein Training in Zahlen." : "Your training in numbers.")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.56))
+            }
+            Spacer()
+            Image(systemName: "chart.xyaxis.line")
+                .font(.system(size: 22, weight: .bold))
+                .foregroundStyle(t.palette.primary)
+                .frame(width: 50, height: 50)
+                .background(Circle().fill(.white.opacity(0.10)))
+                .overlay(Circle().stroke(.white.opacity(0.13), lineWidth: 1))
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 14)
     }
 
     // MARK: - Animation
@@ -556,42 +647,6 @@ struct StatisticsView: View {
         }
     }
 
-    // MARK: - Paywall Open/Close
-
-    private func openPaywall() {
-        if reduceMotion {
-            dim = 1
-            blur = 0
-            showPaywall = true
-            return
-        }
-        withAnimation(currentAnimation) {
-            dim = 1
-            blur = 2
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
-            withAnimation(currentAnimation) {
-                showPaywall = true
-            }
-        }
-    }
-
-    private func closePaywall() {
-        if reduceMotion {
-            showPaywall = false
-            dim = 0
-            blur = 0
-            return
-        }
-        withAnimation(currentAnimation) { showPaywall = false }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
-            withAnimation(currentAnimation) {
-                dim = 0
-                blur = 0
-            }
-        }
-    }
-
     // MARK: - Helpers
 
     private func prettifiedTitle(_ raw: String) -> String {
@@ -616,19 +671,7 @@ struct StatisticsView: View {
         }
     }
 
-    @ViewBuilder
-    private func navigationLinks() -> some View {
-        ZStack {
-            NavigationLink(isActive: $showProfile) {
-                ProfileView(customProfileImageData: $profileImageData)
-                    .environmentObject(appSettings)
-                    .environmentObject(authService)
-                    .environmentObject(trainingStore)
-                    .environmentObject(gm)
-            } label: { EmptyView() }
-        }
-        .frame(width: 0, height: 0)
-    }
+
 
     // Parsing & Unit helpers (kg intern)
 
@@ -661,6 +704,57 @@ struct StatisticsView: View {
         return entry.exercises
             .flatMap(\.sets)
             .reduce(0.0) { $0 + parseKg($1.weight) * Double(parseInt($1.reps)) }
+    }
+    // MARK: - Level Card Logic
+    
+    private var muscleFocus: (region: MuscleRegion, needed: Int, nextRank: MuscleRank)? {
+        MuscleRankingHelper.findClosestNextRank(from: trainingStore.history)
+    }
+
+    private func iconName(for region: MuscleRegion) -> String {
+        switch region {
+        case .chest: return "scalemass.fill" // Or any appropriate icon
+        case .shoulders: return "figure.strengthtraining.traditional"
+        case .biceps, .triceps, .forearms: return "figure.strengthtraining.traditional"
+        case .abs: return "figure.core.training"
+        case .quads, .hamstrings, .calves, .calvesBack, .glutes: return "figure.run"
+        case .lats, .traps, .lowerBack: return "figure.strengthtraining.traditional"
+        }
+    }
+    
+    private func localizedRegionName(_ region: MuscleRegion) -> String {
+        let key = "muscle.region.\(region.rawValue)"
+        let val = appSettings.localized(key)
+        if val != key { return val }
+        // fallback to German names (matching previous implementation)
+        switch region {
+        case .chest: return "Brust"
+        case .shoulders: return "Schultern"
+        case .biceps: return "Bizeps"
+        case .triceps: return "Trizeps"
+        case .lats: return "Rücken (Lat)"
+        case .abs: return "Bauch"
+        case .quads: return "Beine (Quad)"
+        case .hamstrings: return "Beinbeuger"
+        case .glutes: return "Gesäß"
+        case .calves, .calvesBack: return "Waden"
+        case .forearms: return "Unterarme"
+        case .traps: return "Nacken"
+        case .lowerBack: return "Unterer Rücken"
+        }
+    }
+    
+    private func localizedRankTitle(_ rank: MuscleRank) -> String {
+        let key = "rank.\(rank.rawValue)"
+        let val = appSettings.localized(key)
+        return (val == key) ? rank.title : val
+    }
+    
+    private func trainingWord(_ n: Int) -> String {
+        if appSettings.language.lowercased().hasPrefix("de") {
+            return n == 1 ? "Punkt" : "Punkte"
+        }
+        return n == 1 ? "point" : "points"
     }
 }
 
@@ -730,17 +824,20 @@ private struct MetricCardValueSmall: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
                     .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.62))
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                 Text(value)
                     .font(.title3.monospacedDigit().weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
             }
             Spacer(minLength: 0)
         }
-        .appElevatedCard()
+        .padding(16)
+        .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(.white.opacity(0.08)))
+        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(.white.opacity(0.12), lineWidth: 1))
     }
 }
 
@@ -767,19 +864,25 @@ private struct MetricCardFeaturedValue: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(title)
                     .font(.headline)
+                    .foregroundStyle(.white.opacity(0.64))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                 Text(value)
                     .font(.title3.monospacedDigit().weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
             }
             Spacer(minLength: 0)
         }
-        .appElevatedCard()
+        .padding(18)
+        .background(RoundedRectangle(cornerRadius: 24, style: .continuous).fill(.white.opacity(0.08)))
+        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(.white.opacity(0.12), lineWidth: 1))
     }
 }
+
+
+
 
 // MARK: - Section Card
 
@@ -802,16 +905,17 @@ struct ChallengeStyleSectionCard<Content: View>: View {
         self.icon = icon
         self.gradient = gradient
         self.locked = locked
-        self.content = content()
+               self.content = content()
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 Image(systemName: icon)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.white)
                 Text(title)
                     .font(.headline)
+                    .foregroundStyle(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
             }
@@ -826,15 +930,9 @@ struct ChallengeStyleSectionCard<Content: View>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 22)
-                .fill(
-                    LinearGradient(
-                        colors: gradient,
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 5)
+                .fill(Color.white.opacity(0.08))
         )
+        .overlay(RoundedRectangle(cornerRadius: 22).stroke(Color.white.opacity(0.12), lineWidth: 1))
         .overlay(alignment: .topTrailing) {
             if locked {
                 LockBadgeSmall()
@@ -1136,6 +1234,7 @@ struct ExerciseStatisticsView: View {
                 .filter { $0.name == exerciseName }
                 .flatMap { ex in
                     ex.sets.map { s in
+                        // Pro check irrelevant now
                         let wKg = parseKg(s.weight)
                         let r = parseInt(s.reps)
                         return SetLite(
@@ -1206,6 +1305,8 @@ struct ExerciseStatisticsView: View {
 
 // Kleine Teaser-Karte (wird unter den KPIs angezeigt, wenn Premium gesperrt ist)
 private struct PremiumStatsTeaser: View {
+    @EnvironmentObject var appSettings: AppSettings
+
     var onTap: () -> Void
     init(_ onTap: @escaping () -> Void) { self.onTap = onTap }
 
@@ -1213,35 +1314,51 @@ private struct PremiumStatsTeaser: View {
         VStack(spacing: 14) {
             HStack(spacing: 12) {
                 ZStack {
-                    Circle().fill(LinearGradient(colors: [.purple.opacity(0.6), .blue.opacity(0.6)],
-                                                 startPoint: .topLeading, endPoint: .bottomTrailing))
-                    Image(systemName: "crown.fill").foregroundStyle(.white).font(.title2.bold())
+                    Circle().fill(
+                        LinearGradient(
+                            colors: [.purple.opacity(0.6), .blue.opacity(0.6)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    Image(systemName: "crown.fill")
+                        .foregroundStyle(.white)
+                        .font(.title2.bold())
                 }
                 .frame(width: 40, height: 40)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Premium-Statistiken").font(.headline)
-                    Text("Beta: Alle Pro-Features sind aktuell kostenlos.")
-                        .font(.subheadline).foregroundStyle(.secondary)
+                    Text(appSettings.localized("statistics.premium.title"))
+                        .font(.headline)
+
+                    Text(appSettings.localized("statistics.premium.subtitle"))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+
                 Spacer()
             }
 
             VStack(spacing: 10) {
-                row(icon: "chart.bar.fill", title: "Erweiterte Diagramme & Trends")
-                row(icon: "trophy.fill",     title: "Bestes Training & Rekorde")
-                row(icon: "timer",           title: "Dauer, Volumen, Top-Übungen")
-                row(icon: "square.grid.2x2", title: "Widgets auf dem Homescreen")
+                row(icon: "chart.bar.fill", title: appSettings.localized("statistics.premium.feature.charts"))
+                row(icon: "trophy.fill",     title: appSettings.localized("statistics.premium.feature.records"))
+                row(icon: "timer",           title: appSettings.localized("statistics.premium.feature.duration"))
+                row(icon: "square.grid.2x2", title: appSettings.localized("statistics.premium.feature.widgets"))
             }
 
             Button(action: onTap) {
-                Text("Kostenlos freischalten")
+                Text(appSettings.localized("statistics.premium.cta"))
                     .fontWeight(.bold)
                     .padding(.vertical, 14)
                     .frame(maxWidth: .infinity)
-                    .background(LinearGradient(colors: [.blue, .purple],
-                                               startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .background(
+                        LinearGradient(
+                            colors: [.blue, .purple],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .foregroundStyle(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                     .shadow(radius: 8, x: 0, y: 4)
@@ -1249,8 +1366,10 @@ private struct PremiumStatsTeaser: View {
         }
         .padding(16)
         .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
-            .stroke(Color.white.opacity(0.12), lineWidth: 1))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+        )
     }
 
     private func row(icon: String, title: String) -> some View {
@@ -1259,9 +1378,14 @@ private struct PremiumStatsTeaser: View {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(Color.white.opacity(0.07))
                     .frame(width: 44, height: 44)
-                Image(systemName: icon).foregroundStyle(.primary)
+
+                Image(systemName: icon)
+                    .foregroundStyle(.primary)
             }
-            Text(title).font(.subheadline.weight(.semibold))
+
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+
             Spacer()
         }
         .padding(10)
@@ -1271,143 +1395,8 @@ private struct PremiumStatsTeaser: View {
 
 
 
-enum MuscleSide { case front, back }
 
-final class AssetNameResolver {
-    static let shared = AssetNameResolver()
-    private var cache: [String: Bool] = [:]
 
-    func exists(_ name: String) -> Bool {
-        if let v = cache[name] { return v }
-        let ok = UIImage(named: name) != nil
-        cache[name] = ok
-        return ok
-    }
-
-    func resolve(_ candidates: [String]) -> String? {
-        candidates.first(where: exists)
-    }
-}
-
-enum MuscleRegion: String, CaseIterable, Hashable {
-    // Front
-    case chest, shoulders, biceps, forearms, abs, quads, calves
-    // Back
-    case traps, lats, triceps, lowerBack, glutes, hamstrings, calvesBack
-
-    var side: MuscleSide {
-        switch self {
-        case .chest, .shoulders, .biceps, .forearms, .abs, .quads, .calves: return .front
-        case .traps, .lats, .triceps, .lowerBack, .glutes, .hamstrings, .calvesBack: return .back
-        }
-    }
-
-    /// Kandidaten: erst "saubere" Namen, dann ".png", dann deine aktuellen Asset-Namen
-    var candidateAssetNames: [String] {
-        switch self {
-        case .chest:      return ["muscle_front_chest", "muscle_front_chest.png"]
-        case .shoulders:  return ["muscle_front_shoulders", "muscle_front_shoulders.png"]
-        case .biceps:     return ["muscle_front_biceps", "muscle_front_biceps.png", "upperarms_front"]
-        case .forearms:   return ["muscle_front_forearms", "muscle_front_forearms.png", "forearms_front"]
-        case .abs:        return ["muscle_front_abs", "muscle_front_abs.png"]
-        case .quads:      return ["muscle_front_quads", "muscle_front_quads.png"]
-        case .calves:     return ["muscle_front_calves", "muscle_front_calves.png"]
-
-        case .traps:      return ["muscle_back_traps", "muscle_back_traps.png", "traps_back"]
-        case .lats:       return ["muscle_back_lats", "muscle_back_lats.png"]
-        case .triceps:    return ["muscle_back_triceps", "muscle_back_triceps.png", "triceps_back"]
-        case .lowerBack:  return ["muscle_back_lowerback", "muscle_back_lowerBack", "midback_back"]
-        case .glutes:     return ["muscle_back_glutes", "muscle_back_glutes.png"]
-        case .hamstrings: return ["muscle_back_hamstrings", "muscle_back_hamstrings.png", "hamstrings_back"]
-        case .calvesBack: return ["muscle_back_calves", "muscle_back_calves.png"]
-        }
-    }
-
-    var resolvedAssetName: String? {
-        AssetNameResolver.shared.resolve(candidateAssetNames)
-    }
-}
-
-struct MuscleMapSummary: View {
-    @Environment(\.designTokens) private var t
-    @EnvironmentObject var appSettings: AppSettings
-
-    let load: [MuscleRegion: Double]
-    private var maxLoad: Double { max(load.values.max() ?? 0, 1) }
-
-    var body: some View {
-        let title = String(
-            format: appSettings.localized("statistics.musclemap.title.thisweek.format"),
-            appSettings.localized("statistics.musclemap.title"),
-            appSettings.localized("statistics.musclemap.thisweek")
-        )
-
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text(title).font(.headline)
-                Spacer()
-                Circle().fill(t.palette.primary.opacity(0.25)).frame(width: 10, height: 10)
-                Text(appSettings.localized("statistics.musclemap.legend.trained"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            HStack(spacing: 16) {
-                MuscleFigure(side: .front, tint: t.palette.primary, load: load, maxLoad: maxLoad)
-                MuscleFigure(side: .back,  tint: t.palette.primary, load: load, maxLoad: maxLoad)
-            }
-            .frame(maxWidth: .infinity)
-        }
-        .appElevatedCard()
-    }
-}
-
-private struct MuscleFigure: View {
-    @Environment(\.colorScheme) private var scheme
-
-    let side: MuscleSide
-    let tint: Color
-    let load: [MuscleRegion: Double]
-    let maxLoad: Double
-
-    var body: some View {
-        let outlineColor: Color =
-            (scheme == .dark) ? .white.opacity(0.85) : .black.opacity(0.18)
-
-        let regionBlend: BlendMode =
-            (scheme == .dark) ? .screen : .multiply
-
-        ZStack {
-            Image(side == .front ? "muscle_front_outline" : "muscle_back_outline")
-                .resizable()
-                .renderingMode(.template)
-                .scaledToFit()
-                .foregroundStyle(outlineColor)
-
-            ForEach(MuscleRegion.allCases.filter { $0.side == side }, id: \.self) { region in
-                let v = load[region, default: 0]
-                let opacity = opacityFor(value: v, maxValue: maxLoad)
-
-                if opacity > 0.001, let name = region.resolvedAssetName {
-                    Image(name)
-                        .resizable()
-                        .renderingMode(.template)
-                        .scaledToFit()
-                        .foregroundStyle(tint)
-                        .opacity(opacity)
-                        .blendMode(regionBlend)
-                }
-            }
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    private func opacityFor(value: Double, maxValue: Double) -> Double {
-        guard value > 0, maxValue > 0 else { return 0 }
-        let n = min(max(value / maxValue, 0), 1)
-        return 0.18 + 0.82 * sqrt(n)
-    }
-}
 
 
 // iOS 17: Präsentationshintergrund direkt schwarz
@@ -1448,7 +1437,7 @@ extension AnyTransition {
         let insertion = AnyTransition
             .opacity
             .combined(with: .move(edge: .bottom))
-            .combined(with: .scale(scale: 0.995, anchor: .center)) // leicht heranzoomen
+            .combined(with: .scale(scale: 0.995, anchor: .center))
 
         let removal = AnyTransition
             .opacity
@@ -1459,83 +1448,6 @@ extension AnyTransition {
 }
 
 // MARK: - 2) Host-Container, der weich ein-/ausblendet
-struct SmoothPaywallHost<Content: View>: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var showPaywall = false
-    @State private var dim: CGFloat = 0      // 0…1 Overlay-Opacity
-    @State private var blur: CGFloat = 0     // Blur des Hintergrunds
 
-    @EnvironmentObject var app: AppSettings
-    @EnvironmentObject var pm: PurchaseManager
 
-    let content: Content
-
-    init(@ViewBuilder content: () -> Content) {
-        self.content = content()
-    }
-
-    var body: some View {
-        ZStack {
-            // Dein normaler Inhalt
-            content
-                .blur(radius: blur)
-
-            // Dim-Overlay (interaktiv nur wenn sichtbar)
-            if showPaywall || dim > 0 {
-                Color.black
-                    .ignoresSafeArea()
-                    .opacity(dim)
-                    .onTapGesture { close() }
-                    .allowsHitTesting(dim > 0.01)
-                    .animation(animation, value: dim)
-                    .transition(.opacity)
-            }
-
-            // Paywall als Overlay mit eigener Transition
-            if showPaywall {
-                PaywallView(onRequestClose: { close() })
-                    .environmentObject(app)
-                    .environmentObject(pm)
-                    .transition(.paywall)
-                    .zIndex(1)
-                    .animation(animation, value: showPaywall)
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Premium öffnen") { open() }
-            }
-        }
-    }
-
-    private var animation: Animation {
-        reduceMotion
-            ? .linear(duration: 0.15)
-            : .easeInOut(duration: 0.32)
-    }
-
-    // MARK: Open/Close
-    private func open() {
-        if reduceMotion {
-            dim = 1; blur = 0; showPaywall = true
-            return
-        }
-        // erst Hintergrund weich dimmen/blur-en, dann Paywall einfahren
-        withAnimation(animation) { dim = 1; blur = 2 }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
-            withAnimation(animation) { showPaywall = true }
-        }
-    }
-
-    private func close() {
-        if reduceMotion {
-            showPaywall = false; dim = 0; blur = 0
-            return
-        }
-        // erst Paywall raus, dann Overlay zurückfahren
-        withAnimation(animation) { showPaywall = false }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
-            withAnimation(animation) { dim = 0; blur = 0 }
-        }
-    }
-}
+// MARK: - Movo TikTok-Style Strength Progress (symbolisch)

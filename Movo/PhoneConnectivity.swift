@@ -7,6 +7,11 @@ final class PhoneConnectivity: NSObject, WCSessionDelegate {
 
     // Keys
     private let activeWorkoutKey = "activeWorkoutPayloadJSON"
+    private let watchStartOptionsKey = "watchStartOptionsJSON"
+    private var lastActiveWorkoutJSON: String?
+    private var lastActiveWorkoutPushAt: Date = .distantPast
+    private var lastLiveUpdateSignature: String?
+    private var lastLiveUpdateSentAt: Date = .distantPast
 
     // ✅ Callbacks (wichtig damit wirklich gespeichert wird)
     @MainActor var onSetLogged: ((String, String, Int, Double) -> Void)?
@@ -14,6 +19,8 @@ final class PhoneConnectivity: NSObject, WCSessionDelegate {
     @MainActor var onSetRemoved: ((String, String) -> Void)?                         // NEU: workoutExerciseId, setId
     @MainActor var onExerciseChanged: ((String, String) -> Void)?
     @MainActor var onHeartRate: ((Double) -> Void)?
+    @MainActor var onStartTemplateRequested: ((String) -> Void)?
+    @MainActor var onStartPlanTemplateRequested: ((String) -> Void)?
 
     // MARK: - Dedupe Cache (verhindert doppelte Speicherung)
     private var recentEventIds: [String] = []
@@ -43,27 +50,51 @@ final class PhoneConnectivity: NSObject, WCSessionDelegate {
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
 
-        print("📤 PUSH ACTIVE WORKOUT:", payload.isActive, payload.workoutName ?? "nil")
-
         guard session.isPaired, session.isWatchAppInstalled else {
-            print("⌚️ not paired/installed — paired:", session.isPaired, "installed:", session.isWatchAppInstalled)
             return
         }
 
         do {
             let data = try JSONEncoder().encode(payload)
             let json = String(data: data, encoding: .utf8) ?? ""
+            let now = Date()
+            if json == lastActiveWorkoutJSON,
+               now.timeIntervalSince(lastActiveWorkoutPushAt) < 1 {
+                return
+            }
+            lastActiveWorkoutJSON = json
+            lastActiveWorkoutPushAt = now
 
-            try session.updateApplicationContext([
-                "type": "activeWorkoutState",
-                activeWorkoutKey: json
-            ])
+            var context = session.applicationContext
+            context[activeWorkoutKey] = json
+            context["activeWorkoutUpdatedAt"] = Date().timeIntervalSince1970
+            try session.updateApplicationContext(context)
 
             if session.isReachable {
                 session.sendMessage(["type": "activeWorkoutStatePing"], replyHandler: nil, errorHandler: nil)
             }
         } catch {
             print("❌ pushActiveWorkoutState failed:", error.localizedDescription)
+        }
+    }
+
+    func pushWatchStartOptions(_ payload: WatchStartOptionsPayload) {
+        guard WCSession.isSupported() else { return }
+        let session = WCSession.default
+        guard session.isPaired, session.isWatchAppInstalled else { return }
+
+        do {
+            let data = try JSONEncoder().encode(payload)
+            let json = String(data: data, encoding: .utf8) ?? ""
+            var context = session.applicationContext
+            context[watchStartOptionsKey] = json
+            context["watchStartOptionsUpdatedAt"] = Date().timeIntervalSince1970
+            try session.updateApplicationContext(context)
+            if session.isReachable {
+                session.sendMessage(["type": "watchStartOptionsPing"], replyHandler: nil, errorHandler: nil)
+            }
+        } catch {
+            print("❌ pushWatchStartOptions failed:", error.localizedDescription)
         }
     }
 
@@ -77,6 +108,17 @@ final class PhoneConnectivity: NSObject, WCSessionDelegate {
         let session = WCSession.default
 
         guard session.isPaired, session.isWatchAppInstalled else { return }
+
+        let elapsedBucket = Int(elapsed / 5)
+        let totalBucket = Int(totalKg.rounded())
+        let signature = "\(elapsedBucket)|\(completed)|\(totalBucket)|\(unitRaw.lowercased())"
+        let now = Date()
+        if signature == lastLiveUpdateSignature,
+           now.timeIntervalSince(lastLiveUpdateSentAt) < 5 {
+            return
+        }
+        lastLiveUpdateSignature = signature
+        lastLiveUpdateSentAt = now
 
         let payload: [String: Any] = [
             "type": "liveUpdate",
@@ -197,6 +239,14 @@ final class PhoneConnectivity: NSObject, WCSessionDelegate {
                 let workoutExerciseId = payload["workoutExerciseId"] as? String
             else { return }
             onExerciseChanged?(workoutId, workoutExerciseId)
+
+        case "start_template_from_watch":
+            guard let templateId = payload["templateId"] as? String else { return }
+            onStartTemplateRequested?(templateId)
+
+        case "start_plan_template_from_watch":
+            guard let templateId = payload["templateId"] as? String else { return }
+            onStartPlanTemplateRequested?(templateId)
 
         default:
             break

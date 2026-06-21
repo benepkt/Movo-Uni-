@@ -17,7 +17,6 @@ final class AuthService: ObservableObject {
 
     private var authListener: AuthStateDidChangeListenerHandle?
     private var launchObserver: NSObjectProtocol?
-    private var userDocListener: ListenerRegistration?
 
     // MARK: - Init / Deinit
 
@@ -38,7 +37,6 @@ final class AuthService: ObservableObject {
     deinit {
         if let h = authListener { Auth.auth().removeStateDidChangeListener(h) }
         if let obs = launchObserver { NotificationCenter.default.removeObserver(obs) }
-        userDocListener?.remove()
     }
 
     // MARK: - Bootstrap
@@ -50,45 +48,26 @@ final class AuthService: ObservableObject {
 
         self.user = Auth.auth().currentUser
         self.isGuest = self.user?.isAnonymous ?? false
-        attachUserDocListenerIfNeeded(for: self.user)
+        
+        // Load profile data on app start
+        if let currentUser = self.user, !currentUser.isAnonymous {
+            Task { @MainActor in
+                await self.ensureUserProfile(for: currentUser)
+                _ = await self.cacheProfileImageForCurrentUser(reason: "bootstrap")
+            }
+        }
 
         authListener = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             guard let self else { return }
             Task { @MainActor in
                 self.user = user
                 self.isGuest = user?.isAnonymous ?? false
-                self.attachUserDocListenerIfNeeded(for: user)
 
                 if let u = user, !u.isAnonymous {
                     await self.ensureUserProfile(for: u)
                     _ = await self.cacheProfileImageForCurrentUser(reason: "auth state change")
                 } else {
                     self.clearLocalAvatarCache()
-                }
-            }
-        }
-    }
-
-    // MARK: - Live-Listener /users/<uid>
-
-    private func attachUserDocListenerIfNeeded(for user: FirebaseAuth.User?) {
-        userDocListener?.remove()
-        userDocListener = nil
-
-        guard let uid = user?.uid, user?.isAnonymous == false else { return }
-
-        let ref = Firestore.firestore().collection("users").document(uid)
-        userDocListener = ref.addSnapshotListener { [weak self] snap, error in
-            guard let self else { return }
-            if let error {
-                print("[PROFILE] userDocListener error:", error.localizedDescription)
-                return
-            }
-            guard let data = snap?.data() else { return }
-            if let urlStr = data["photoURL"] as? String, !urlStr.isEmpty {
-                Task { @MainActor in
-                    print("[PROFILE] photoURL changed, recache…")
-                    _ = await self.cacheProfileImageForCurrentUser(reason: "photoURL listener")
                 }
             }
         }
@@ -108,8 +87,8 @@ final class AuthService: ObservableObject {
 
                 self.isGuest = false
                 self.user = user
-                self.attachUserDocListenerIfNeeded(for: user)
                 await self.ensureUserProfile(for: user)
+                AnalyticsService.identifyUser(id: user.uid, isGuest: false, provider: "email")
                 _ = await self.cacheProfileImageForCurrentUser(reason: "signIn callback")
                 completion(.success(()))
             }
@@ -128,8 +107,9 @@ final class AuthService: ObservableObject {
 
                 self.isGuest = false
                 self.user = user
-                self.attachUserDocListenerIfNeeded(for: user)
                 await self.ensureUserProfile(for: user)
+                AnalyticsService.identifyUser(id: user.uid, isGuest: false, provider: "email_signup")
+                AnalyticsService.track("signup_completed", properties: ["provider": "email"])
                 _ = await self.cacheProfileImageForCurrentUser(reason: "signUp callback")
                 completion(.success(()))
             }
@@ -148,7 +128,6 @@ final class AuthService: ObservableObject {
 
     // MARK: - Gastmodus
 
-    /// Klassischer Gast-Login, falls du ihn irgendwo direkt aufrufst.
     func signInAsGuest(completion: @escaping (Result<Void, Error>) -> Void) {
         guard isConfigured(completion: completion) else { return }
 
@@ -158,14 +137,15 @@ final class AuthService: ObservableObject {
                 else {
                     self?.isGuest = true
                     self?.user = result?.user
+                    if let uid = result?.user.uid {
+                        AnalyticsService.identifyUser(id: uid, isGuest: true, provider: "guest")
+                    }
                     completion(.success(()))
                 }
             }
         }
     }
 
-    /// Für AuthChoiceView: „Ohne Registrierung fortfahren“.
-    /// Nutzt anonymen User nur als Auth-Träger, Daten bleiben lokal (über SyncService).
     func signInAnonymouslyIfNeeded() {
         guard FirebaseApp.app() != nil else {
             print("[AUTH] Firebase not configured for anonymous sign-in.")
@@ -213,7 +193,6 @@ final class AuthService: ObservableObject {
 
                 self.user = user
                 self.isGuest = false
-                self.attachUserDocListenerIfNeeded(for: user)
                 await self.ensureUserProfile(for: user)
                 _ = await self.cacheProfileImageForCurrentUser(reason: "link callback")
                 completion(.success(()))
@@ -227,8 +206,8 @@ final class AuthService: ObservableObject {
         guard FirebaseApp.app() != nil else { return }
         do {
             try Auth.auth().signOut()
-            userDocListener?.remove()
-            userDocListener = nil
+            AnalyticsService.track("sign_out")
+            AnalyticsService.resetUser()
             self.user = nil
             self.isGuest = false
             clearLocalAvatarCache()
@@ -265,8 +244,8 @@ final class AuthService: ObservableObject {
         let finish: (User) async -> Void = { user in
             self.isGuest = false
             self.user = user
-            self.attachUserDocListenerIfNeeded(for: user)
             await self.ensureUserProfile(for: user)
+            AnalyticsService.identifyUser(id: user.uid, isGuest: false, provider: "apple")
             _ = await self.cacheProfileImageForCurrentUser(reason: "apple sign in")
         }
 
@@ -323,8 +302,8 @@ final class AuthService: ObservableObject {
             let finish: (User) async -> Void = { user in
                 self.isGuest = false
                 self.user = user
-                self.attachUserDocListenerIfNeeded(for: user)
                 await self.ensureUserProfile(for: user)
+                AnalyticsService.identifyUser(id: user.uid, isGuest: false, provider: "google")
                 _ = await self.cacheProfileImageForCurrentUser(reason: "google sign in")
             }
 
@@ -357,8 +336,8 @@ final class AuthService: ObservableObject {
         let res = try await Auth.auth().signIn(withEmail: email, password: password)
         self.user = res.user
         self.isGuest = false
-        attachUserDocListenerIfNeeded(for: res.user)
         await ensureUserProfile(for: res.user)
+        AnalyticsService.identifyUser(id: res.user.uid, isGuest: false, provider: "email")
         _ = await cacheProfileImageForCurrentUser(reason: "signIn async")
     }
 
@@ -367,8 +346,9 @@ final class AuthService: ObservableObject {
         let res = try await Auth.auth().createUser(withEmail: email, password: password)
         self.user = res.user
         self.isGuest = false
-        attachUserDocListenerIfNeeded(for: res.user)
         await ensureUserProfile(for: res.user)
+        AnalyticsService.identifyUser(id: res.user.uid, isGuest: false, provider: "email_signup")
+        AnalyticsService.track("signup_completed", properties: ["provider": "email"])
         _ = await cacheProfileImageForCurrentUser(reason: "signUp async")
     }
 
@@ -385,15 +365,16 @@ final class AuthService: ObservableObject {
             let res = try await current.link(with: cred)
             self.user = res.user
             self.isGuest = false
-            attachUserDocListenerIfNeeded(for: res.user)
             await ensureUserProfile(for: res.user)
+            AnalyticsService.identifyUser(id: res.user.uid, isGuest: false, provider: "email_link")
+            AnalyticsService.track("guest_converted", properties: ["provider": "email"])
             _ = await cacheProfileImageForCurrentUser(reason: "link async")
         } else {
             let res = try await Auth.auth().signIn(withEmail: email, password: password)
             self.user = res.user
             self.isGuest = false
-            attachUserDocListenerIfNeeded(for: res.user)
             await ensureUserProfile(for: res.user)
+            AnalyticsService.identifyUser(id: res.user.uid, isGuest: false, provider: "email")
             _ = await cacheProfileImageForCurrentUser(reason: "signIn async 2")
         }
     }
@@ -404,33 +385,102 @@ final class AuthService: ObservableObject {
         let db = Firestore.firestore()
         let ref = db.collection("users").document(user.uid)
 
+        func sanitizeBaseUsername(_ source: String) -> String {
+            let base = source.trimmingCharacters(in: .whitespacesAndNewlines)
+            let lowered = base.lowercased()
+            let allowed = lowered.map { ch -> Character in
+                if ch.isLetter || ch.isNumber || ch == "_" { return ch }
+                if ch == "." || ch == "-" { return "_" }
+                return "_"
+            }
+            var candidate = String(allowed).replacingOccurrences(of: "__", with: "_")
+            candidate = candidate.trimmingCharacters(in: CharacterSet(charactersIn: "_"))
+            if candidate.isEmpty { candidate = "user" }
+            return candidate
+        }
+
         do {
             let snap = try await ref.getDocument()
             var updates: [String: Any] = [:]
 
             if !snap.exists {
-                let base = (user.email ?? user.uid).components(separatedBy: "@").first ?? "user"
-                let username = base.replacingOccurrences(of: ".", with: "_")
+                // Create basic profile
+                let onboardingName = UserDefaults.standard.string(forKey: "profile.userName")
+                let emailBase = (user.email ?? user.uid).components(separatedBy: "@").first ?? "user"
+                let initialBase = sanitizeBaseUsername(onboardingName ?? emailBase.replacingOccurrences(of: ".", with: "_"))
+                let username = initialBase
+
                 try await ref.setData([
+                    "id": user.uid,
                     "displayName": user.displayName ?? username,
                     "username": username,
                     "username_lower": username.lowercased(),
-                    "photoURL": user.photoURL?.absoluteString ?? ""
+                    "photoURL": user.photoURL?.absoluteString ?? "",
+                    "avatarURL": user.photoURL?.absoluteString ?? "",
+                    "bio": "",
+                    "createdAt": Timestamp(date: Date()),
+                    // Stats
+                    "stats": [
+                        "totalWorkouts": 0,
+                        "currentStreak": 0,
+                        "totalPRs": 0,
+                    ]
                 ])
-                print("[PROFILE] created profile for \(username)")
-            } else {
-                if snap.get("username") == nil {
-                    let base = (user.email ?? user.uid).components(separatedBy: "@").first ?? "user"
-                    let username = base.replacingOccurrences(of: ".", with: "_")
-                    updates["username"] = username
-                    updates["username_lower"] = username.lowercased()
+                print("[PROFILE] created basic profile for \(username)")
+
+                // Clear onboarding username if we used it
+                if onboardingName != nil {
+                    UserDefaults.standard.removeObject(forKey: "profile.userName")
                 }
+            } else {
+                // Read existing values for checks
+                let currentUsername = (snap.get("username") as? String) ?? ""
+                let hasUsernameField = snap.get("username") != nil
+
+                // Prefer onboarding/profile name if present and username is missing or empty
+                if !hasUsernameField || currentUsername.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    let onboardingName = UserDefaults.standard.string(forKey: "profile.userName")
+                    let source = onboardingName
+                        ?? (user.email?.components(separatedBy: "@").first ?? user.uid)
+                    let base = sanitizeBaseUsername(source.replacingOccurrences(of: ".", with: "_"))
+                    updates["username"] = base
+                    updates["username_lower"] = base.lowercased()
+                } else if snap.get("username_lower") == nil {
+                    // Backfill username_lower if missing but username exists
+                    updates["username_lower"] = currentUsername.lowercased()
+                }
+
                 if snap.get("displayName") == nil, let name = user.displayName {
                     updates["displayName"] = name
                 }
+                if snap.get("id") == nil {
+                    updates["id"] = user.uid
+                }
+                if snap.get("createdAt") == nil {
+                    updates["createdAt"] = Timestamp(date: Date())
+                }
+                if snap.get("stats") == nil {
+                    updates["stats"] = [
+                        "totalWorkouts": 0,
+                        "currentStreak": 0,
+                        "totalPRs": 0,
+                    ]
+                }
+                if snap.get("bio") == nil {
+                    updates["bio"] = ""
+                }
+                if snap.get("avatarURL") == nil {
+                    updates["avatarURL"] = user.photoURL?.absoluteString ?? ""
+                }
+                
                 if !updates.isEmpty {
                     try await ref.updateData(updates)
-                    print("[PROFILE] patched profile for \(user.uid)")
+                    print("[PROFILE] patched profile for \(user.uid) with keys:", Array(updates.keys))
+                    
+                    // Wenn wir einen Onboarding-Username verwendet haben: aufräumen
+                    if updates["username"] != nil {
+                        UserDefaults.standard.removeObject(forKey: "profile.userName")
+                    }
                 }
             }
         } catch {
@@ -595,8 +645,6 @@ extension AuthService {
                     }
                 }
 
-                self.userDocListener?.remove()
-                self.userDocListener = nil
                 self.user = nil
                 self.isGuest = false
                 self.clearLocalAvatarCache()
@@ -656,5 +704,41 @@ extension AuthService {
                 await deleteStorageFolderIfExists(prefix: dir.fullPath)
             }
         } catch { }
+    }
+    
+    // MARK: - Password Management
+    
+    func changePassword(currentPassword: String, newPassword: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let user = Auth.auth().currentUser, let email = user.email else {
+            completion(.failure(NSError(domain: "AuthService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user logged in"])))
+            return
+        }
+        
+        let credential = EmailAuthProvider.credential(withEmail: email, password: currentPassword)
+        
+        user.reauthenticate(with: credential) { _, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            user.updatePassword(to: newPassword) { error in
+                if let error = error {
+                    completion(.failure(error))
+                } else {
+                    completion(.success(()))
+                }
+            }
+        }
+    }
+    
+    func sendPasswordReset(email: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        Auth.auth().sendPasswordReset(withEmail: email) { error in
+            if let error = error {
+                completion(.failure(error))
+            } else {
+                completion(.success(()))
+            }
+        }
     }
 }

@@ -2,90 +2,140 @@ import ActivityKit
 import WidgetKit
 import SwiftUI
 
+private let liveAccent = Color(red: 0.30, green: 0.72, blue: 1.00)
+
 struct MovoLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: WorkoutActivityAttributes.self) { context in
             // Effektive Sprache bestimmen (ContentState → App Group/UserDefaults → Locale)
             let lang = effectiveLanguage(from: context)
+            let elapsed = "\(Int(context.state.elapsedTime) / 60)m"
+            let weight = formatWeightLong(
+                kg: context.state.totalWeight,
+                unitRaw: context.state.weightUnitRaw
+            )
+            let isActivity = context.state.modeRaw == "activity"
+            let title = isActivity && !context.state.activityTitle.isEmpty ? context.state.activityTitle : L("live.running", lang)
+            let distance = formatDistance(context.state.distanceKm)
 
-            HStack {
-                TrainingMetricView(
-                    icon: "figure.strengthtraining.traditional",
-                    label: L("live.sets", lang),
-                    value: "\(context.state.completedExercises)"
-                )
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(liveAccent.opacity(0.18))
+                            .frame(width: 42, height: 42)
+                        Image(systemName: isActivity ? context.state.activityIcon : "bolt.fill")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(liveAccent)
+                    }
 
-                Divider().frame(height: 40)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title)
+                            .font(.system(size: 16, weight: .heavy, design: .rounded))
+                            .foregroundStyle(.white)
+                        Text(L("live.keepGoing", lang))
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.56))
+                    }
 
-                TrainingMetricView(
-                    icon: "clock",
-                    label: L("live.duration", lang),
-                    value: "\(Int(context.state.elapsedTime) / 60)m"
-                )
+                    Spacer()
 
-                Divider().frame(height: 40)
+                    Text(elapsed)
+                        .font(.system(size: 24, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.white)
+                        .monospacedDigit()
+                }
 
-                // Gewicht mit korrekter Einheit (kg/lb) und lokalem Zahlformat
-                TrainingMetricView(
-                    icon: "scalemass",
-                    label: L("live.weight", lang),
-                    value: formatWeightLong(
-                        kg: context.state.totalWeight,
-                        unitRaw: context.state.weightUnitRaw
+                HStack(spacing: 10) {
+                    TrainingMetricView(
+                        icon: isActivity ? "point.topleft.down.curvedto.point.bottomright.up" : "checkmark.circle.fill",
+                        label: isActivity ? L("live.distance", lang) : L("live.sets", lang),
+                        value: isActivity ? distance : "\(context.state.completedExercises)"
                     )
-                )
+
+                    TrainingMetricView(
+                        icon: isActivity ? "speedometer" : "scalemass.fill",
+                        label: isActivity ? L("live.paceSpeed", lang) : L("live.weight", lang),
+                        value: isActivity ? (context.state.paceOrSpeed.isEmpty ? "—" : context.state.paceOrSpeed) : weight
+                    )
+                }
             }
-            .padding()
+            .padding(16)
             .frame(maxWidth: .infinity)
-            .background(Color(.systemBackground))
-            .activityBackgroundTint(Color(.systemBackground))
-            .activitySystemActionForegroundColor(Color.primary)
+            .background(
+                LinearGradient(
+                    colors: [Color(red: 0.05, green: 0.06, blue: 0.08), Color(red: 0.08, green: 0.10, blue: 0.12)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .activityBackgroundTint(Color.black)
+            .activitySystemActionForegroundColor(liveAccent)
 
         } dynamicIsland: { context in
             let lang = effectiveLanguage(from: context)
+            let elapsed = "\(Int(context.state.elapsedTime) / 60)m"
+            let shortWeight = formatWeightShort(
+                kg: context.state.totalWeight,
+                unitRaw: context.state.weightUnitRaw
+            )
+            let isActivity = context.state.modeRaw == "activity"
+            let title = isActivity && !context.state.activityTitle.isEmpty ? context.state.activityTitle : L("live.running", lang)
 
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    TrainingMetricMini(
-                        icon: "figure.strengthtraining.traditional",
-                        value: "\(context.state.completedExercises)"
+                    IslandMetricBlock(
+                        icon: isActivity ? "point.topleft.down.curvedto.point.bottomright.up" : "checkmark.circle.fill",
+                        label: isActivity ? L("live.distance", lang) : L("live.sets", lang),
+                        value: isActivity ? formatDistance(context.state.distanceKm) : "\(context.state.completedExercises)"
                     )
                 }
 
                 DynamicIslandExpandedRegion(.center) {
-                    VStack(spacing: 4) {
-                        Text("🏋️ " + L("live.running", lang))
-                            .font(.subheadline)
-                        HStack(spacing: 12) {
-                            TrainingMetricMini(
-                                icon: "clock",
-                                value: "\(Int(context.state.elapsedTime) / 60)m"
-                            )
-                            // Kurzformat ohne Leerzeichen, 0–1 Nachkommastellen
-                            TrainingMetricMini(
-                                icon: "scalemass",
-                                value: formatWeightShort(
-                                    kg: context.state.totalWeight,
-                                    unitRaw: context.state.weightUnitRaw
-                                )
-                            )
+                    VStack(spacing: 5) {
+                        HStack(spacing: 6) {
+                            Image(systemName: isActivity ? context.state.activityIcon : "bolt.fill")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundStyle(liveAccent)
+                            Text(title)
+                                .font(.system(size: 14, weight: .heavy, design: .rounded))
                         }
+                        Text(L("live.tapToContinue", lang))
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.secondary)
                     }
                 }
 
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text("⏱").font(.title3)
+                    IslandMetricBlock(
+                        icon: "clock.fill",
+                        label: L("live.duration", lang),
+                        value: elapsed
+                    )
+                }
+
+                DynamicIslandExpandedRegion(.bottom) {
+                    HStack(spacing: 8) {
+                        IslandPill(icon: isActivity ? "speedometer" : "scalemass.fill", text: isActivity ? (context.state.paceOrSpeed.isEmpty ? "—" : context.state.paceOrSpeed) : shortWeight)
+                        IslandPill(icon: isActivity ? context.state.activityIcon : "figure.strengthtraining.traditional", text: isActivity ? L("live.activity", lang) : L("live.strength", lang))
+                    }
+                    .padding(.top, 2)
                 }
 
             } compactLeading: {
-                Image(systemName: "figure.strengthtraining.traditional")
+                Image(systemName: isActivity ? context.state.activityIcon : "bolt.fill")
+                    .foregroundStyle(liveAccent)
 
             } compactTrailing: {
-                Text("\(Int(context.state.elapsedTime) / 60)m")
+                Text(elapsed)
+                    .font(.system(size: 13, weight: .bold))
+                    .monospacedDigit()
 
             } minimal: {
-                Text("🏋️")
+                Image(systemName: "bolt.fill")
+                    .foregroundStyle(liveAccent)
             }
+            .keylineTint(liveAccent)
         }
     }
 }
@@ -112,6 +162,11 @@ private func formatWeightShort(kg: Double, unitRaw: String) -> String {
     return (nf.string(from: NSNumber(value: value)) ?? "0") + symbol
 }
 
+private func formatDistance(_ km: Double) -> String {
+    guard km > 0 else { return "0.0km" }
+    return String(format: "%.2fkm", km)
+}
+
 private func convert(kg: Double, unitRaw: String) -> (Double, String) {
     if unitRaw.lowercased() == "lb" {
         return (kg * 2.20462262185, "lb")
@@ -127,14 +182,70 @@ struct TrainingMetricView: View {
     let label: String
     let value: String
     var body: some View {
-        VStack(spacing: 4) {
-            Label(value, systemImage: icon)
-                .font(.subheadline)
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(liveAccent)
+                .frame(width: 30, height: 30)
+                .background(Color.white.opacity(0.08))
+                .clipShape(Circle())
+            VStack(alignment: .leading, spacing: 2) {
+                Text(value)
+                    .font(.system(size: 16, weight: .heavy, design: .rounded))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                Text(label)
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(.white.opacity(0.48))
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity)
+        .background(Color.white.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+}
+
+struct IslandMetricBlock: View {
+    let icon: String
+    let label: String
+    let value: String
+
+    var body: some View {
+        VStack(spacing: 3) {
+            Image(systemName: icon)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(liveAccent)
+            Text(value)
+                .font(.system(size: 14, weight: .heavy, design: .rounded))
+                .monospacedDigit()
             Text(label)
-                .font(.caption2)
-                .foregroundColor(.gray)
+                .font(.system(size: 9, weight: .semibold))
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+struct IslandPill: View {
+    let icon: String
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Image(systemName: icon)
+                .font(.system(size: 10, weight: .bold))
+            Text(text)
+                .font(.system(size: 11, weight: .bold))
+                .lineLimit(1)
+        }
+        .foregroundStyle(.white.opacity(0.82))
+        .padding(.horizontal, 9)
+        .padding(.vertical, 6)
+        .background(Color.white.opacity(0.10))
+        .clipShape(Capsule())
     }
 }
 
@@ -180,13 +291,25 @@ private func L(_ key: String, _ lang: String) -> String {
         "live.sets": "Sätze",
         "live.duration": "Dauer",
         "live.weight": "Gewicht",
-        "live.running": "Training läuft"
+        "live.running": "Training läuft",
+        "live.keepGoing": "Weiter dranbleiben",
+        "live.tapToContinue": "Zum Fortsetzen öffnen",
+        "live.strength": "Kraft",
+        "live.distance": "Distanz",
+        "live.paceSpeed": "Tempo",
+        "live.activity": "Aktivität"
     ]
     let en: [String: String] = [
         "live.sets": "Sets",
         "live.duration": "Time",
         "live.weight": "Weight",
-        "live.running": "Workout running"
+        "live.running": "Workout running",
+        "live.keepGoing": "Keep going",
+        "live.tapToContinue": "Open to continue",
+        "live.strength": "Strength",
+        "live.distance": "Distance",
+        "live.paceSpeed": "Pace",
+        "live.activity": "Activity"
     ]
     let isDE = lang.hasPrefix("de")
     return (isDE ? de[key] : en[key]) ?? en[key] ?? key

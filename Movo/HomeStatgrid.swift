@@ -1,5 +1,6 @@
 import SwiftUI
 import HealthKit
+import Charts
 
 // MARK: - Home Stats Grid
 struct HomeStatsGrid: View {
@@ -37,6 +38,9 @@ struct HomeStatsGrid: View {
     
     // Sleep State
     @State private var sleepHours: Double = 0
+    
+    // Steps Graph Data
+    @State private var hourlySteps: [Double] = []
     
     // Weight history for Delta
     @State private var latestWeight: Double?
@@ -95,6 +99,7 @@ struct HomeStatsGrid: View {
         .onAppear {
             loadWeightHistory()
             loadSleepSummary()
+            loadHourlySteps()
         }
     }
     
@@ -104,12 +109,10 @@ struct HomeStatsGrid: View {
     private func cardView(for item: DashboardItem) -> some View {
         switch item {
         case .steps:
-            StatGridCard(
-                icon: item.icon,
-                iconColor: t.palette.primary,
+            StepsGraphCard(
+                steps: todaySteps,
                 title: item.title(using: appSettings),
-                value: "\(todaySteps.formatted())",
-                subtitle: "/ \(stepsGoal.formatted())",
+                hourlySteps: hourlySteps,
                 action: onOpenSteps
             )
             
@@ -350,5 +353,91 @@ struct HomeStatsGrid: View {
             formatter.dateFormat = "d. MMM"
             return formatter.string(from: date)
         }
+        
+    }
+        
+    private func loadHourlySteps() {
+        healthManager.fetchTodayHourlySteps { steps in
+            DispatchQueue.main.async {
+                self.hourlySteps = steps
+            }
+        }
     }
 }
+
+// MARK: - New Steps Graph Card
+struct StepsGraphCard: View {
+    let steps: Int
+    let title: String
+    let hourlySteps: [Double]
+    let action: () -> Void
+    
+    @Environment(\.colorScheme) private var colorScheme
+    
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                // Background
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(Color(.secondarySystemGroupedBackground)) // Adaptive
+                
+                VStack(alignment: .leading, spacing: 0) {
+                    
+                    Spacer()
+                    
+                    // Steps Count
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(steps)")
+                            .font(.system(size: 38, weight: .bold, design: .rounded))
+                            .foregroundStyle(.primary) // Adaptive
+                            .minimumScaleFactor(0.5)
+                            .lineLimit(1)
+                        
+                        Text(title)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.leading, 16)
+                    .padding(.bottom, 8) 
+                    
+                    // Chart
+                    Chart {
+                        ForEach(Array(hourlySteps.enumerated()), id: \.offset) { index, value in
+                            LineMark(
+                                x: .value("Hour", index),
+                                y: .value("Steps", value)
+                            )
+                            .interpolationMethod(.catmullRom)
+                            .foregroundStyle(Color.cyan)
+                            .lineStyle(StrokeStyle(lineWidth: 3))
+                            
+                            AreaMark(
+                                x: .value("Hour", index),
+                                y: .value("Steps", value)
+                            )
+                            .interpolationMethod(.catmullRom)
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color.cyan.opacity(0.3), Color.cyan.opacity(0.0)],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                        }
+                    }
+                    .chartXAxis(.hidden)
+                    .chartYAxis(.hidden)
+                    .frame(height: 50)
+                    .padding(.horizontal, 8)
+                    .padding(.bottom, 16)
+                }
+            }
+            .frame(height: 160) 
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+

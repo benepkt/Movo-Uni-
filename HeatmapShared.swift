@@ -24,17 +24,54 @@ public enum HeatmapShared {
         AppGroup.containerURL.appendingPathComponent("training_heatmap_snapshot.json")
     }
 
+    // A small writer actor to serialize and debounce disk writes so UI isn't blocked.
+    private actor HeatmapWriter {
+        static let shared = HeatmapWriter()
+
+        private var pending: HeatmapSnapshot?
+        private var isScheduled = false
+
+        func enqueue(_ snap: HeatmapSnapshot, to url: URL) async {
+            pending = snap
+            guard !isScheduled else { return }
+            isScheduled = true
+            await scheduleWrite(to: url)
+        }
+
+        private func scheduleWrite(to url: URL) async {
+            // Debounce a bit to coalesce multiple quick updates (e.g. logging sets rapidly)
+            do {
+                try await Task.sleep(nanoseconds: 300_000_000) // 300 ms
+            } catch { /* task cancelled */ }
+
+            guard let snap = pending else {
+                isScheduled = false
+                return
+            }
+
+            do {
+                let data = try JSONEncoder().encode(snap)
+                try data.write(to: url, options: .atomic)
+            } catch {
+                print("HeatmapShared.save error:", error)
+            }
+
+            // Reset state
+            pending = nil
+            isScheduled = false
+        }
+    }
+
     public static func load() -> HeatmapSnapshot? {
+        // Loading is fast enough for most cases; keep synchronous for simplicity.
         guard let data = try? Data(contentsOf: fileURL) else { return nil }
         return try? JSONDecoder().decode(HeatmapSnapshot.self, from: data)
     }
 
     public static func save(_ snap: HeatmapSnapshot) {
-        do {
-            let data = try JSONEncoder().encode(snap)
-            try data.write(to: fileURL, options: .atomic)
-        } catch {
-            print("HeatmapShared.save error:", error)
+        // Offload to the writer actor so we don't block the caller (e.g. Watch UI)
+        Task {
+            await HeatmapWriter.shared.enqueue(snap, to: fileURL)
         }
     }
 
@@ -69,6 +106,7 @@ public enum HeatmapShared {
             day = cal.date(byAdding: .day, value: 1, to: day)!
         }
 
+        // Save asynchronously (debounced) to avoid blocking UI
         save(HeatmapSnapshot(updated: Date(), days: out))
     }
 

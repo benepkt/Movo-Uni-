@@ -3,43 +3,92 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var trainingStore: TrainingStore
+    @EnvironmentObject var appSettings: AppSettings   // ✅ wichtig
+    @EnvironmentObject var deepLink: DeepLinkManager
+    @EnvironmentObject var templateStore: TemplateStore
+    @EnvironmentObject var challengeStore: ChallengeStore
+
+    @EnvironmentObject var exerciseLibrary: ExerciseLibrary
+    @EnvironmentObject var equipmentStore: EquipmentStore
+
     @StateObject var healthKitManager = HealthKitManager()
-
-
+    @State private var selection = 0
 
     var body: some View {
         if authService.user != nil || authService.isGuest {
-            // Benutzer ist eingeloggt oder als Gast unterwegs – Hauptinhalt anzeigen
-            TabView {
-                HomeView(trainingHistory: $trainingStore.history)
+            TabView(selection: $selection) {
+
+                HomeView(trainingHistory: $trainingStore.history, tabSelection: $selection)
+                    .tag(0)
                     .tabItem {
-                        Label("Training", systemImage: "figure.strengthtraining.traditional")
+                        Label {
+                            Text(appSettings.localized("tab.training"))
+                        } icon: {
+                            Image(systemName: "figure.strengthtraining.traditional")
+                        }
                     }
 
                 ExercisesView()
+                    .tag(1)
                     .tabItem {
-                        Label("Übungen", systemImage: "book")
+                        Label {
+                            Text(appSettings.localized("tab.exercises"))
+                        } icon: {
+                            Image(systemName: "dumbbell.fill")
+                        }
                     }
 
-                ChallengesDashboardView()
+                ProgrammeDashboardView()
+                    .tag(2)
                     .tabItem {
-                        Label("Challenges", systemImage: "star.fill")
-                    }
-
-                TrainingHistoryView()
-                    .tabItem {
-                        Label("Verlauf", systemImage: "clock.arrow.circlepath")
+                        Label {
+                            Text(appSettings.localized("tab.feed"))
+                        } icon: {
+                            Image(systemName: "calendar.badge.clock")
+                        }
                     }
 
                 StatisticsView()
+                    .tag(3)
                     .tabItem {
-                        Label("Statistik", systemImage: "chart.bar")
+                        Label {
+                            Text(appSettings.localized("tab.stats"))
+                        } icon: {
+                            Image(systemName: "chart.bar")
+                        }
                     }
+
+            }
+            .onAppear {
+                AnalyticsService.screen(screenName(for: selection))
+            }
+            .onChange(of: selection) { newSelection in
+                AnalyticsService.screen(screenName(for: newSelection))
+            }
+            .sheet(item: $deepLink.templateToImport) { template in
+                TemplateImportView(template: template)
+                    .environmentObject(templateStore)
+
+                    .environmentObject(appSettings)
+                    .environmentObject(exerciseLibrary)
+            }
+            .sheet(item: $deepLink.programToImport) { program in
+                TrainingProgramImportView(program: program)
+                    .environmentObject(challengeStore)
             }
         } else {
-            // Nicht eingeloggt – LoginView anzeigen
             LoginView()
-                .environmentObject(authService)  // Wichtig für LoginView
+                .environmentObject(authService)
+        }
+    }
+
+    private func screenName(for selection: Int) -> String {
+        switch selection {
+        case 0: return "training_home"
+        case 1: return "exercise_library"
+        case 2: return "training_plan"
+        case 3: return "statistics"
+        default: return "unknown_tab"
         }
     }
 }

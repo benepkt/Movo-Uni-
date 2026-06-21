@@ -3,7 +3,7 @@ import SwiftUI
 struct ActivityHeatmap: View {
     let entries: [TrainingEntry]
     var onOpenYear: (() -> Void)? = nil
-    
+
     @Environment(\.designTokens) private var t
     @EnvironmentObject var appSettings: AppSettings
     @Environment(\.scenePhase) private var scenePhase
@@ -194,8 +194,10 @@ struct ActivityHeatmap: View {
                                 Text(span.name)
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
-                                    .frame(width: CGFloat(span.columns) * (cellSize + columnSpacing),
-                                           alignment: .leading)
+                                    .frame(
+                                        width: CGFloat(span.columns) * (cellSize + columnSpacing),
+                                        alignment: .leading
+                                    )
                             }
                         }
 
@@ -232,17 +234,17 @@ struct ActivityHeatmap: View {
 
             // Legende
             HStack(spacing: 4) {
-                Text("Weniger")
+                Text(appSettings.localized("common.less"))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                
+
                 ForEach(0..<5, id: \.self) { i in
                     RoundedRectangle(cornerRadius: 2)
                         .fill(color(forLevel: i))
                         .frame(width: 10, height: 10)
                 }
-                
-                Text("Mehr")
+
+                Text(appSettings.localized("common.more"))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
@@ -264,24 +266,24 @@ struct ActivityHeatmap: View {
             }
         }
     }
-    
+
     private func cell(_ day: DayData, size: CGFloat = 10) -> some View {
         let inYear = day.date >= yearJan1 && day.date <= yearDec31
         let fill: Color = inYear
             ? color(for: day.count)
             : Color(.systemGray4).opacity(0.4) // überstehende Tage dezent, nicht „weiß“
-        
+
         return RoundedRectangle(cornerRadius: 2)
             .fill(fill)
             .frame(width: size, height: size)
     }
-    
+
     private func color(for count: Int) -> Color {
         if count == 0 { return Color(.systemGray5) }
         let intensity = min(Double(count) * 0.3 + 0.2, 1.0)
         return t.palette.primary.opacity(intensity)
     }
-    
+
     private func color(forLevel level: Int) -> Color {
         if level == 0 { return Color(.systemGray5) }
         let intensity = min(max(0.0, Double(level) * 0.2 + 0.2), 1.0)

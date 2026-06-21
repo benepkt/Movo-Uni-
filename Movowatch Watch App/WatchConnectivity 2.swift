@@ -195,7 +195,7 @@ extension WatchConnectivity {
 
         exercise.sets[setIdx].reps = reps
         exercise.sets[setIdx].weight = weight
-        exercise.sets[setIdx].completed = exercise.sets[setIdx].completed // keep as-is
+        exercise.sets[setIdx].completed = true
         exercise.setCount = exercise.sets.count
         payload.exercises[exIdx] = exercise
 
@@ -222,4 +222,3 @@ extension WatchConnectivity {
         self.activeWorkout = payload
     }
 }
-

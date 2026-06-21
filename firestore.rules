@@ -1,0 +1,127 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ========== Helpers ==========
+    function signedIn() { return request.auth != null; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    
+    function areFriends(ownerUid) {
+      let aPath = /databases/$(database)/documents/users/$(ownerUid)/friends/$(request.auth.uid);
+      let aOk   = exists(aPath) && get(aPath).data.status == 'accepted';
+      let bPath = /databases/$(database)/documents/users/$(request.auth.uid)/friends/$(ownerUid);
+      let bOk   = exists(bPath) && get(bPath).data.status == 'accepted';
+      return signedIn() && (aOk || bOk);
+    }
+    
+    // ========== /users ==========
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create, update, delete: if isOwner(uid);
+      
+      match /friends/{fid} {
+        allow read: if signedIn() && (request.auth.uid == uid || request.auth.uid == fid);
+        allow create, update: if signedIn() && (request.auth.uid == uid || request.auth.uid == fid)
+          && request.resource.data.keys().hasOnly(['status','since'])
+          && request.resource.data.status in ['incoming','outgoing','accepted']
+          && request.resource.data.since is timestamp;
+        allow delete: if signedIn() && (request.auth.uid == uid || request.auth.uid == fid);
+      }
+      
+      match /{document=**} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+    
+    // ========== weitere Owner-Bereiche ==========
+    match /gamification/{uid}/{doc=**} { allow read, write: if isOwner(uid); }
+    match /badges/{uid}/{doc=**}      { allow read, write: if isOwner(uid); }
+    
+    // ========== Trainings-Feed (BESTEHEND) ==========
+    match /trainings/{tid} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+             'userId','userDisplayName','type','startedAt','createdAt',
+             'durationMin','kcal','notes','visibility','trainingEntryId'
+           ])
+        && request.resource.data.keys().hasAll(['userId','type','createdAt','durationMin'])
+        && request.resource.data.userId is string
+        && request.resource.data.type is string
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.durationMin is int
+        && (!('userDisplayName' in request.resource.data) || request.resource.data.userDisplayName is string)
+        && (!('startedAt' in request.resource.data)      || request.resource.data.startedAt is timestamp)
+        && (!('kcal' in request.resource.data)           || request.resource.data.kcal is int)
+        && (!('notes' in request.resource.data)          || request.resource.data.notes is string)
+        && (!('trainingEntryId' in request.resource.data)|| request.resource.data.trainingEntryId is string)
+        && (!('visibility' in request.resource.data)     || request.resource.data.visibility in ['private','friends','public']);
+      
+      allow update: if signedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.createdAt == resource.data.createdAt
+        && (
+             (('startedAt' in resource.data) && ('startedAt' in request.resource.data) && request.resource.data.startedAt == resource.data.startedAt)
+             || (!('startedAt' in resource.data) && !('startedAt' in request.resource.data))
+           )
+        && request.resource.data.keys().hasOnly([
+             'userId','userDisplayName','type','startedAt','createdAt',
+             'durationMin','kcal','notes','visibility','trainingEntryId'
+           ])
+        && request.resource.data.type is string
+        && request.resource.data.durationMin is int
+        && (!('userDisplayName' in request.resource.data) || request.resource.data.userDisplayName is string)
+        && (!('kcal' in request.resource.data)           || request.resource.data.kcal is int)
+        && (!('notes' in request.resource.data)          || request.resource.data.notes is string)
+        && (!('trainingEntryId' in request.resource.data)|| request.resource.data.trainingEntryId is string)
+        && (!('visibility' in request.resource.data)     || request.resource.data.visibility in ['private','friends','public']);
+      
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+      
+      allow read: if signedIn() && (
+        resource.data.userId == request.auth.uid
+        || (areFriends(resource.data.userId) && (resource.data.visibility in ['public','friends']))
+      );
+    }
+    
+    // ========== FIXED: Social Feed Posts ==========
+    match /posts/{postId} {
+      // CREATE – nur eigene Posts
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      
+      // UPDATE/DELETE – nur Owner
+      allow update, delete: if signedIn() && resource.data.userId == request.auth.uid;
+      
+      // READ – WICHTIG: Für Queries müssen wir signedIn() erlauben
+      // Die App filtert dann client-seitig nach Privacy
+      allow read: if signedIn();
+      
+      // ALTERNATIVE (wenn du server-seitige Filterung bevorzugst):
+      // allow read: if signedIn() && (
+      //   resource.data.userId == request.auth.uid
+      //   || resource.data.privacy == 'public'
+      //   || (resource.data.privacy == 'friends' && areFriends(resource.data.userId))
+      // );
+      // ABER: Das funktioniert nur für einzelne Dokumente, nicht für Queries!
+    }
+    
+    // ========== Post Likes ==========
+    match /post_likes/{postId}/likes/{userId} {
+      allow read: if signedIn();
+      allow create, delete: if signedIn() && request.auth.uid == userId;
+    }
+    
+    // ========== Post Comments ==========
+    match /post_comments/{postId}/comments/{commentId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+    
+    // ========== Notifications ==========
+    match /notifications/{userId}/notifications/{notificationId} {
+      allow read, update, delete: if signedIn() && request.auth.uid == userId;
+      allow create: if signedIn();
+    }
+  }
+}

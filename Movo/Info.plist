@@ -27,9 +27,12 @@
 	</array>
 	<key>GIDClientID</key>
 	<string>43945641252-i6t34bn3kghuopktfvbb7k0f864g9egd.apps.googleusercontent.com</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Movo nutzt die Kamera, um geteilte Trainingsplan-QR-Codes zu scannen.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
+		<string>remote-notification</string>
 	</array>
 </dict>
 </plist>

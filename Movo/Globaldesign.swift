@@ -19,10 +19,11 @@ struct AppThemeHost<Content: View>: View {
         content()
             .environment(\.designTokens, design.tokens)
             .environment(\.colorScheme, effectiveScheme)
+            .environment(\.locale, appSettings.locale)
             .tint(design.tokens.palette.primary)
             .animation(.easeInOut(duration: 0.22), value: design.tokens.colors)
             .animation(nil, value: appSettings.themeMode)
-            .id(appSettings.themeMode)
+            .id("\(appSettings.themeMode.rawValue)-\(appSettings.language)")
     }
 }
 
@@ -238,151 +239,6 @@ private struct DarkPillModifier: ViewModifier {
             .padding(.horizontal, 14).padding(.vertical, 8)
             .background(Capsule(style: .continuous).fill(Color.white.opacity(0.06)))
             .overlay(Capsule(style: .continuous).stroke(Color.white.opacity(0.10), lineWidth: 0.5))
-    }
-}
-
-// MARK: - Design Settings View (unverändert – darf Palette zeigen)
-struct DesignSettingsView: View {
-    @EnvironmentObject var design: DesignSettingsStore
-    @EnvironmentObject var appSettings: AppSettings
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.designTokens) private var t
-
-    private let grid = [GridItem(.flexible(), spacing: 14),
-                        GridItem(.flexible(), spacing: 14)]
-
-    var body: some View {
-        List {
-            Section {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Vorschau")
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(.secondary)
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Circle().fill(t.palette.primary).frame(width: 10, height: 10)
-                            Text(t.colors.title)
-                                .font(.headline.weight(.bold))
-                                .foregroundStyle(t.palette.onSurface)
-                            Spacer()
-                            Capsule().fill(t.palette.primary).frame(width: 36, height: 6)
-                        }
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(t.palette.secondary.opacity(0.18))
-                            .frame(height: 46)
-                        HStack(spacing: 10) {
-                            Capsule().fill(t.palette.primary).frame(height: 26)
-                            Capsule().fill(t.palette.secondary).frame(height: 26)
-                        }
-                    }
-                    .padding(14)
-                    .background(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(LinearGradient(colors: [t.palette.surfaceA, t.palette.surfaceB],
-                                                 startPoint: .topLeading, endPoint: .bottomTrailing))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .stroke(t.palette.outline, lineWidth: 1)
-                    )
-                }
-                .listRowInsets(.init(top: 8, leading: 0, bottom: 8, trailing: 0))
-            }
-
-            Section(header: Text("Farbschema").font(.footnote.weight(.semibold))) {
-                LazyVGrid(columns: grid, spacing: 14) {
-                    ForEach(DSColorPreset.allCases) { preset in
-                        PresetCellDSV(preset: preset,
-                                      selected: design.tokens.colors == preset)
-                            .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                            .onTapGesture { design.tokens.colors = preset }
-                    }
-                }
-                .listRowInsets(.init(top: 8, leading: 0, bottom: 8, trailing: 0))
-            }
-
-            Section(header: Text("Erscheinungsbild").font(.footnote.weight(.semibold))) {
-                Picker("Modus", selection: $appSettings.themeMode) {
-                    Text("System").tag(AppThemeMode.system)
-                    Text("Hell").tag(AppThemeMode.light)
-                    Text("Dunkel").tag(AppThemeMode.dark)
-                }
-                .pickerStyle(.segmented)
-                .padding(.vertical, 4)
-            }
-
-            Section {
-                Button(role: .destructive) {
-                    design.tokens.colors = .movo
-                    appSettings.themeMode = .system
-                } label: {
-                    Label("Zurücksetzen auf Standard", systemImage: "arrow.counterclockwise")
-                }
-            }
-        }
-        .navigationTitle("Design & Darstellung")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Fertig") { dismiss() }
-            }
-        }
-    }
-}
-
-// MARK: - Preset Cell
-private struct PresetCellDSV: View {
-    let preset: DSColorPreset
-    let selected: Bool
-
-    var body: some View {
-        let p = preset.palette
-        VStack(alignment: .leading, spacing: 10) {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(LinearGradient(colors: [p.surfaceA, p.surfaceB],
-                                     startPoint: .topLeading, endPoint: .bottomTrailing))
-                .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(p.outline, lineWidth: 1))
-                .overlay(
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Circle().fill(p.primary).frame(width: 10, height: 10)
-                            Text(preset.title).font(.headline.weight(.bold))
-                            Spacer()
-                            Capsule().fill(p.primary).frame(width: 36, height: 6)
-                        }
-                        RoundedRectangle(cornerRadius: 10).fill(p.secondary.opacity(0.18)).frame(height: 46)
-                        HStack(spacing: 10) {
-                            Capsule().fill(p.primary).frame(height: 26)
-                            Capsule().fill(p.secondary).frame(height: 26)
-                        }
-                    }
-                    .padding(14)
-                    .foregroundStyle(p.onSurface)
-                )
-                .frame(height: 140)
-
-            HStack(spacing: 8) {
-                let swatches: [Color] = [p.primary, p.secondary, p.positive, p.warning]
-                ForEach(Array(swatches.enumerated()), id: \.0) { _, c in
-                    Circle().fill(c).frame(width: 16, height: 16)
-                }
-                Spacer()
-                if selected {
-                    Image(systemName: "checkmark.circle.fill").foregroundColor(p.primary)
-                }
-            }
-        }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color(UIColor.secondarySystemBackground))
-                .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 6)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(selected ? p.primary.opacity(0.6) : .clear, lineWidth: 2)
-        )
     }
 }
 

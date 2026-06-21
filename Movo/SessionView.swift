@@ -631,6 +631,7 @@ struct SessionView: View {
             entry.title == entryTitle && Calendar.current.isDate(entry.date, inSameDayAs: today)
         }
 
+        var xpReward = 25
         if !alreadyExists {
             let allStations = week.warmUp + week.exercises + week.coolDown
             let plan = WorkoutPlanner.planned(
@@ -644,17 +645,14 @@ struct SessionView: View {
                 duration: TimeInterval(plan.totalSeconds),
                 totalWeight: nil
             )
+            xpReward = GamificationManager.xpReward(for: entry)
             DispatchQueue.main.async { trainingStore.add(entry: entry) }
         }
 
         // Gamification
-        gm.addXP(100); gm.addCoins(20); gm.updateStreak()
+        gm.addXP(xpReward); gm.addCoins(20); gm.updateStreak()
         gm.unlockBadge(.firstWorkout)
         if gm.streak == 7 { gm.unlockBadge(.streak7) }
-
-        withAnimation(.spring()) {
-            rewardMessage = RewardMessage(text: "+100 XP & +20 Coins", icon: "star.fill", color: .blue)
-        }
     }
 
     // MARK: - Subviews
@@ -1042,7 +1040,7 @@ struct CompletionView: View {
                 .padding(.horizontal)
 
                 VStack(spacing: 12) {
-                    RewardRow(icon: "star.fill", color: .blue,   text: "+100 XP")
+                    RewardRow(icon: "trophy.fill", color: .blue, text: "Level-Fortschritt gespeichert")
                     RewardRow(icon: "bitcoinsign.circle.fill", color: .orange, text: "+20 Coins")
                 }
 

@@ -63,7 +63,7 @@ final class SyncService: ObservableObject {
     private let training: TrainingStore
     private let challenges: ChallengeStore
     private let notes: GlobalExerciseNotesStore
-    private let purchaseManager: PurchaseManager
+
 
     // MARK: - Listener
     private var trainingListener: ListenerRegistration?
@@ -146,7 +146,7 @@ final class SyncService: ObservableObject {
 
     private func pauseListeners() {
         self.trainingListener?.remove();     self.trainingListener = nil
-        self.templateListener?.remove();     self.templateListener = nil
+               self.templateListener?.remove();     self.templateListener = nil
         self.pulseListener?.remove();        self.pulseListener = nil
         self.entitlementsListener?.remove(); self.entitlementsListener = nil
     }
@@ -232,14 +232,13 @@ final class SyncService: ObservableObject {
     // MARK: - Init
     init(auth: AuthService,
          training: TrainingStore,
-         challenges: ChallengeStore,
-         notes: GlobalExerciseNotesStore,
-         purchaseManager: PurchaseManager) {
+        challenges: ChallengeStore,
+         notes: GlobalExerciseNotesStore) {
         self.auth = auth
         self.training = training
         self.challenges = challenges
         self.notes = notes
-        self.purchaseManager = purchaseManager
+
 
         // Manual-Sync standardmäßig aktivieren (nur beim allerersten Start)
         if UserDefaults.standard.object(forKey: kManualKey) == nil {
@@ -360,7 +359,7 @@ final class SyncService: ObservableObject {
             UserDefaults.standard.removeObject(forKey: "gm.xp.cloud")
             UserDefaults.standard.removeObject(forKey: "gm.coins.cloud")
 
-            await MainActor.run { self.purchaseManager.applyRemotePremium(false) }
+
             NotificationCenter.default.post(name: .gmResetForGuest, object: nil)
 
             self.wireHistoryPushes()
@@ -411,7 +410,7 @@ final class SyncService: ObservableObject {
         let snap = try await self.col("templates").getDocuments()
         let remote: [TrainingTemplateDTO] = snap.documents.compactMap { try? TrainingTemplateDTO.fromSnapshot($0) }
         let mapped: [TrainingTemplate] = remote.map {
-            TrainingTemplate(id: $0.templateId, name: $0.name, exercises: $0.exercises, ownerId: self.activeUid ?? "", updatedAt: $0.updatedAt)
+            TrainingTemplate(id: $0.templateId, name: $0.name, exercises: $0.exercises, activities: $0.activities.map { $0.toModel() }, ownerId: self.activeUid ?? "", updatedAt: $0.updatedAt)
         }
         print("[pullTemplatesOnce] fetched \(mapped.count) templates")
         await MainActor.run {
@@ -439,8 +438,7 @@ final class SyncService: ObservableObject {
         self.entitlementsListener = self.doc("entitlements")
             .addSnapshotListener { [weak self] snap, _ in
                 guard let self = self else { return }
-                let isPro = (snap?.data()?["pro"] as? Bool) ?? false
-                Task { @MainActor in self.purchaseManager.applyRemotePremium(isPro) }
+                // Pro check irrelevant now
             }
     }
 
@@ -513,6 +511,7 @@ final class SyncService: ObservableObject {
                         id: dto.templateId,
                         name: dto.name,
                         exercises: dto.exercises,
+                        activities: dto.activities.map { $0.toModel() },
                         ownerId: self.activeUid ?? "",
                         updatedAt: dto.updatedAt
                     )
@@ -694,15 +693,17 @@ final class SyncService: ObservableObject {
             await MainActor.run { self.training.history = [] }
         }
 
-        // Templates
+        // Templates: Nur setzen, wenn ein Snapshot existiert.
+        // Falls kein Snapshot vorhanden ist, NICHT überschreiben – TemplateStore
+        // hat ggf. bereits lokal (per templates.<uid>.v1) geladen.
         if let data = UserDefaults.standard.data(forKey: tKey),
            let dtos = try? JSONDecoder().decode([TrainingTemplateDTO].self, from: data) {
             let items: [TrainingTemplate] = dtos.map {
-                TrainingTemplate(id: $0.templateId, name: $0.name, exercises: $0.exercises, ownerId: isGuest ? "guest" : (uid ?? ""), updatedAt: $0.updatedAt)
+                TrainingTemplate(id: $0.templateId, name: $0.name, exercises: $0.exercises, activities: $0.activities.map { $0.toModel() }, ownerId: isGuest ? "guest" : (uid ?? ""), updatedAt: $0.updatedAt)
             }
             await MainActor.run { self.training.templates = items }
         } else {
-            await MainActor.run { self.training.templates = [] }
+            // kein Setzen auf [] mehr – bestehende Templates bleiben erhalten
         }
     }
 
@@ -879,7 +880,7 @@ extension SyncService {
             if let snap = try? await base.collection("templates").getDocuments() {
                 let remote = snap.documents.compactMap { try? TrainingTemplateDTO.fromSnapshot($0) }
                 let mapped: [TrainingTemplate] = remote.map {
-                    TrainingTemplate(id: $0.templateId, name: $0.name, exercises: $0.exercises, ownerId: self.activeUid ?? "", updatedAt: $0.updatedAt)
+                    TrainingTemplate(id: $0.templateId, name: $0.name, exercises: $0.exercises, activities: $0.activities.map { $0.toModel() }, ownerId: self.activeUid ?? "", updatedAt: $0.updatedAt)
                 }
                 await MainActor.run { self.training.templates = mapped }
             }

@@ -49,7 +49,7 @@ struct StepsWeeklyProvider: TimelineProvider {
     private func makeEntry() -> StepsWeeklyEntry {
         let snap = StepsShared.load()
         let last7 = Array((snap?.lastDays ?? []).suffix(7)) // älteste -> neueste
-        let premium = snap?.premiumUnlocked ?? false
+        let premium = true
         return StepsWeeklyEntry(
             date: Date(),
             goal: snap?.goal ?? 10000,

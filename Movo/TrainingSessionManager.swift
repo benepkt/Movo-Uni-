@@ -11,9 +11,13 @@ class TrainingSessionManager: ObservableObject {
     @Published var startTime: Date?
     @Published var elapsedTime: TimeInterval = 0.0
     @Published var exercises: [Exercise] = []
+    @Published var activities: [WorkoutActivityBlock] = []
     @Published var trainingTitle: String = ""
     @Published var completedExercises: Int = 0
     @Published var totalWeightLifted: Double = 0.0
+    @Published var workoutStartSource: String = "quick_start"
+    @Published var workoutTemplateId: String?
+    @Published var workoutHasActivePlan: Bool = false
 
     private var timer: Timer?
 
@@ -23,16 +27,62 @@ class TrainingSessionManager: ObservableObject {
         var startedAt: Date
         var elapsed: TimeInterval
         var exercises: [Exercise]
+        var activities: [WorkoutActivityBlock]
+        var startSource: String
+        var templateId: String?
+        var hasActivePlan: Bool
+
+        enum CodingKeys: String, CodingKey {
+            case title, startedAt, elapsed, exercises, activities, startSource, templateId, hasActivePlan
+        }
+
+        init(
+            title: String,
+            startedAt: Date,
+            elapsed: TimeInterval,
+            exercises: [Exercise],
+            activities: [WorkoutActivityBlock] = [],
+            startSource: String = "quick_start",
+            templateId: String? = nil,
+            hasActivePlan: Bool = false
+        ) {
+            self.title = title
+            self.startedAt = startedAt
+            self.elapsed = elapsed
+            self.exercises = exercises
+            self.activities = activities
+            self.startSource = startSource
+            self.templateId = templateId
+            self.hasActivePlan = hasActivePlan
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            title = try container.decodeIfPresent(String.self, forKey: .title) ?? ""
+            startedAt = try container.decodeIfPresent(Date.self, forKey: .startedAt) ?? Date()
+            elapsed = try container.decodeIfPresent(TimeInterval.self, forKey: .elapsed) ?? 0
+            exercises = try container.decodeIfPresent([Exercise].self, forKey: .exercises) ?? []
+            activities = try container.decodeIfPresent([WorkoutActivityBlock].self, forKey: .activities) ?? []
+            startSource = try container.decodeIfPresent(String.self, forKey: .startSource) ?? "quick_start"
+            templateId = try container.decodeIfPresent(String.self, forKey: .templateId)
+            hasActivePlan = try container.decodeIfPresent(Bool.self, forKey: .hasActivePlan) ?? false
+        }
     }
 
     private let snapshotKey = "session.resume.snapshot.v1"
 
     // MARK: - Public session controls
 
-    func startTraining(title: String? = nil) {
+    func startTraining(title: String? = nil,
+                       source: String = "quick_start",
+                       templateId: String? = nil,
+                       hasActivePlan: Bool = false) {
         if let t = title {
             trainingTitle = t
         }
+        workoutStartSource = source
+        workoutTemplateId = templateId
+        workoutHasActivePlan = hasActivePlan
         startTime = Date()
         elapsedTime = 0
         isTrainingActive = true
@@ -51,7 +101,11 @@ class TrainingSessionManager: ObservableObject {
         startTime = nil
         elapsedTime = 0
         exercises = []
+        activities = []
         trainingTitle = ""
+        workoutStartSource = "quick_start"
+        workoutTemplateId = nil
+        workoutHasActivePlan = false
         completedExercises = 0
         totalWeightLifted = 0
         clearResumeSnapshot()
@@ -142,7 +196,11 @@ class TrainingSessionManager: ObservableObject {
             title: trainingTitle,
             startedAt: startedAt,
             elapsed: elapsedTime,
-            exercises: exercises
+            exercises: exercises,
+            activities: activities,
+            startSource: workoutStartSource,
+            templateId: workoutTemplateId,
+            hasActivePlan: workoutHasActivePlan
         )
         do {
             let data = try JSONEncoder().encode(snap)
@@ -166,6 +224,10 @@ class TrainingSessionManager: ObservableObject {
         // Restore state
         trainingTitle = snapshot.title
         exercises = snapshot.exercises
+        activities = snapshot.activities
+        workoutStartSource = snapshot.startSource
+        workoutTemplateId = snapshot.templateId
+        workoutHasActivePlan = snapshot.hasActivePlan
         startTime = snapshot.startedAt
         elapsedTime = snapshot.elapsed
         isTrainingActive = true
@@ -183,8 +245,7 @@ class TrainingSessionManager: ObservableObject {
             print("[Session] exercise not found for id:", workoutExerciseId)
             return
         }
-        let kg6 = (weightKg * 1_000_000).rounded() / 1_000_000
-        let weightString = String(format: "%.6f", kg6).trimmingCharacters(in: .whitespacesAndNewlines)
+        let weightString = formatWeightForStorage(weightKg)
 
         let set = ExerciseSet(
             weight: weightString,
@@ -217,8 +278,7 @@ class TrainingSessionManager: ObservableObject {
             return
         }
 
-        let kg6 = (weightKg * 1_000_000).rounded() / 1_000_000
-        let weightString = String(format: "%.6f", kg6).trimmingCharacters(in: .whitespacesAndNewlines)
+        let weightString = formatWeightForStorage(weightKg)
 
         exercises[exIndex].sets[setIndex].reps = String(reps)
         exercises[exIndex].sets[setIndex].weight = weightString
@@ -277,9 +337,21 @@ class TrainingSessionManager: ObservableObject {
 
     private func parseWeight(_ text: String) -> Double {
         let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if t.contains("."), !t.contains(","),
+           let d = Double(t) {
+            return d
+        }
         if let d = Double(t) { return d }
         let swapped = t.replacingOccurrences(of: ",", with: ".")
         return Double(swapped) ?? 0
+    }
+
+    private func formatWeightForStorage(_ kg: Double) -> String {
+        let rounded = (kg * 10).rounded() / 10
+        if abs(rounded - rounded.rounded()) < 0.0001 {
+            return "\(Int(rounded.rounded()))"
+        }
+        return String(format: "%.1f", locale: Locale(identifier: "en_US_POSIX"), rounded)
     }
 
     // Kopiert Werte des Quell‑Satzes in alle „leeren“ Sätze derselben Übung (ohne den Quell‑Satz).

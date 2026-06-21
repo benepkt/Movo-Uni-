@@ -9,6 +9,7 @@ struct AddTemplateView: View {
     @State private var name: String
     // WICHTIG: Reihenfolge beibehalten -> Array statt Set
     @State private var selectedExercises: [String]
+    @State private var selectedActivities: [WorkoutActivityBlock]
     @State private var searchText: String = ""
 
     var onSave: (TrainingTemplate) -> Void
@@ -22,9 +23,11 @@ struct AddTemplateView: View {
             _name = State(initialValue: template.name)
             // Reihenfolge aus bestehender Vorlage übernehmen
             _selectedExercises = State(initialValue: template.exercises)
+            _selectedActivities = State(initialValue: template.activities)
         } else {
             _name = State(initialValue: "")
             _selectedExercises = State(initialValue: [])
+            _selectedActivities = State(initialValue: [])
         }
     }
 
@@ -34,6 +37,14 @@ struct AddTemplateView: View {
         } else {
             return exerciseLibrary.exercises.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
+    }
+    
+    // Localization helpers with fallback
+    private var isDE: Bool { appSettings.language.lowercased().hasPrefix("de") }
+    private func localizedOrDefault(_ key: String, de: String, en: String) -> String {
+        let v = appSettings.localized(key)
+        if v == key { return isDE ? de : en }
+        return v
     }
 
     var body: some View {
@@ -62,7 +73,7 @@ struct AddTemplateView: View {
 
                 // Optional: ausgewählte Übungen anzeigen (in Reihenfolge)
                 if !selectedExercises.isEmpty {
-                    Section(appSettings.localized("template.selected")) {
+                    Section(localizedOrDefault("template.selected", de: "Ausgewählt", en: "Selected")) {
                         ForEach(Array(selectedExercises.enumerated()), id: \.offset) { idx, name in
                             HStack {
                                 Text("\(idx + 1). \(name)")
@@ -74,6 +85,22 @@ struct AddTemplateView: View {
                                         .foregroundColor(.red)
                                 }
                                 .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                }
+
+                if !selectedActivities.isEmpty {
+                    Section(isDE ? "Gym-Geräte" : "Gym machines") {
+                        ForEach(selectedActivities) { activity in
+                            HStack(spacing: 10) {
+                                Text(activity.emoji ?? "🚴")
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(activity.title)
+                                    Text(activityTemplateSubtitle(activity))
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
                             }
                         }
                     }
@@ -149,11 +176,21 @@ struct AddTemplateView: View {
             id: existingTemplate?.id ?? UUID().uuidString,
             name: name,
             exercises: selectedExercises,     // Reihenfolge beibehalten
+            activities: selectedActivities,
             ownerId: owner,
             updatedAt: Date()                 // wichtig für späteren Push/Merge
         )
         onSave(template)                      // Parent schreibt in TrainingStore (lokal)
         dismiss()
+    }
+
+    private func activityTemplateSubtitle(_ activity: WorkoutActivityBlock) -> String {
+        var parts: [String] = []
+        let minutes = Int((activity.duration / 60).rounded())
+        if minutes > 0 { parts.append("\(minutes) min") }
+        if let distance = activity.distanceKm, distance > 0 { parts.append(String(format: "%.2f km", distance)) }
+        if let level = activity.resistanceLevel, level > 0 { parts.append("Level \(Int(level.rounded()))") }
+        return parts.isEmpty ? (isDE ? "In Vorlage gespeichert" : "Saved in template") : parts.joined(separator: " · ")
     }
 }
 

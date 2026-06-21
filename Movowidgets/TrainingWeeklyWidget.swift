@@ -65,7 +65,7 @@ struct TrainingWeekProvider: AppIntentTimelineProvider {
         let last = snap?.lastWeeks.last
 
         // Premium-Flag aus StepsShared (eine zentrale Quelle)
-        let premium = StepsShared.load()?.premiumUnlocked ?? false
+        let premium = true
 
         let goal = goalOverride ?? snap?.goalPerWeek ?? 3
 

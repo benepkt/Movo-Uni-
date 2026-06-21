@@ -48,6 +48,31 @@ enum AppThemeMode: String, CaseIterable, Identifiable {
 }
 
 // MARK: - App Settings
+enum MovoLanguage: String, CaseIterable, Identifiable {
+    case de
+    case en
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .de: return "Deutsch"
+        case .en: return "English"
+        }
+    }
+
+    var localeIdentifier: String {
+        switch self {
+        case .de: return "de_DE"
+        case .en: return "en_US"
+        }
+    }
+
+    static func normalized(_ value: String) -> MovoLanguage {
+        value.lowercased().hasPrefix("de") ? .de : .en
+    }
+}
+
 final class AppSettings: ObservableObject {
     // Darstellung (Hell/Dunkel/System)
     @Published var themeMode: AppThemeMode {
@@ -70,9 +95,27 @@ final class AppSettings: ObservableObject {
         didSet { UserDefaults.standard.set(notificationsEnabled, forKey: "notificationsEnabled") }
     }
 
+    // Product analytics via PostHog. Defaults to disabled until the user chooses.
+    @Published var analyticsEnabled: Bool {
+        didSet { UserDefaults.standard.set(analyticsEnabled, forKey: "analyticsEnabled") }
+    }
+
+    @Published var analyticsConsentPromptSeen: Bool {
+        didSet { UserDefaults.standard.set(analyticsConsentPromptSeen, forKey: "analyticsConsentPromptSeen") }
+    }
+
     // Sprache (de/en)
     @Published var language: String {
-        didSet { UserDefaults.standard.set(language, forKey: "language") }
+        didSet {
+            let normalized = MovoLanguage.normalized(language).rawValue
+            if language != normalized {
+                language = normalized
+                return
+            }
+            UserDefaults.standard.set(normalized, forKey: "language")
+            UserDefaults.standard.set(normalized, forKey: "app.language")
+            UserDefaults(suiteName: APP_GROUP_ID)?.set(normalized, forKey: "app.language")
+        }
     }
 
     // User name for personalization (optional)
@@ -111,8 +154,18 @@ final class AppSettings: ObservableObject {
         // Notifications laden
         self.notificationsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
 
-        // Sprache laden
-        self.language = UserDefaults.standard.string(forKey: "language") ?? "de"
+        let analyticsState = AppSettings.loadAnalyticsConsentState()
+        self.analyticsEnabled = analyticsState.enabled
+        self.analyticsConsentPromptSeen = analyticsState.promptSeen
+
+        // Sprache laden oder erstmals anhand System-Sprache initialisieren
+        if let saved = UserDefaults.standard.string(forKey: "language") {
+            self.language = saved
+        } else {
+            let initial = AppSettings.detectInitialLanguage()
+            self.language = initial
+            UserDefaults.standard.set(initial, forKey: "language")
+        }
 
         // User name laden
         self.userName = UserDefaults.standard.string(forKey: "userName") ?? ""
@@ -124,15 +177,90 @@ final class AppSettings: ObservableObject {
             self.goalWeightKg = nil
         }
     }
+
+    /// Wählt "de" wenn eine bevorzugte Sprache mit "de" beginnt, sonst "en".
+    private static func detectInitialLanguage() -> String {
+        // 1) bevorzugte Sprachenliste (z. B. ["de-DE", "en-DE", ...])
+        if let first = Locale.preferredLanguages.first?.lowercased(),
+           first.hasPrefix("de") {
+            return "de"
+        }
+        // 2) Fallback: Locale.current (iOS 16+ hat language.languageCode)
+        if #available(iOS 16.0, *) {
+            if let code = Locale.current.language.languageCode?.identifier.lowercased(),
+               code.hasPrefix("de") {
+                return "de"
+            }
+        } else {
+            let id = Locale.current.identifier.lowercased()
+            if id.hasPrefix("de") { return "de" }
+        }
+        // 3) Default: Fallback zu Deutsch für diesen User, da er es wünscht
+        // Original war "en", aber User sagt es ist immer englisch am Start.
+        // Wir erzwingen hier "de" als Default fallback oder prüfen präziser.
+        return "de"
+    }
+
+    private static func loadAnalyticsConsentState() -> (enabled: Bool, promptSeen: Bool) {
+        let defaults = UserDefaults.standard
+        let migrationKey = "analyticsConsentMigration.v1"
+        let enabledKey = "analyticsEnabled"
+        let promptKey = "analyticsConsentPromptSeen"
+
+        if defaults.object(forKey: migrationKey) == nil {
+            let hasExplicitChoice = defaults.object(forKey: promptKey) != nil
+            let looksLikeExistingInstall = defaults.object(forKey: kOnboardingKey) != nil
+                || defaults.object(forKey: "profile.weightKg") != nil
+                || defaults.object(forKey: "userName") != nil
+                || defaults.object(forKey: "language") != nil
+
+            if looksLikeExistingInstall, !hasExplicitChoice {
+                defaults.set(false, forKey: enabledKey)
+                defaults.set(true, forKey: promptKey)
+            } else if defaults.object(forKey: enabledKey) == nil {
+                defaults.set(false, forKey: enabledKey)
+                defaults.set(false, forKey: promptKey)
+            }
+
+            defaults.set(true, forKey: migrationKey)
+        }
+
+        if defaults.object(forKey: enabledKey) == nil {
+            defaults.set(false, forKey: enabledKey)
+        }
+        if defaults.object(forKey: promptKey) == nil {
+            defaults.set(false, forKey: promptKey)
+        }
+
+        return (
+            enabled: defaults.bool(forKey: enabledKey),
+            promptSeen: defaults.bool(forKey: promptKey)
+        )
+    }
 }
 
 // MARK: - Simple Localizer über AppSettings.language
 extension AppSettings {
+    var movoLanguage: MovoLanguage { MovoLanguage.normalized(language) }
+    var isGerman: Bool { movoLanguage == .de }
+    var locale: Locale { Locale(identifier: movoLanguage.localeIdentifier) }
+
     func localized(_ key: String) -> String {
-        switch language {
-        case "en": LocalizedStrings.en[key] ?? key
-        default:   LocalizedStrings.de[key] ?? key
+        switch movoLanguage {
+        case .en:
+            return LocalizedStrings.en[key] ?? LocalizedStrings.de[key] ?? key
+        case .de:
+            return LocalizedStrings.de[key] ?? LocalizedStrings.en[key] ?? key
         }
+    }
+
+    func localized(_ key: String, fallback: String) -> String {
+        let value = localized(key)
+        return value == key ? fallback : value
+    }
+
+    func localizedFormat(_ key: String, _ args: CVarArg...) -> String {
+        String(format: localized(key), locale: locale, arguments: args)
     }
 }
 

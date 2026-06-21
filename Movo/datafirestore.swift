@@ -33,6 +33,17 @@ struct TrainingEntryDTO: Identifiable, Codable {
     var updatedAt: Date
     var id: String { entryId }
     var cardioType: String?      // "Outdoor Walk", "Outdoor Run", ...
+    var distanceKm: Double?
+    var activeCalories: Double?
+    var averageHeartRate: Double?
+    var elevationGainM: Double?
+    var perceivedEffort: Int?
+    var activityNote: String?
+    var healthSourceName: String?
+    var healthDeviceName: String?
+    var healthWorkoutActivityRaw: UInt?
+    var isIndoorWorkout: Bool?
+    var activities: [WorkoutActivityBlockDTO]
 
 
     // optional route polyline
@@ -49,7 +60,18 @@ struct TrainingEntryDTO: Identifiable, Codable {
         emoji: String?,
         updatedAt: Date,
         routePolyline: String? = nil, // optional param
-        cardioType: String? = nil
+        cardioType: String? = nil,
+        distanceKm: Double? = nil,
+        activeCalories: Double? = nil,
+        averageHeartRate: Double? = nil,
+        elevationGainM: Double? = nil,
+        perceivedEffort: Int? = nil,
+        activityNote: String? = nil,
+        healthSourceName: String? = nil,
+        healthDeviceName: String? = nil,
+        healthWorkoutActivityRaw: UInt? = nil,
+        isIndoorWorkout: Bool? = nil,
+        activities: [WorkoutActivityBlockDTO] = []
 
     ) {
         self.docId = docId
@@ -63,6 +85,17 @@ struct TrainingEntryDTO: Identifiable, Codable {
         self.updatedAt = updatedAt
         self.routePolyline = routePolyline
         self.cardioType = cardioType
+        self.distanceKm = distanceKm
+        self.activeCalories = activeCalories
+        self.averageHeartRate = averageHeartRate
+        self.elevationGainM = elevationGainM
+        self.perceivedEffort = perceivedEffort
+        self.activityNote = activityNote
+        self.healthSourceName = healthSourceName
+        self.healthDeviceName = healthDeviceName
+        self.healthWorkoutActivityRaw = healthWorkoutActivityRaw
+        self.isIndoorWorkout = isIndoorWorkout
+        self.activities = activities
 
     }
 
@@ -79,7 +112,18 @@ struct TrainingEntryDTO: Identifiable, Codable {
             emoji: e.emoji,
             updatedAt: e.updatedAt,
             routePolyline: e.routePolyline,
-            cardioType: e.cardioType
+            cardioType: e.cardioType,
+            distanceKm: e.loggedDistanceKm,
+            activeCalories: e.activeCalories,
+            averageHeartRate: e.averageHeartRate,
+            elevationGainM: e.elevationGainM,
+            perceivedEffort: e.perceivedEffort,
+            activityNote: e.activityNote,
+            healthSourceName: e.healthSourceName,
+            healthDeviceName: e.healthDeviceName,
+            healthWorkoutActivityRaw: e.healthWorkoutActivityRaw,
+            isIndoorWorkout: e.isIndoorWorkout,
+            activities: e.activities.map(WorkoutActivityBlockDTO.init)
 
         )
     }
@@ -96,7 +140,18 @@ struct TrainingEntryDTO: Identifiable, Codable {
                 emoji: data["emoji"] as? String,
                 updatedAt: FSConv.date(data["updatedAt"]),
                 routePolyline: data["routePolyline"] as? String,
-                cardioType: data["cardioType"] as? String
+                cardioType: data["cardioType"] as? String,
+                distanceKm: data["distanceKm"] as? Double,
+                activeCalories: data["activeCalories"] as? Double,
+                averageHeartRate: data["averageHeartRate"] as? Double,
+                elevationGainM: data["elevationGainM"] as? Double,
+                perceivedEffort: data["perceivedEffort"] as? Int,
+                activityNote: data["activityNote"] as? String,
+                healthSourceName: data["healthSourceName"] as? String,
+                healthDeviceName: data["healthDeviceName"] as? String,
+                healthWorkoutActivityRaw: (data["healthWorkoutActivityRaw"] as? UInt) ?? (data["healthWorkoutActivityRaw"] as? NSNumber)?.uintValue,
+                isIndoorWorkout: data["isIndoorWorkout"] as? Bool,
+                activities: (data["activities"] as? [[String: Any]] ?? []).map(WorkoutActivityBlockDTO.fromDict)
             )
         }
 
@@ -118,9 +173,144 @@ struct TrainingEntryDTO: Identifiable, Codable {
             if let cardioType {
                 dict["cardioType"] = cardioType
             }
+            if let distanceKm { dict["distanceKm"] = distanceKm }
+            if let activeCalories { dict["activeCalories"] = activeCalories }
+            if let averageHeartRate { dict["averageHeartRate"] = averageHeartRate }
+            if let elevationGainM { dict["elevationGainM"] = elevationGainM }
+            if let perceivedEffort { dict["perceivedEffort"] = perceivedEffort }
+            if let activityNote, !activityNote.isEmpty { dict["activityNote"] = activityNote }
+            if let healthSourceName, !healthSourceName.isEmpty { dict["healthSourceName"] = healthSourceName }
+            if let healthDeviceName, !healthDeviceName.isEmpty { dict["healthDeviceName"] = healthDeviceName }
+            if let healthWorkoutActivityRaw { dict["healthWorkoutActivityRaw"] = healthWorkoutActivityRaw }
+            if let isIndoorWorkout { dict["isIndoorWorkout"] = isIndoorWorkout }
+            if !activities.isEmpty { dict["activities"] = activities.map { $0.toDict() } }
             return dict
         }
     }
+
+struct WorkoutActivityBlockDTO: Codable {
+    var id: String
+    var title: String
+    var kindRaw: String?
+    var emoji: String?
+    var duration: TimeInterval
+    var distanceKm: Double?
+    var resistanceLevel: Double?
+    var inclinePercent: Double?
+    var averageWatts: Double?
+    var activeCalories: Double?
+    var averageHeartRate: Double?
+    var elevationGainM: Double?
+    var perceivedEffort: Int?
+    var note: String?
+
+    init(from block: WorkoutActivityBlock) {
+        self.id = block.id.uuidString
+        self.title = block.title
+        self.kindRaw = block.kindRaw
+        self.emoji = block.emoji
+        self.duration = block.duration
+        self.distanceKm = block.distanceKm
+        self.resistanceLevel = block.resistanceLevel
+        self.inclinePercent = block.inclinePercent
+        self.averageWatts = block.averageWatts
+        self.activeCalories = block.activeCalories
+        self.averageHeartRate = block.averageHeartRate
+        self.elevationGainM = block.elevationGainM
+        self.perceivedEffort = block.perceivedEffort
+        self.note = block.note
+    }
+
+    static func fromDict(_ d: [String: Any]) -> WorkoutActivityBlockDTO {
+        WorkoutActivityBlockDTO(
+            id: d["id"] as? String ?? UUID().uuidString,
+            title: d["title"] as? String ?? "",
+            kindRaw: d["kindRaw"] as? String,
+            emoji: d["emoji"] as? String,
+            duration: d["duration"] as? TimeInterval ?? 0,
+            distanceKm: d["distanceKm"] as? Double,
+            resistanceLevel: d["resistanceLevel"] as? Double,
+            inclinePercent: d["inclinePercent"] as? Double,
+            averageWatts: d["averageWatts"] as? Double,
+            activeCalories: d["activeCalories"] as? Double,
+            averageHeartRate: d["averageHeartRate"] as? Double,
+            elevationGainM: d["elevationGainM"] as? Double,
+            perceivedEffort: d["perceivedEffort"] as? Int,
+            note: d["note"] as? String
+        )
+    }
+
+    init(
+        id: String,
+        title: String,
+        kindRaw: String? = nil,
+        emoji: String?,
+        duration: TimeInterval,
+        distanceKm: Double?,
+        resistanceLevel: Double?,
+        inclinePercent: Double?,
+        averageWatts: Double?,
+        activeCalories: Double?,
+        averageHeartRate: Double?,
+        elevationGainM: Double?,
+        perceivedEffort: Int?,
+        note: String?
+    ) {
+        self.id = id
+        self.title = title
+        self.kindRaw = kindRaw
+        self.emoji = emoji
+        self.duration = duration
+        self.distanceKm = distanceKm
+        self.resistanceLevel = resistanceLevel
+        self.inclinePercent = inclinePercent
+        self.averageWatts = averageWatts
+        self.activeCalories = activeCalories
+        self.averageHeartRate = averageHeartRate
+        self.elevationGainM = elevationGainM
+        self.perceivedEffort = perceivedEffort
+        self.note = note
+    }
+
+    func toDict() -> [String: Any] {
+        var dict: [String: Any] = [
+            "id": id,
+            "title": title,
+            "duration": duration
+        ]
+        if let kindRaw { dict["kindRaw"] = kindRaw }
+        if let emoji { dict["emoji"] = emoji }
+        if let distanceKm { dict["distanceKm"] = distanceKm }
+        if let resistanceLevel { dict["resistanceLevel"] = resistanceLevel }
+        if let inclinePercent { dict["inclinePercent"] = inclinePercent }
+        if let averageWatts { dict["averageWatts"] = averageWatts }
+        if let activeCalories { dict["activeCalories"] = activeCalories }
+        if let averageHeartRate { dict["averageHeartRate"] = averageHeartRate }
+        if let elevationGainM { dict["elevationGainM"] = elevationGainM }
+        if let perceivedEffort { dict["perceivedEffort"] = perceivedEffort }
+        if let note, !note.isEmpty { dict["note"] = note }
+        return dict
+    }
+
+    func toModel() -> WorkoutActivityBlock {
+        WorkoutActivityBlock(
+            id: UUID(uuidString: id) ?? UUID(),
+            title: title,
+            kindRaw: kindRaw,
+            emoji: emoji,
+            duration: duration,
+            distanceKm: distanceKm,
+            resistanceLevel: resistanceLevel,
+            inclinePercent: inclinePercent,
+            averageWatts: averageWatts,
+            activeCalories: activeCalories,
+            averageHeartRate: averageHeartRate,
+            elevationGainM: elevationGainM,
+            perceivedEffort: perceivedEffort,
+            note: note
+        )
+    }
+}
 
 
 // Exercise DTO
@@ -181,20 +371,36 @@ struct TrainingTemplateDTO: Identifiable, Codable {
     var templateId: String
     var name: String
     var exercises: [String]
+    var activities: [WorkoutActivityBlockDTO]
     var updatedAt: Date
 
     var id: String { templateId }
 
-    init(docId: String?, templateId: String, name: String, exercises: [String], updatedAt: Date) {
+    enum CodingKeys: String, CodingKey {
+        case docId, templateId, name, exercises, activities, updatedAt
+    }
+
+    init(docId: String?, templateId: String, name: String, exercises: [String], activities: [WorkoutActivityBlockDTO] = [], updatedAt: Date) {
         self.docId = docId
         self.templateId = templateId
         self.name = name
         self.exercises = exercises
+        self.activities = activities
         self.updatedAt = updatedAt
     }
 
     init(from t: TrainingTemplate, updatedAt: Date = Date()) {
-        self.init(docId: nil, templateId: t.id, name: t.name, exercises: t.exercises, updatedAt: updatedAt)
+        self.init(docId: nil, templateId: t.id, name: t.name, exercises: t.exercises, activities: t.activities.map(WorkoutActivityBlockDTO.init), updatedAt: updatedAt)
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        docId = try container.decodeIfPresent(String.self, forKey: .docId)
+        templateId = try container.decodeIfPresent(String.self, forKey: .templateId) ?? UUID().uuidString
+        name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
+        exercises = try container.decodeIfPresent([String].self, forKey: .exercises) ?? []
+        activities = try container.decodeIfPresent([WorkoutActivityBlockDTO].self, forKey: .activities) ?? []
+        updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt) ?? Date()
     }
 
     static func fromSnapshot(_ doc: DocumentSnapshot) throws -> TrainingTemplateDTO {
@@ -204,6 +410,7 @@ struct TrainingTemplateDTO: Identifiable, Codable {
             templateId: data["templateId"] as? String ?? doc.documentID,
             name: data["name"] as? String ?? "",
             exercises: data["exercises"] as? [String] ?? [],
+            activities: (data["activities"] as? [[String: Any]] ?? []).map(WorkoutActivityBlockDTO.fromDict),
             updatedAt: FSConv.date(data["updatedAt"])
         )
     }
@@ -213,6 +420,7 @@ struct TrainingTemplateDTO: Identifiable, Codable {
             "templateId": templateId,
             "name": name,
             "exercises": exercises,
+            "activities": activities.map { $0.toDict() },
             "updatedAt": FieldValue.serverTimestamp()
         ]
     }
@@ -300,7 +508,18 @@ extension TrainingEntry {
             emoji: r.emoji,
             updatedAt: r.updatedAt,
             routePolyline: r.routePolyline,
-            cardioType: r.cardioType
+            cardioType: r.cardioType,
+            distanceKm: r.distanceKm,
+            activeCalories: r.activeCalories,
+            averageHeartRate: r.averageHeartRate,
+            elevationGainM: r.elevationGainM,
+            perceivedEffort: r.perceivedEffort,
+            activityNote: r.activityNote,
+            healthSourceName: r.healthSourceName,
+            healthDeviceName: r.healthDeviceName,
+            healthWorkoutActivityRaw: r.healthWorkoutActivityRaw,
+            isIndoorWorkout: r.isIndoorWorkout,
+            activities: r.activities.map { $0.toModel() }
         )
     }
 
@@ -322,7 +541,18 @@ extension TrainingEntry {
             emoji: r.emoji,
             updatedAt: r.updatedAt,
             routePolyline: r.routePolyline ?? self.routePolyline,
-            cardioType: r.cardioType ?? self.cardioType
+            cardioType: r.cardioType ?? self.cardioType,
+            distanceKm: r.distanceKm ?? self.loggedDistanceKm,
+            activeCalories: r.activeCalories ?? self.activeCalories,
+            averageHeartRate: r.averageHeartRate ?? self.averageHeartRate,
+            elevationGainM: r.elevationGainM ?? self.elevationGainM,
+            perceivedEffort: r.perceivedEffort ?? self.perceivedEffort,
+            activityNote: r.activityNote ?? self.activityNote,
+            healthSourceName: r.healthSourceName ?? self.healthSourceName,
+            healthDeviceName: r.healthDeviceName ?? self.healthDeviceName,
+            healthWorkoutActivityRaw: r.healthWorkoutActivityRaw ?? self.healthWorkoutActivityRaw,
+            isIndoorWorkout: r.isIndoorWorkout ?? self.isIndoorWorkout,
+            activities: r.activities.isEmpty ? self.activities : r.activities.map { $0.toModel() }
         )
     }
 }

@@ -7,8 +7,13 @@ import CoreLocation
 struct TrainingDetailView: View {
     let training: TrainingEntry
     @EnvironmentObject var appSettings: AppSettings
+    @EnvironmentObject var trainingStore: TrainingStore
+    @Environment(\.designTokens) private var t
 
     @AppStorage("units.weight") private var weightUnit: WeightUnit = .kg
+    @State private var editedActivities: [WorkoutActivityBlock] = []
+    @State private var didLoadActivities = false
+    @State private var activityEditTarget: WorkoutActivityBlock?
 
     // WEEK vs RUN vs STRENGTH
     private var isWeek: Bool {
@@ -23,8 +28,8 @@ struct TrainingDetailView: View {
     // MARK: - Run Analytics
 
     private var runDistanceKm: Double? {
-        // falls du später ein echtes Feld hast -> hier umstellen
-        extractDistanceKm(from: training.title)
+        if let logged = training.loggedDistanceKm, logged > 0 { return logged }
+        return extractDistanceKm(from: training.title)
     }
 
     private var runAnalytics: RunAnalytics? {
@@ -51,42 +56,109 @@ struct TrainingDetailView: View {
     // MARK: - Body
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                if isWeek {
-                    weekSection
-                } else if isRun {
-                    runSection
-                } else {
-                    strengthSection
+        ZStack {
+            detailBackground
+
+            ScrollView {
+                VStack(spacing: 22) {
+                    detailHero
+                    if isWeek {
+                        weekSection
+                    } else if isRun {
+                        runSection
+                    } else {
+                        strengthSection
+                    }
                 }
+                .padding(.vertical, 18)
+                .padding(.horizontal, 18)
             }
-            .padding(.vertical)
-            .padding(.horizontal)
         }
         .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(appSettings.localized("details.title"))
+        .navigationTitle("")
+        .toolbarColorScheme(.dark, for: .navigationBar)
+        .preferredColorScheme(.dark)
+        .onAppear {
+            if !didLoadActivities {
+                editedActivities = training.activities
+                didLoadActivities = true
+            }
+        }
+        .sheet(item: $activityEditTarget) { activity in
+            TrainingActivityEditSheet(
+                activity: activity,
+                isDE: appSettings.language.lowercased().hasPrefix("de"),
+                accent: t.palette.primary
+            ) { updated in
+                updateStoredActivity(updated)
+            }
+        }
+    }
+
+    private var detailBackground: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            RadialGradient(
+                colors: [t.palette.primary.opacity(0.36), Color.blue.opacity(0.14), .clear],
+                center: .topLeading,
+                startRadius: 24,
+                endRadius: 430
+            )
+            .ignoresSafeArea()
+            RadialGradient(
+                colors: [Color.cyan.opacity(0.11), .clear],
+                center: .bottomTrailing,
+                startRadius: 28,
+                endRadius: 360
+            )
+            .ignoresSafeArea()
+        }
+    }
+
+    private var detailHero: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(detailKindTitle)
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(t.palette.primary)
+                    Text(detailTitle)
+                        .font(.system(size: 34, weight: .heavy, design: .rounded))
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.75)
+                    Text(dateString)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white.opacity(0.56))
+                }
+                Spacer()
+                Text(training.emoji ?? (isRun ? "🔥" : "💪"))
+                    .font(.system(size: 34))
+                    .frame(width: 56, height: 56)
+                    .background(Circle().fill(.white.opacity(0.10)))
+                    .overlay(Circle().stroke(.white.opacity(0.13), lineWidth: 1))
+            }
+            DetailMetaChips(items: isRun ? runMetaItems : (isWeek ? weekMetaItems : strengthMetaItems))
+        }
+    }
+
+    private var detailTitle: String {
+        if isWeek {
+            return localizedWeekTitle(training.title, weekFormat: appSettings.localized("week.number"))
+        }
+        return training.title.isEmpty ? L("training.training", "Training") : training.title
+    }
+
+    private var detailKindTitle: String {
+        if isWeek { return L("details.plan", "Plan") }
+        if isRun { return cardioTypeText }
+        return L("details.strength", "Krafttraining")
     }
 
     // MARK: - WEEK SECTION
 
     private var weekSection: some View {
         VStack(alignment: .leading, spacing: 20) {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(localizedWeekTitle(training.title,
-                                        weekFormat: appSettings.localized("week.number")))
-                    .font(.system(size: 34, weight: .heavy, design: .rounded))
-                    .foregroundColor(appSettings.accentColor)
-
-                DetailMetaChips(items: [
-                    .init(icon: "calendar", title: dateString),
-                    .init(icon: "figure.strengthtraining.traditional",
-                          title: "\(training.exercises.count) \(L("details.exercises", "Übungen"))"),
-                    .init(icon: "square.grid.3x3.fill",
-                          title: "3 \(L("rounds", "Runden"))")
-                ])
-            }
-
             let plan = plannedTimingForWeekEntry()
             HStack(spacing: 12) {
                 DetailMetricCard(
@@ -105,15 +177,18 @@ struct TrainingDetailView: View {
                 ForEach(training.exercises) { ex in
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
-                            Text(ex.name).font(.headline)
+                            Text(ex.name)
+                                .font(.headline.weight(.heavy))
+                                .foregroundStyle(.white)
                             Spacer()
                             Text("35s × 3 \(L("rounds.short", "Rdn"))")
                                 .font(.footnote.weight(.semibold))
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(Capsule().fill(Color(.systemBackground)))
+                                .foregroundStyle(.white.opacity(0.78))
+                                .background(Capsule().fill(Color.white.opacity(0.08)))
                                 .overlay(
-                                    Capsule().stroke(Color(.separator), lineWidth: 0.5)
+                                    Capsule().stroke(Color.white.opacity(0.12), lineWidth: 1)
                                 )
                         }
                         HStack(spacing: 8) {
@@ -127,11 +202,22 @@ struct TrainingDetailView: View {
                     .padding(14)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .fill(Color(.secondarySystemBackground))
+                            .fill(Color.white.opacity(0.08))
                     )
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.white.opacity(0.12), lineWidth: 1))
                 }
             }
         }
+    }
+
+    private var weekMetaItems: [DetailMetaChips.Item] {
+        [
+            .init(icon: "calendar", title: dateString),
+            .init(icon: "figure.strengthtraining.traditional",
+                  title: "\(training.exercises.count) \(L("details.exercises", "Übungen"))"),
+            .init(icon: "square.grid.3x3.fill",
+                  title: "3 \(L("rounds", "Runden"))")
+        ]
     }
 
     private func plannedTimingForWeekEntry() -> (minutes: Int, kcal: Int) {
@@ -155,39 +241,36 @@ struct TrainingDetailView: View {
 
     private var runSection: some View {
         VStack(alignment: .leading, spacing: 20) {
-            // LARGE Distance at top with icon
-            if let dist = runDistanceKm {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(String(format: "%.2f", dist).replacingOccurrences(of: ".", with: ","))
-                        .font(.system(size: 64, weight: .bold))
-                        .monospacedDigit()
-                        .foregroundStyle(.primary)
-                    
-                    Image(systemName: "figure.run")
-                        .font(.system(size: 48, weight: .medium))
-                        .foregroundStyle(.green)
-                }
-            }
-            
-            // Activity type
-            Text(cardioTypeText)
-                .font(.title2.weight(.semibold))
-            
-            // Date/time badges
-            DetailMetaChips(items: runMetaItems)
-
-            // 4 Summary-Karten im 2×2 Grid
             if let analytics = runAnalytics {
-                RunSummaryGrid(analytics: analytics, durationText: runDurationText)
+                RunSummaryGrid(
+                    analytics: analytics,
+                    durationText: runDurationText,
+                    cardioType: cardioTypeText,
+                    activeCalories: training.activeCalories,
+                    averageHeartRate: training.averageHeartRate,
+                    elevationGainM: training.elevationGainM,
+                    perceivedEffort: training.perceivedEffort
+                )
             } else {
-                HStack(spacing: 12) {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                     DetailMetricCard(
                         title: L("details.duration", "Dauer"),
                         value: runDurationText,
                         icon: "clock"
                     )
+                    if let calories = training.activeCalories {
+                        DetailMetricCard(title: L("run.calories", "Kalorien"), value: "\(Int(calories.rounded())) kcal", icon: "flame.fill")
+                    }
+                    if let hr = training.averageHeartRate {
+                        DetailMetricCard(title: "Ø Puls", value: "\(Int(hr.rounded())) bpm", icon: "heart.fill")
+                    }
+                    if let effort = training.perceivedEffort {
+                        DetailMetricCard(title: L("details.effort", "Anstrengung"), value: "\(effort)/10", icon: "gauge.with.dots.needle.67percent")
+                    }
                 }
             }
+
+            activityDetailsCard
 
             // Karte
             if let analytics = runAnalytics, !analytics.coordinates.isEmpty {
@@ -205,6 +288,78 @@ struct TrainingDetailView: View {
         }
     }
 
+    private var activityDetailsCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label(L("details.activityData", "Aktivitätsdaten"), systemImage: "waveform.path.ecg")
+                .font(.headline.weight(.heavy))
+                .foregroundStyle(.white)
+
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                if let distance = runDistanceKm {
+                    compactDetail("Distanz", String(format: "%.2f km", distance), "point.topleft.down.curvedto.point.bottomright.up")
+                }
+                compactDetail("Dauer", runDurationText, "timer")
+                if let calories = training.activeCalories {
+                    compactDetail("Kalorien", "\(Int(calories.rounded())) kcal", "flame.fill")
+                }
+                if let hr = training.averageHeartRate {
+                    compactDetail("Ø Puls", "\(Int(hr.rounded())) bpm", "heart.fill")
+                }
+                if let elevation = training.elevationGainM {
+                    compactDetail("Höhenmeter", "\(Int(elevation.rounded())) m", "mountain.2.fill")
+                }
+                if let effort = training.perceivedEffort {
+                    compactDetail("Anstrengung", "\(effort)/10", "gauge.with.dots.needle.67percent")
+                }
+            }
+
+            if let note = training.activityNote,
+               !note.isEmpty,
+               training.healthSourceName == nil,
+               training.healthDeviceName == nil {
+                Text(note)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.white.opacity(0.62))
+                    .padding(.top, 2)
+            }
+
+            if training.healthSourceName != nil || training.healthDeviceName != nil || training.isIndoorWorkout != nil {
+                HStack(spacing: 8) {
+                    Image(systemName: "heart.text.square.fill")
+                        .foregroundStyle(t.palette.primary)
+                    Text(healthSourceText)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.white.opacity(0.52))
+                        .lineLimit(2)
+                    Spacer(minLength: 0)
+                }
+                .padding(.top, 2)
+            }
+        }
+        .padding(16)
+        .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(.white.opacity(0.08)))
+        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(.white.opacity(0.12), lineWidth: 1))
+    }
+
+    private func compactDetail(_ title: String, _ value: String, _ icon: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .foregroundStyle(t.palette.primary)
+                .frame(width: 18)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(value)
+                    .font(.subheadline.weight(.heavy))
+                    .foregroundStyle(.white)
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.48))
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.white.opacity(0.07)))
+    }
+
     private var runMetaItems: [DetailMetaChips.Item] {
         var items: [DetailMetaChips.Item] = [
             .init(icon: "calendar", title: dateString)
@@ -219,14 +374,6 @@ struct TrainingDetailView: View {
 
     private var strengthSection: some View {
         VStack(alignment: .leading, spacing: 20) {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(training.title)
-                    .font(.system(size: 34, weight: .heavy, design: .rounded))
-                    .foregroundColor(appSettings.accentColor)
-
-                DetailMetaChips(items: strengthMetaItems)
-            }
-
             HStack(spacing: 12) {
                 DetailMetricCard(
                     title: L("details.duration", "Dauer"),
@@ -248,8 +395,79 @@ struct TrainingDetailView: View {
                     DetailExerciseCard(exercise: ex, unit: weightUnit)
                 }
             }
-            .padding(.bottom, 20)
+
+            if !displayActivities.isEmpty {
+                embeddedActivitiesCard
+            }
         }
+        .padding(.bottom, 20)
+    }
+
+    private var embeddedActivitiesCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Label(L("details.embeddedActivities", "Aktivitäten im Training"), systemImage: "figure.outdoor.cycle")
+                .font(.headline.weight(.heavy))
+                .foregroundStyle(.white)
+
+            VStack(spacing: 10) {
+                ForEach(displayActivities) { activity in
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 10) {
+                            Text(activity.emoji ?? "🔥")
+                                .font(.title3)
+                                .frame(width: 38, height: 38)
+                                .background(Circle().fill(.white.opacity(0.09)))
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(activity.title)
+                                    .font(.subheadline.weight(.heavy))
+                                    .foregroundStyle(.white)
+                                Text(activitySubtitle(activity))
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.white.opacity(0.54))
+                            }
+                            Spacer(minLength: 0)
+                            Button {
+                                activityEditTarget = activity
+                            } label: {
+                                Image(systemName: "pencil")
+                                    .foregroundStyle(t.palette.primary)
+                                    .frame(width: 34, height: 34)
+                                    .background(Circle().fill(.white.opacity(0.08)))
+                            }
+                            .buttonStyle(.plain)
+                        }
+
+                        if let note = activity.note, !note.isEmpty {
+                            Text(note)
+                                .font(.footnote.weight(.medium))
+                                .foregroundStyle(.white.opacity(0.58))
+                        }
+                    }
+                    .padding(13)
+                    .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(.white.opacity(0.07)))
+                }
+            }
+        }
+        .padding(16)
+        .background(RoundedRectangle(cornerRadius: 22, style: .continuous).fill(.white.opacity(0.08)))
+        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous).stroke(.white.opacity(0.12), lineWidth: 1))
+    }
+
+    private var displayActivities: [WorkoutActivityBlock] {
+        didLoadActivities ? editedActivities : training.activities
+    }
+
+    private func updateStoredActivity(_ updated: WorkoutActivityBlock) {
+        if let index = editedActivities.firstIndex(where: { $0.id == updated.id }) {
+            editedActivities[index] = updated
+        } else {
+            editedActivities.append(updated)
+        }
+        var entry = training
+        entry.activities = editedActivities
+        entry.updatedAt = Date()
+        trainingStore.update(entry: entry)
+        activityEditTarget = nil
     }
 
     private var strengthMetaItems: [DetailMetaChips.Item] {
@@ -275,6 +493,9 @@ struct TrainingDetailView: View {
 
     /// Versucht, aus dem Titel einen Cardio-Typ zu erkennen („Outdoor Walk“ usw.)
     private var cardioTypeText: String {
+        if let cardioType = training.cardioType, !cardioType.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return cardioType
+        }
         let raw = training.title.trimmingCharacters(in: .whitespacesAndNewlines)
         let lower = raw.lowercased()
 
@@ -290,6 +511,20 @@ struct TrainingDetailView: View {
 
         // Fallback: nimm einfach den Titel oder einen generischen Text
         return raw.isEmpty ? L("run.type.generic", "Cardio-Workout") : raw
+    }
+
+    private var healthSourceText: String {
+        var parts: [String] = []
+        if let source = training.healthSourceName, !source.isEmpty {
+            parts.append(source)
+        }
+        if let device = training.healthDeviceName, !device.isEmpty {
+            parts.append(device)
+        }
+        if let indoor = training.isIndoorWorkout {
+            parts.append(indoor ? L("workout.location.indoor", "Indoor") : L("workout.location.outdoor", "Outdoor"))
+        }
+        return parts.isEmpty ? "Apple Health" : parts.joined(separator: " · ")
     }
 
     /// Zeitspanne wie „11:34–11:41“ (optional, falls Dauer > 0)
@@ -369,6 +604,37 @@ struct TrainingDetailView: View {
         return f.string(from: NSNumber(value: v)) ?? "\(Int(v.rounded()))"
     }
 
+    private func activitySubtitle(_ activity: WorkoutActivityBlock) -> String {
+        var parts: [String] = []
+        let minutes = Int((activity.duration / 60).rounded())
+        if minutes > 0 { parts.append("\(minutes) min") }
+        if let distance = activity.distanceKm, distance > 0 {
+            parts.append(String(format: "%.2f km", distance))
+        }
+        if let resistance = activity.resistanceLevel, resistance > 0 {
+            parts.append("Level \(Int(resistance.rounded()))")
+        }
+        if let incline = activity.inclinePercent, incline > 0 {
+            parts.append("\(Int(incline.rounded()))%")
+        }
+        if let watts = activity.averageWatts, watts > 0 {
+            parts.append("\(Int(watts.rounded())) W")
+        }
+        if let calories = activity.activeCalories, calories > 0 {
+            parts.append("\(Int(calories.rounded())) kcal")
+        }
+        if let heartRate = activity.averageHeartRate, heartRate > 0 {
+            parts.append("\(Int(heartRate.rounded())) bpm")
+        }
+        if let elevation = activity.elevationGainM, elevation > 0 {
+            parts.append("\(Int(elevation.rounded())) m")
+        }
+        if let effort = activity.perceivedEffort {
+            parts.append(L("details.effort", "Anstrengung") + " \(effort)/10")
+        }
+        return parts.isEmpty ? L("details.loggedInWorkout", "Im Training erfasst") : parts.joined(separator: " · ")
+    }
+
     /// „… 3.84 km“ → 3.84
     private func extractDistanceKm(from title: String) -> Double? {
         let pattern = #"([0-9]+(?:[.,][0-9]+)?)\s*km"#
@@ -435,7 +701,7 @@ private struct RunAnalytics {
 
     /// 1-km-Splits ( letzter Split ggf. kürzer )
     var splits: [Split] {
-        guard distanceKm > 0 else { return [] }
+        guard distanceKm > 0, !coordinates.isEmpty else { return [] }
         let kmCount = max(1, Int(ceil(distanceKm)))
         let fullKm = Double(kmCount - 1)
         let perKm = 1.0
@@ -477,6 +743,11 @@ private func paceString(_ secondsPerKm: Double) -> String {
 private struct RunSummaryGrid: View {
     let analytics: RunAnalytics
     let durationText: String
+    let cardioType: String
+    let activeCalories: Double?
+    let averageHeartRate: Double?
+    let elevationGainM: Double?
+    let perceivedEffort: Int?
     @EnvironmentObject var appSettings: AppSettings
 
     private func L(_ key: String, _ fallback: String) -> String {
@@ -492,9 +763,21 @@ private struct RunSummaryGrid: View {
         "\(paceString(analytics.avgPaceSecondsPerKm)) min/km"
     }
 
-    private var caloriesText: String {
-        let kcal = Int(analytics.distanceKm * 60.0)   // grober Schätzer
-        return "\(kcal) kcal"
+    private var speedText: String {
+        guard analytics.duration > 0 else { return "–" }
+        let kmh = analytics.distanceKm / (analytics.duration / 3600.0)
+        return String(format: "%.1f km/h", kmh)
+    }
+
+    private var secondaryMetric: (title: String, value: String) {
+        let lower = cardioType.lowercased()
+        if lower.contains("rad") || lower.contains("cycl") || lower.contains("bike") {
+            return (L("run.speed.avg", "Ø Speed"), speedText)
+        }
+        if lower.contains("swim") || lower.contains("schwimm") {
+            return (L("run.pace.avg", "Ø Pace"), "\(paceString(analytics.avgPaceSecondsPerKm / 10.0)) /100m")
+        }
+        return (L("run.pace.avg", "Ø Pace"), avgPaceText)
     }
 
     private let columns: [GridItem] = [
@@ -504,29 +787,21 @@ private struct RunSummaryGrid: View {
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: 12) {
-            RunMetricCard(
-                icon: "clock",
-                title: L("details.duration", "Dauer"),
-                value: durationText
-            )
-
-            RunMetricCard(
-                icon: "ruler",
-                title: L("run.distance", "Distanz"),
-                value: distanceText
-            )
-
-            RunMetricCard(
-                icon: "speedometer",
-                title: L("run.pace.avg", "Ø Pace"),
-                value: avgPaceText
-            )
-
-            RunMetricCard(
-                icon: "flame.fill",
-                title: L("run.calories", "Kalorien"),
-                value: caloriesText
-            )
+            RunMetricCard(icon: "clock", title: L("details.duration", "Dauer"), value: durationText)
+            RunMetricCard(icon: "ruler", title: L("run.distance", "Distanz"), value: distanceText)
+            RunMetricCard(icon: "speedometer", title: secondaryMetric.title, value: secondaryMetric.value)
+            if let activeCalories {
+                RunMetricCard(icon: "flame.fill", title: L("run.calories", "Kalorien"), value: "\(Int(activeCalories.rounded())) kcal")
+            }
+            if let averageHeartRate {
+                RunMetricCard(icon: "heart.fill", title: "Ø Puls", value: "\(Int(averageHeartRate.rounded())) bpm")
+            }
+            if let elevationGainM {
+                RunMetricCard(icon: "mountain.2.fill", title: "Höhe", value: "\(Int(elevationGainM.rounded())) m")
+            }
+            if let perceivedEffort {
+                RunMetricCard(icon: "gauge.with.dots.needle.67percent", title: L("details.effort", "Anstrengung"), value: "\(perceivedEffort)/10")
+            }
         }
         .padding(.top, 8)
     }
@@ -538,7 +813,6 @@ private struct RunMetricCard: View {
     let value: String
 
     @EnvironmentObject var appSettings: AppSettings
-    @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         HStack(spacing: 12) {
@@ -552,21 +826,22 @@ private struct RunMetricCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(value)
                     .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(appSettings.accentColor)
+                    .foregroundStyle(.white)
                     .monospacedDigit()
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
                 
                 Text(title)
                     .font(.system(size: 13, weight: .regular))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.52))
             }
             
             Spacer(minLength: 0)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemBackground))
+        .background(Color.white.opacity(0.08))
+        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Color.white.opacity(0.12), lineWidth: 1))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
@@ -579,11 +854,12 @@ private struct RunPaceSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Pace")
-                .font(.headline)
+                .font(.headline.weight(.heavy))
+                .foregroundStyle(.white)
 
             Text("Average \(paceString(analytics.avgPaceSecondsPerKm)) min/km")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.56))
 
             PaceAreaChart(values: analytics.paceSamplesNormalized)
                 .frame(height: 130)
@@ -602,7 +878,7 @@ private struct PaceAreaChart: View {
 
             ZStack {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color(.secondarySystemBackground))
+                    .fill(Color.white.opacity(0.08))
 
                 if !values.isEmpty {
                     Path { path in
@@ -644,12 +920,13 @@ private struct RunSplitsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Splits")
-                .font(.headline)
+                .font(.headline.weight(.heavy))
+                .foregroundStyle(.white)
 
             if analytics.splits.isEmpty {
                 Text("Keine Splits verfügbar")
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.52))
             } else {
                 let slowest =
                     analytics.splits.map { $0.paceSecondsPerKm }.max()
@@ -663,8 +940,9 @@ private struct RunSplitsSection: View {
                 .padding(12)
                 .background(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(Color(.secondarySystemBackground))
+                        .fill(Color.white.opacity(0.08))
                 )
+                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Color.white.opacity(0.12), lineWidth: 1))
             }
         }
     }
@@ -678,14 +956,17 @@ private struct RunSplitRow: View {
         HStack(spacing: 8) {
             Text("\(split.index)")
                 .font(.footnote.monospacedDigit())
+                .foregroundStyle(.white.opacity(0.82))
                 .frame(width: 22, alignment: .leading)
 
             Text(String(format: "%.2f km", split.distanceKm))
                 .font(.footnote)
+                .foregroundStyle(.white.opacity(0.72))
                 .frame(width: 60, alignment: .leading)
 
             Text(paceString(split.paceSecondsPerKm))
                 .font(.footnote.monospacedDigit())
+                .foregroundStyle(.white.opacity(0.72))
                 .frame(width: 56, alignment: .leading)
 
             GeometryReader { geo in
@@ -897,9 +1178,10 @@ struct DetailMetaChip: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Capsule().fill(Color(.secondarySystemBackground)))
+        .foregroundStyle(.white.opacity(0.78))
+        .background(Capsule().fill(Color.white.opacity(0.09)))
         .overlay(
-            Capsule().stroke(Color.primary.opacity(0.06), lineWidth: 1)
+            Capsule().stroke(Color.white.opacity(0.12), lineWidth: 1)
         )
     }
 }
@@ -918,25 +1200,22 @@ struct DetailMetricCard: View {
                 Image(systemName: icon)
                     .foregroundColor(appSettings.accentColor)
                 Text(title)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .font(.footnote.weight(.bold))
+                    .foregroundStyle(.white.opacity(0.52))
             }
             Text(value)
-                .font(.title2.weight(.semibold))
-                .foregroundColor(appSettings.accentColor)
+                .font(.system(size: 22, weight: .heavy, design: .rounded))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
         }
         .padding(16)
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, minHeight: 102, alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color(.secondarySystemGroupedBackground))
-                .shadow(
-                    color: .black.opacity(scheme == .dark ? 0.25 : 0.08),
-                    radius: 10,
-                    x: 0,
-                    y: 4
-                )
+                .fill(Color.white.opacity(0.08))
         )
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(Color.white.opacity(0.12), lineWidth: 1))
     }
 }
 
@@ -956,16 +1235,18 @@ struct DetailExerciseCard: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline) {
                 Text(exercise.name)
-                    .font(.headline)
+                    .font(.headline.weight(.heavy))
+                    .foregroundStyle(.white)
                 Spacer()
                 if let chip = headlineChip {
                     Text(chip)
                         .font(.footnote.weight(.semibold))
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(Capsule().fill(Color(.systemBackground)))
+                        .foregroundStyle(.white.opacity(0.78))
+                        .background(Capsule().fill(Color.white.opacity(0.08)))
                         .overlay(
-                            Capsule().stroke(Color(.separator), lineWidth: 0.5)
+                            Capsule().stroke(Color.white.opacity(0.12), lineWidth: 1)
                         )
                 }
             }
@@ -983,14 +1264,9 @@ struct DetailExerciseCard: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
-                .shadow(
-                    color: .black.opacity(scheme == .dark ? 0.25 : 0.06),
-                    radius: 8,
-                    x: 0,
-                    y: 3
-                )
+                .fill(Color.white.opacity(0.08))
         )
+        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color.white.opacity(0.12), lineWidth: 1))
     }
 
     private func displaySet(weight: String, reps: String) -> String {
@@ -1021,6 +1297,155 @@ struct DetailExerciseCard: View {
     }
 }
 
+private struct TrainingActivityEditSheet: View {
+    let activity: WorkoutActivityBlock
+    let isDE: Bool
+    let accent: Color
+    var onSave: (WorkoutActivityBlock) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var title: String
+    @State private var minutes: String
+    @State private var distance: String
+    @State private var resistance: String
+    @State private var incline: String
+    @State private var watts: String
+    @State private var calories: String
+    @State private var heartRate: String
+    @State private var elevation: String
+    @State private var effort: Int
+    @State private var note: String
+
+    init(activity: WorkoutActivityBlock, isDE: Bool, accent: Color, onSave: @escaping (WorkoutActivityBlock) -> Void) {
+        self.activity = activity
+        self.isDE = isDE
+        self.accent = accent
+        self.onSave = onSave
+        _title = State(initialValue: activity.title)
+        _minutes = State(initialValue: activity.duration > 0 ? "\(Int((activity.duration / 60).rounded()))" : "")
+        _distance = State(initialValue: Self.text(activity.distanceKm))
+        _resistance = State(initialValue: Self.text(activity.resistanceLevel))
+        _incline = State(initialValue: Self.text(activity.inclinePercent))
+        _watts = State(initialValue: Self.text(activity.averageWatts))
+        _calories = State(initialValue: Self.text(activity.activeCalories))
+        _heartRate = State(initialValue: Self.text(activity.averageHeartRate))
+        _elevation = State(initialValue: Self.text(activity.elevationGainM))
+        _effort = State(initialValue: activity.perceivedEffort ?? 5)
+        _note = State(initialValue: activity.note ?? "")
+    }
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.black.ignoresSafeArea()
+                RadialGradient(colors: [accent.opacity(0.32), .clear], center: .topLeading, startRadius: 24, endRadius: 420)
+                    .ignoresSafeArea()
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(isDE ? "Aktivität bearbeiten" : "Edit activity")
+                            .font(.system(size: 26, weight: .heavy, design: .rounded))
+                            .foregroundStyle(.white)
+
+                        editField(isDE ? "Name" : "Name", text: $title, icon: "text.cursor")
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                            editField(isDE ? "Minuten" : "Minutes", text: $minutes, icon: "timer", keyboard: .decimalPad)
+                            editField(isDE ? "Distanz km" : "Distance km", text: $distance, icon: "point.topleft.down.curvedto.point.bottomright.up", keyboard: .decimalPad)
+                            editField("Level", text: $resistance, icon: "dial.medium", keyboard: .decimalPad)
+                            editField(isDE ? "Steigung %" : "Incline %", text: $incline, icon: "angle", keyboard: .decimalPad)
+                            editField("Watt", text: $watts, icon: "bolt.fill", keyboard: .decimalPad)
+                            editField("kcal", text: $calories, icon: "flame.fill", keyboard: .decimalPad)
+                            editField(isDE ? "Ø Puls" : "Avg HR", text: $heartRate, icon: "heart.fill", keyboard: .decimalPad)
+                            editField(isDE ? "Höhenmeter" : "Elevation", text: $elevation, icon: "mountain.2.fill", keyboard: .decimalPad)
+                        }
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(isDE ? "Anstrengung \(effort)/10" : "Effort \(effort)/10")
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(.white.opacity(0.58))
+                            Slider(value: Binding(get: { Double(effort) }, set: { effort = Int($0.rounded()) }), in: 1...10, step: 1)
+                                .tint(accent)
+                        }
+                        .padding(14)
+                        .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(.white.opacity(0.08)))
+
+                        editField(isDE ? "Notiz" : "Note", text: $note, icon: "note.text")
+
+                        Button {
+                            onSave(makeUpdatedActivity())
+                            dismiss()
+                        } label: {
+                            Label(isDE ? "Änderungen speichern" : "Save changes", systemImage: "checkmark.circle.fill")
+                                .font(.headline.weight(.bold))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .foregroundStyle(.black)
+                                .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(accent))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(18)
+                }
+            }
+            .preferredColorScheme(.dark)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(isDE ? "Abbrechen" : "Cancel") { dismiss() }
+                        .foregroundStyle(.white)
+                }
+            }
+        }
+    }
+
+    private func editField(_ label: String, text: Binding<String>, icon: String, keyboard: UIKeyboardType = .default) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .foregroundStyle(accent)
+                .frame(width: 20)
+            TextField(label, text: text)
+                .keyboardType(keyboard)
+                .textInputAutocapitalization(.sentences)
+                .foregroundStyle(.white)
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(.white.opacity(0.08)))
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(.white.opacity(0.12), lineWidth: 1))
+    }
+
+    private func makeUpdatedActivity() -> WorkoutActivityBlock {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedNote = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        return WorkoutActivityBlock(
+            id: activity.id,
+            title: trimmedTitle.isEmpty ? activity.title : trimmedTitle,
+            kindRaw: activity.kindRaw,
+            emoji: activity.emoji,
+            duration: max(0, (parseDecimal(minutes) ?? 0) * 60),
+            distanceKm: parseDecimal(distance),
+            resistanceLevel: parseDecimal(resistance),
+            inclinePercent: parseDecimal(incline),
+            averageWatts: parseDecimal(watts),
+            activeCalories: parseDecimal(calories),
+            averageHeartRate: parseDecimal(heartRate),
+            elevationGainM: parseDecimal(elevation),
+            perceivedEffort: effort,
+            note: trimmedNote.isEmpty ? nil : trimmedNote
+        )
+    }
+
+    private func parseDecimal(_ raw: String) -> Double? {
+        let value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !value.isEmpty else { return nil }
+        return Double(value.replacingOccurrences(of: ",", with: "."))
+    }
+
+    private static func text(_ value: Double?) -> String {
+        guard let value, value > 0 else { return "" }
+        if value.rounded() == value { return "\(Int(value))" }
+        return String(format: "%.2f", value)
+    }
+}
+
 struct DetailSetRow: View {
     @EnvironmentObject var appSettings: AppSettings
 
@@ -1032,15 +1457,16 @@ struct DetailSetRow: View {
         HStack(spacing: 10) {
             Text("\(L("details.set", "Satz")) \(index):")
                 .font(.footnote.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.52))
 
             Spacer()
 
             Text(text)
                 .font(.footnote.weight(.semibold))
+                .foregroundStyle(.white)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(Capsule().fill(Color(.systemBackground)))
+                .background(Capsule().fill(Color.white.opacity(0.08)))
 
             if done {
                 Image(systemName: "checkmark.circle.fill")
@@ -1053,7 +1479,7 @@ struct DetailSetRow: View {
         .padding(.vertical, 6)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color(.tertiarySystemBackground))
+                .fill(Color.white.opacity(0.06))
         )
     }
 

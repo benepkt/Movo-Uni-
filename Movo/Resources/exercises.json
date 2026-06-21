@@ -1,0 +1,3591 @@
+[
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000081",
+        "name": "Ab Crunch Machine",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Abs",
+        "secondaryMuscles": [],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Sit in machine, crunch forward using abdominals.",
+        "imageName": "ab_crunch_machine"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000001",
+        "name": "Arnold Press (Dumbbell)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Deltoids",
+        "secondaryMuscles": [
+            "Triceps"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Start with the dumbbells in front of the chest; rotate the palms forward as you press up.",
+        "imageName": "shoulder_press_dumbbell"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009061",
+        "name": "Assault Bike",
+        "muscleGroup": "Cardio",
+        "primaryMuscle": "Cardio",
+        "secondaryMuscles": [
+            "Legs",
+            "Arms"
+        ],
+        "equipment": "Machine",
+        "classification": "Cardio",
+        "category": "Activity",
+        "instructions": "Perform Assault Bike with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000048",
+        "name": "Back Extension",
+        "muscleGroup": "Lower Back",
+        "primaryMuscle": "Erector Spinae",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Hüfte auf dem Polster. Oberkörper absenken und wieder aufrichten.",
+        "imageName": "back_extension"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009000",
+        "name": "Back Squat (Barbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Back Squat (Barbell) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009060",
+        "name": "Battle Ropes",
+        "muscleGroup": "Conditioning",
+        "primaryMuscle": "Shoulders",
+        "secondaryMuscles": [
+            "Core",
+            "Arms"
+        ],
+        "equipment": "Ropes",
+        "classification": "Conditioning",
+        "category": "Strength",
+        "instructions": "Perform Battle Ropes with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000002",
+        "name": "Bench Press (Barbell)",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major",
+        "secondaryMuscles": [
+            "Triceps",
+            "Front Delts"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Lie on the bench, grip the barbell shoulder-width and press it up.",
+        "imageName": "bench_press_barbell"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000004",
+        "name": "Bench Press (Dumbbell)",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major",
+        "secondaryMuscles": [
+            "Triceps",
+            "Front Delts"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Lie on the bench, hold dumbbells and press them up evenly.",
+        "imageName": "bench_press_dumbbell"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000022",
+        "name": "Bent Over Row (Barbell)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Lats",
+        "secondaryMuscles": [
+            "Traps",
+            "Biceps"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Hinge forward and pull the barbell toward the waist.",
+        "imageName": "bent_over_row_barbell"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000027",
+        "name": "Bicep Curl (Barbell)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Biceps",
+        "secondaryMuscles": [],
+        "equipment": "Barbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Hold the barbell shoulder-width and curl under control.",
+        "imageName": "bicep_curl_barbell"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000028",
+        "name": "Bicep Curl (Dumbbell)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Biceps",
+        "secondaryMuscles": [],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Hold dumbbells at your sides and curl up under control.",
+        "imageName": "bicep_curl_dumbbell"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009068",
+        "name": "Box Jump",
+        "muscleGroup": "Plyometrics",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Calves"
+        ],
+        "equipment": "Box",
+        "classification": "Power",
+        "category": "Strength",
+        "instructions": "Perform Box Jump with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000068",
+        "name": "Box Jumps",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quads",
+        "secondaryMuscles": [
+            "Calves",
+            "Glutes"
+        ],
+        "equipment": "Box",
+        "classification": "Plyometric",
+        "category": "Strength",
+        "instructions": "",
+        "imageName": "box_jumps"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000017",
+        "name": "Bulgarian Split Squat",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quads",
+        "secondaryMuscles": [
+            "Glutes"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Unilateral",
+        "category": "Strength",
+        "instructions": "Place one foot back on a bench and perform single-leg squats.",
+        "imageName": "bulgarian_split_squat"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009007",
+        "name": "Bulgarian Split Squat (Dumbbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Bulgarian Split Squat (Dumbbell) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009069",
+        "name": "Burpee",
+        "muscleGroup": "Full Body",
+        "primaryMuscle": "Full Body",
+        "secondaryMuscles": [
+            "Cardio"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Conditioning",
+        "category": "Strength",
+        "instructions": "Perform Burpee with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000073",
+        "name": "Burpees",
+        "muscleGroup": "Full Body",
+        "primaryMuscle": "Full Body",
+        "secondaryMuscles": [],
+        "equipment": "Bodyweight",
+        "classification": "Cardio",
+        "category": "Cardio",
+        "instructions": "Brust offen, aufrecht bleiben; Arme aktiv mitnehmen. Weich auf dem Vorfuß landen; gleichmäßiger Rhythmus.",
+        "imageName": "burpees"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000091",
+        "name": "Butterfly",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major",
+        "secondaryMuscles": [
+            "Front Delts"
+        ],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Stelle Sitz und Griffe so ein, dass die Oberarme etwa auf Brusthöhe sind. Führe die Arme kontrolliert vor der Brust zusammen und öffne langsam wieder.",
+        "imageName": "pec_deck"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000092",
+        "name": "Butterfly Reverse",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Rear Delts",
+        "secondaryMuscles": [
+            "Rhomboids",
+            "Middle Traps"
+        ],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Setze dich zur Maschine, Brust am Polster. Führe die Griffe mit leicht gebeugten Armen nach außen und hinten, ohne Schwung zu holen.",
+        "imageName": "reverse_fly_machine"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000042",
+        "name": "Cable Crossover",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major",
+        "secondaryMuscles": [
+            "Front Delts"
+        ],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Ziehe beide Kabelzüge vor dem Körper zusammen auf Brusthöhe.",
+        "imageName": "cable_crossover"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009047",
+        "name": "Cable Crunch",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Abs",
+        "secondaryMuscles": [],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Cable Crunch with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009026",
+        "name": "Cable Curl",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Biceps",
+        "secondaryMuscles": [],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Cable Curl with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009034",
+        "name": "Cable Fly (High to Low)",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Chest",
+        "secondaryMuscles": [],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Cable Fly (High to Low) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009035",
+        "name": "Cable Fly (Low to High)",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Upper Chest",
+        "secondaryMuscles": [],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Cable Fly (Low to High) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009053",
+        "name": "Cable Kickback",
+        "muscleGroup": "Glutes",
+        "primaryMuscle": "Glutes",
+        "secondaryMuscles": [],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Cable Kickback with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000018",
+        "name": "Calf Raise (Standing)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Calves",
+        "secondaryMuscles": [],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Wadenheben im Stehen.",
+        "imageName": "calf_raise_standing"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000006",
+        "name": "Chest Fly (Cable)",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major",
+        "secondaryMuscles": [],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Führe die Kabel vor der Brust zusammen.",
+        "imageName": "chest_fly_cable"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000007",
+        "name": "Chest Press (Machine)",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major",
+        "secondaryMuscles": [
+            "Triceps"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Press the machine handles straight forward.",
+        "imageName": "chest_press_machine"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009017",
+        "name": "Chest Supported Row (Machine)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Mid Back",
+        "secondaryMuscles": [
+            "Lats",
+            "Biceps"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Chest Supported Row (Machine) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009014",
+        "name": "Chin-Up",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus",
+        "secondaryMuscles": [
+            "Biceps"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Chin-Up with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009058",
+        "name": "Clean and Press (Dumbbell)",
+        "muscleGroup": "Full Body",
+        "primaryMuscle": "Shoulders",
+        "secondaryMuscles": [
+            "Legs",
+            "Core"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Power",
+        "category": "Strength",
+        "instructions": "Perform Clean and Press (Dumbbell) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000076",
+        "name": "Close-Grip Bench Press",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Chest",
+            "Front Delts"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Bankdrücken mit schulterbreitem Griff.",
+        "imageName": "close_grip_bench"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000046",
+        "name": "Close-Grip Lat Pulldown",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Lats",
+        "secondaryMuscles": [
+            "Biceps"
+        ],
+        "equipment": "Cable",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Ziehe die Stange zur Brust.",
+        "imageName": "lat_pulldown_close"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000059",
+        "name": "Concentration Curl",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Biceps",
+        "secondaryMuscles": [],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Sitzend, Ellbogen am Innenoberschenkel. Curlen.",
+        "imageName": "concentration_curl"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000033",
+        "name": "Crunch",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Abs",
+        "secondaryMuscles": [],
+        "equipment": "Bodyweight",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Crunches für die Bauchmuskeln.",
+        "imageName": "crunch"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000036",
+        "name": "Cycling (Indoor)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quads",
+        "secondaryMuscles": [
+            "Heart"
+        ],
+        "equipment": "Machine",
+        "classification": "Cardio",
+        "category": "Cardio",
+        "instructions": "Fahre auf dem Ergometer.",
+        "imageName": "cycling_indoor"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009049",
+        "name": "Dead Bug",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Abs",
+        "secondaryMuscles": [
+            "Core Stability"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Control",
+        "category": "Strength",
+        "instructions": "Perform Dead Bug with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000015",
+        "name": "Deadlift (Barbell)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Posterior Chain",
+        "secondaryMuscles": [
+            "Lower Back",
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Lift the barbell from the floor with a straight back.",
+        "imageName": "deadlift_barbell"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000044",
+        "name": "Decline Bench Press",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major (Lower)",
+        "secondaryMuscles": [
+            "Triceps",
+            "Front Delts"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Lege dich auf die Negativbank. Drücke die Hantel nach oben.",
+        "imageName": "decline_bench_press"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000009",
+        "name": "Dip",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Chest",
+            "Shoulders"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Beuge und strecke die Arme am Barren.",
+        "imageName": "dip"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009030",
+        "name": "Dips",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Chest",
+            "Shoulders"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Dips with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000064",
+        "name": "Donkey Kickback",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Glutes",
+        "secondaryMuscles": [],
+        "equipment": "Bodyweight",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "",
+        "imageName": "donkey_kickback"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000070",
+        "name": "Elliptical",
+        "muscleGroup": "Cardio",
+        "primaryMuscle": "Heart",
+        "secondaryMuscles": [
+            "Quads",
+            "Glutes"
+        ],
+        "equipment": "Machine",
+        "classification": "Cardio",
+        "category": "Cardio",
+        "instructions": "Benutze den Crosstrainer.",
+        "imageName": "elliptical"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000023",
+        "name": "Face Pull",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Rear Delts",
+        "secondaryMuscles": [
+            "Rotator Cuff"
+        ],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Ziehe das Seil zum Gesicht.",
+        "imageName": "face_pull"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009021",
+        "name": "Face Pull (Cable)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Rear Delts",
+        "secondaryMuscles": [
+            "Traps"
+        ],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Face Pull (Cable) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000077",
+        "name": "Farmer's Walk",
+        "muscleGroup": "Full Body",
+        "primaryMuscle": "Grip",
+        "secondaryMuscles": [
+            "Traps",
+            "Core",
+            "Legs"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Gehe mit schweren Gewichten in den Händen.",
+        "imageName": "farmers_walk"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000056",
+        "name": "Front Raise",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Front Delts",
+        "secondaryMuscles": [],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Hebe die Hantel vor dem Körper bis auf Schulterhöhe.",
+        "imageName": "front_raise"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000011",
+        "name": "Front Squat (Barbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quads",
+        "secondaryMuscles": [
+            "Glutes",
+            "Core"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Lege die Langhantel auf die vordere Schulter und führe Kniebeugen aus.",
+        "imageName": "front_squat"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000063",
+        "name": "Glute Bridge",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Glutes",
+        "secondaryMuscles": [
+            "Hamstrings"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Fließend mit Ganzkörperspannung bewegen. Ausrichtung und Kontrolle über die gesamte Range halten.",
+        "imageName": "glute_bridge"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000050",
+        "name": "Goblet Squat",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quads",
+        "secondaryMuscles": [
+            "Glutes",
+            "Core"
+        ],
+        "equipment": "Kettlebell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Halte Gewicht vor der Brust. Tief beugen.",
+        "imageName": "goblet_squat"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000080",
+        "name": "Good Morning",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Posterior Chain",
+        "secondaryMuscles": [
+            "Hamstrings",
+            "Lower Back"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Hantel im Nacken. Oberkörper vorbeugen, Beine leicht gebeugt.",
+        "imageName": "good_morning"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000049",
+        "name": "Hack Squat",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quads",
+        "secondaryMuscles": [
+            "Glutes",
+            "Calves"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Schultern unter die Polster. Tief beugen und wieder hochdrücken.",
+        "imageName": "hack_squat"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009002",
+        "name": "Hack Squat (Machine)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Hack Squat (Machine) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000029",
+        "name": "Hammer Curl",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Brachialis",
+        "secondaryMuscles": [
+            "Forearms"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Curls mit Hammergriff.",
+        "imageName": "hammer_curl"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009024",
+        "name": "Hammer Curl (Dumbbell)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Brachialis",
+        "secondaryMuscles": [
+            "Forearms",
+            "Biceps"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Hammer Curl (Dumbbell) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000034",
+        "name": "Hanging Leg Raise",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Abs",
+        "secondaryMuscles": [
+            "Hip Flexors"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Beinheben hängend oder liegend.",
+        "imageName": "leg_raise"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000053",
+        "name": "Hip Abduction",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Glutes (Medius)",
+        "secondaryMuscles": [
+            "Hips"
+        ],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Drücke die Beine gegen den Widerstand nach außen.",
+        "imageName": "hip_abduction"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009054",
+        "name": "Hip Abduction (Machine)",
+        "muscleGroup": "Glutes",
+        "primaryMuscle": "Glute Medius",
+        "secondaryMuscles": [],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Hip Abduction (Machine) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000054",
+        "name": "Hip Adduction",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Adductors",
+        "secondaryMuscles": [],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Drücke die Beine gegen den Widerstand zusammen.",
+        "imageName": "hip_adduction"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009055",
+        "name": "Hip Adduction (Machine)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Adductors",
+        "secondaryMuscles": [],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Hip Adduction (Machine) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000041",
+        "name": "Hip Thrust (Barbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Glutes",
+        "secondaryMuscles": [
+            "Hamstrings"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Oberen Rücken auf Bank, Hantel über Hüfte. Hüfte heben.",
+        "imageName": "hip_thrust_barbell"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000003",
+        "name": "Incline Bench Press (Barbell)",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major (Upper)",
+        "secondaryMuscles": [
+            "Triceps",
+            "Front Delts"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Drücke die Langhantel schräg nach oben von der Bank.",
+        "imageName": "bench_press_incline"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000005",
+        "name": "Incline Bench Press (Dumbbell)",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major (Upper)",
+        "secondaryMuscles": [
+            "Triceps",
+            "Front Delts"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Drücke die Kurzhanteln schräg nach oben.",
+        "imageName": "bench_press_incline_dumbbell"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009023",
+        "name": "Incline Dumbbell Curl",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Biceps",
+        "secondaryMuscles": [],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Incline Dumbbell Curl with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009032",
+        "name": "Incline Push-Up",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Chest",
+        "secondaryMuscles": [
+            "Triceps"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Incline Push-Up with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000038",
+        "name": "Jump Rope",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Calves",
+        "secondaryMuscles": [
+            "Heart"
+        ],
+        "equipment": "Rope",
+        "classification": "Cardio",
+        "category": "Cardio",
+        "instructions": "Springseil springen.",
+        "imageName": "jump_rope"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000057",
+        "name": "Jump Squat",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Calves",
+            "Hamstrings"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Plyometric",
+        "category": "Strength",
+        "instructions": "Gehe in die Kniebeuge und springe explosiv nach oben. Lande weich und kontrolliert.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000102",
+        "name": "Jumping Jack",
+        "muscleGroup": "Full Body",
+        "primaryMuscle": "Full Body",
+        "secondaryMuscles": [
+            "Calves",
+            "Shoulders"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Conditioning",
+        "category": "Strength",
+        "instructions": "Springe mit Beinen auseinander und Armen über Kopf, dann rhythmisch zurück.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000069",
+        "name": "Kettlebell Swing",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Posterior Chain",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings",
+            "Core"
+        ],
+        "equipment": "Kettlebell",
+        "classification": "Ballistic",
+        "category": "Strength",
+        "instructions": "Schwinge die Kettlebell mit gestreckten Armen nach vorne.",
+        "imageName": "kettlebell_swing"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000103",
+        "name": "Kettlebell Turkish Get Up",
+        "muscleGroup": "Full Body",
+        "primaryMuscle": "Full Body",
+        "secondaryMuscles": [
+            "Core",
+            "Shoulders",
+            "Glutes"
+        ],
+        "equipment": "Kettlebell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Bringe die Kettlebell aus der Rückenlage Schritt für Schritt stabil bis in den Stand.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000010",
+        "name": "Kipping Pull Up",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Biceps",
+            "Core",
+            "Shoulders"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Nutze einen kontrollierten Kip aus Schulter und Hüfte, um dynamisch über die Stange zu ziehen.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000091",
+        "name": "Klappmesser Crunch",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Abs",
+        "secondaryMuscles": [
+            "Hip Flexors"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Führe Arme und Beine wie ein Klappmesser zusammen und senke kontrolliert ab.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000080",
+        "name": "Knee Raise (Captain’s Chair)",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Abs",
+        "secondaryMuscles": [
+            "Hip Flexors"
+        ],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Stütze dich im Captain’s Chair und hebe die Knie kontrolliert Richtung Brust.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000001",
+        "name": "Kneeling Pulldown (Band)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Biceps",
+            "Teres Major"
+        ],
+        "equipment": "Band",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Knie dich stabil hin, halte den Oberkörper aufrecht und ziehe das Band kontrolliert Richtung obere Brust. Führe die Arme langsam zurück.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000079",
+        "name": "Knees to Elbows",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Abs",
+        "secondaryMuscles": [
+            "Hip Flexors",
+            "Lats"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Hänge an der Stange und ziehe die Knie kontrolliert Richtung Ellenbogen.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000003",
+        "name": "Lat Pulldown - Underhand (Band)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Biceps",
+            "Lower Traps"
+        ],
+        "equipment": "Band",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Fixiere das Band über dir, greife im Untergriff und ziehe die Hände zur oberen Brust. Brust bleibt aufrecht.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000004",
+        "name": "Lat Pulldown - Underhand (Cable)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Biceps",
+            "Lower Traps"
+        ],
+        "equipment": "Cable",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Greife die Stange schulterbreit im Untergriff und ziehe sie kontrolliert zur oberen Brust. Ellenbogen nach unten führen.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000005",
+        "name": "Lat Pulldown - Wide Grip (Cable)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Teres Major",
+            "Biceps",
+            "Rear Delts"
+        ],
+        "equipment": "Cable",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Greife breit, halte den Oberkörper ruhig und ziehe die Stange zur oberen Brust. Schulterblätter zuerst nach unten ziehen.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000020",
+        "name": "Lat Pulldown (Cable)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Biceps"
+        ],
+        "equipment": "Cable",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Ziehe die Stange zum oberen Brustbein.",
+        "imageName": "lat_pulldown"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000093",
+        "name": "Lat Pulldown (Machine)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Biceps",
+            "Teres Major",
+            "Rear Delts"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Sitze stabil an der Maschine, Brust aufrecht. Ziehe die Griffe kontrolliert zur oberen Brust und führe sie langsam zurück.",
+        "imageName": "lat_pulldown"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000002",
+        "name": "Lat Pulldown (Single Arm)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Biceps",
+            "Teres Major",
+            "Rear Delts"
+        ],
+        "equipment": "Cable",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Greife einen einzelnen Griff, ziehe den Ellenbogen eng Richtung Rippen und halte die Schulter tief. Kontrolliert zurückführen.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000078",
+        "name": "Lateral Box Jump",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Calves"
+        ],
+        "equipment": "Box",
+        "classification": "Plyometric",
+        "category": "Strength",
+        "instructions": "Springe seitlich auf eine Box und lande weich. Kontrolliert absteigen und Seite wechseln.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000025",
+        "name": "Lateral Raise (Band)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Side Delts",
+        "secondaryMuscles": [
+            "Upper Traps"
+        ],
+        "equipment": "Band",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Stehe auf dem Band und hebe die Arme seitlich bis Schulterhöhe. Langsam kontrolliert absenken.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009038",
+        "name": "Lateral Raise (Cable)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Side Delts",
+        "secondaryMuscles": [],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Lateral Raise (Cable) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000026",
+        "name": "Lateral Raise (Dumbbell)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Side Delts",
+        "secondaryMuscles": [],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Hebe die Kurzhanteln seitlich auf Schulterhöhe.",
+        "imageName": "lateral_raise"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000026",
+        "name": "Lateral Raise (Machine)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Side Delts",
+        "secondaryMuscles": [
+            "Upper Traps"
+        ],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Stelle Sitz und Polster ein und hebe die Arme kontrolliert seitlich an. Spannung oben kurz halten.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000027",
+        "name": "Lateral Raises Plate Loaded",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Side Delts",
+        "secondaryMuscles": [
+            "Upper Traps"
+        ],
+        "equipment": "Plate Loaded Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Nutze die plattenbeladene Maschine und hebe die Polster seitlich kontrolliert bis Schulterhöhe.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000014",
+        "name": "Leg Curl (Lying)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Hamstrings",
+        "secondaryMuscles": [],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Beuge die Beine im Liegen.",
+        "imageName": "leg_curl_lying"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000013",
+        "name": "Leg Extension",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quads",
+        "secondaryMuscles": [],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Strecke die Beine gegen den Widerstand.",
+        "imageName": "leg_extension"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000202",
+        "name": "Leg Extension (Machine)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Stelle Rückenpolster und Fußrolle ein. Strecke die Knie kontrolliert und senke das Gewicht langsam wieder ab.",
+        "imageName": "leg_extension"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000012",
+        "name": "Leg Press",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quads",
+        "secondaryMuscles": [
+            "Glutes"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Press the weight away with the legs.",
+        "imageName": "leg_press"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009003",
+        "name": "Leg Press (Machine)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Leg Press (Machine) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000006",
+        "name": "Low Row",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Rhomboids",
+            "Middle Traps",
+            "Biceps"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Sitze stabil, ziehe die Griffe Richtung Bauch und halte die Brust aufrecht. Langsam in die Streckung zurück.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000058",
+        "name": "Lunge (Barbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Lege die Hantel auf den oberen Rücken, mache einen Ausfallschritt und drücke dich kontrolliert zurück.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000059",
+        "name": "Lunge (Bodyweight)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Mache einen großen Schritt, senke das hintere Knie Richtung Boden und drücke dich zurück.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000060",
+        "name": "Lunge (Dumbbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Halte Kurzhanteln seitlich und führe kontrollierte Ausfallschritte aus. Oberkörper aufrecht.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009010",
+        "name": "Lying Leg Curl (Machine)",
+        "muscleGroup": "Hamstrings",
+        "primaryMuscle": "Hamstrings",
+        "secondaryMuscles": [],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Lying Leg Curl (Machine) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009036",
+        "name": "Machine Chest Press",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Chest",
+        "secondaryMuscles": [
+            "Triceps",
+            "Shoulders"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Machine Chest Press with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009070",
+        "name": "Mountain Climber",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Abs",
+        "secondaryMuscles": [
+            "Cardio",
+            "Shoulders"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Conditioning",
+        "category": "Strength",
+        "instructions": "Perform Mountain Climber with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000072",
+        "name": "Mountain Climbers",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Abs",
+        "secondaryMuscles": [
+            "Hip Flexors",
+            "Shoulders"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Cardio",
+        "category": "Cardio",
+        "instructions": "Brust offen, aufrecht bleiben; Arme aktiv mitnehmen. Weich auf dem Vorfuß landen; gleichmäßiger Rhythmus.",
+        "imageName": "mountain_climbers"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000104",
+        "name": "Muscle Up",
+        "muscleGroup": "Full Body",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Chest",
+            "Triceps",
+            "Biceps",
+            "Core"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Ziehe dich explosiv über die Stange oder Ringe und drücke dich in den Stütz.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000081",
+        "name": "Oblique Crunch",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Obliques",
+        "secondaryMuscles": [
+            "Abs"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Richte den Oberkörper diagonal auf und fokussiere die seitliche Bauchmuskulatur.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000024",
+        "name": "Overhead Press (Barbell)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Deltoids",
+        "secondaryMuscles": [
+            "Triceps"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Press the barbell overhead.",
+        "imageName": "overhead_press_barbell"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000028",
+        "name": "Overhead Press (Cable)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Front Delts",
+        "secondaryMuscles": [
+            "Side Delts",
+            "Triceps"
+        ],
+        "equipment": "Cable",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Stelle die Kabel tief ein, drücke die Griffe über Kopf und halte die Körpermitte stabil.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000029",
+        "name": "Overhead Press (Dumbbell)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Front Delts",
+        "secondaryMuscles": [
+            "Side Delts",
+            "Triceps"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Drücke die Kurzhanteln aus Schulterhöhe über Kopf. Handgelenke neutral und Rumpf stabil halten.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000030",
+        "name": "Overhead Press (Smith Machine)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Front Delts",
+        "secondaryMuscles": [
+            "Side Delts",
+            "Triceps"
+        ],
+        "equipment": "Smith Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Sitze oder stehe stabil und drücke die Smith-Stange über Kopf. Kontrolliert zur Schulterhöhe zurück.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000092",
+        "name": "Overhead Squat (Barbell)",
+        "muscleGroup": "Olympic",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Shoulders",
+            "Core",
+            "Upper Back"
+        ],
+        "equipment": "Barbell",
+        "classification": "Olympic",
+        "category": "Strength",
+        "instructions": "Halte die Hantel stabil über Kopf und führe eine kontrollierte Kniebeuge aus.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009028",
+        "name": "Overhead Triceps Extension (Cable)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Overhead Triceps Extension (Cable) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009050",
+        "name": "Pallof Press (Cable)",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Obliques",
+        "secondaryMuscles": [
+            "Core Stability"
+        ],
+        "equipment": "Cable",
+        "classification": "Anti-Rotation",
+        "category": "Strength",
+        "instructions": "Perform Pallof Press (Cable) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000043",
+        "name": "Pec Deck",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major",
+        "secondaryMuscles": [
+            "Front Delts"
+        ],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Setze dich mit geradem Rücken hin. Führe die Polster vor der Brust zusammen.",
+        "imageName": "pec_deck"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009033",
+        "name": "Pec Deck (Machine)",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Chest",
+        "secondaryMuscles": [],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Pec Deck (Machine) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000012",
+        "name": "Pendlay Row (Barbell)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Rhomboids",
+            "Middle Traps",
+            "Biceps",
+            "Rear Delts"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Beuge dich mit flachem Rücken vor, starte jede Wiederholung vom Boden und ziehe die Hantel explosiv zum unteren Brustkorb.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000077",
+        "name": "Pistol Squat",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings",
+            "Core"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Balanciere auf einem Bein, strecke das andere nach vorn und senke dich kontrolliert ab.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000032",
+        "name": "Plank",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Abs",
+        "secondaryMuscles": [],
+        "equipment": "Bodyweight",
+        "classification": "Isometric",
+        "category": "Strength",
+        "instructions": "Halte die Unterarmstütz-Position.",
+        "imageName": "plank"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000093",
+        "name": "Power Clean",
+        "muscleGroup": "Olympic",
+        "primaryMuscle": "Full Body",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings",
+            "Traps",
+            "Quads"
+        ],
+        "equipment": "Barbell",
+        "classification": "Olympic",
+        "category": "Strength",
+        "instructions": "Ziehe die Hantel explosiv vom Boden und fange sie in der Front-Rack-Position oberhalb der Kniebeuge.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000094",
+        "name": "Power Snatch (Barbell)",
+        "muscleGroup": "Olympic",
+        "primaryMuscle": "Full Body",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings",
+            "Shoulders",
+            "Traps"
+        ],
+        "equipment": "Barbell",
+        "classification": "Olympic",
+        "category": "Strength",
+        "instructions": "Ziehe die Hantel explosiv über Kopf und fange sie in einer teilweisen Kniebeuge stabil ab.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000058",
+        "name": "Preacher Curl",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Biceps",
+        "secondaryMuscles": [],
+        "equipment": "Barbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Arme über das Polster legen. Gewicht curlen.",
+        "imageName": "preacher_curl"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000037",
+        "name": "Preacher Curl (Barbell)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Biceps",
+        "secondaryMuscles": [
+            "Brachialis",
+            "Forearms"
+        ],
+        "equipment": "Barbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Lege die Oberarme auf das Polster und curle die Hantel ohne Schwung. Unten nicht komplett entspannen.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000038",
+        "name": "Preacher Curl (Dumbbell)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Biceps",
+        "secondaryMuscles": [
+            "Brachialis",
+            "Forearms"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Führe ein- oder beidarmige Curls am Scottpolster aus. Oberarm bleibt am Polster.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009025",
+        "name": "Preacher Curl (Machine)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Biceps",
+        "secondaryMuscles": [],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Preacher Curl (Machine) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000095",
+        "name": "Press Under (Barbell)",
+        "muscleGroup": "Olympic",
+        "primaryMuscle": "Shoulders",
+        "secondaryMuscles": [
+            "Triceps",
+            "Core"
+        ],
+        "equipment": "Barbell",
+        "classification": "Olympic",
+        "category": "Strength",
+        "instructions": "Drücke dich aktiv unter die Hantel und stabilisiere sie über Kopf.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000019",
+        "name": "Pull Up",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Biceps"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Pull yourself up on a bar with an overhand grip.",
+        "imageName": "pull_up"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000007",
+        "name": "Pull Up (Assisted)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Biceps",
+            "Teres Major"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Stelle Unterstützung ein, ziehe dich kontrolliert hoch und lasse dich langsam zurück in die volle Streckung.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000008",
+        "name": "Pull Up (Band)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Biceps",
+            "Teres Major"
+        ],
+        "equipment": "Band",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Nutze ein Band als Unterstützung, halte Körperspannung und ziehe dich kontrolliert zur Stange.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009013",
+        "name": "Pull-Up",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus",
+        "secondaryMuscles": [
+            "Biceps",
+            "Upper Back"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Pull-Up with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000019",
+        "name": "Pullover (Dumbbell)",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major",
+        "secondaryMuscles": [
+            "Latissimus Dorsi",
+            "Serratus",
+            "Triceps"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Liege quer oder längs auf der Bank, führe die Hantel kontrolliert hinter den Kopf und ziehe sie über die Brust zurück.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000020",
+        "name": "Pullover (Machine)",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major",
+        "secondaryMuscles": [
+            "Latissimus Dorsi",
+            "Serratus"
+        ],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Setze dich stabil an die Maschine und führe die Arme in einem Bogen nach vorn unten. Langsam zurück.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000031",
+        "name": "Push Press",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Front Delts",
+        "secondaryMuscles": [
+            "Triceps",
+            "Quads",
+            "Glutes"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Nutze einen kurzen Dip aus den Beinen und drücke die Hantel explosiv über Kopf. Stabil ausfangen.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000008",
+        "name": "Push Up",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major",
+        "secondaryMuscles": [
+            "Triceps",
+            "Core"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Press the body up from the floor.",
+        "imageName": "push_up"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000021",
+        "name": "Push Up (Band)",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major",
+        "secondaryMuscles": [
+            "Triceps",
+            "Front Delts",
+            "Core"
+        ],
+        "equipment": "Band",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Lege das Band über den oberen Rücken und halte es in den Händen. Drücke dich gegen den Widerstand hoch.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000022",
+        "name": "Push Up (Knees)",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major",
+        "secondaryMuscles": [
+            "Triceps",
+            "Front Delts"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Stütze dich auf Knie und Hände, senke die Brust kontrolliert und drücke dich wieder hoch.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009031",
+        "name": "Push-Up",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Chest",
+        "secondaryMuscles": [
+            "Triceps",
+            "Shoulders"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Push-Up with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000011",
+        "name": "Rack Pull (Barbell)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Erector Spinae",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings",
+            "Traps"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Starte die Hantel aus dem Rack unterhalb Kniehöhe, spanne Rücken und Hüfte an und strecke dich kraftvoll auf.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009040",
+        "name": "Rear Delt Fly (Dumbbell)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Rear Delts",
+        "secondaryMuscles": [],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Rear Delt Fly (Dumbbell) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000082",
+        "name": "Reverse Crunch",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Abs",
+        "secondaryMuscles": [
+            "Hip Flexors"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Ziehe das Becken kontrolliert vom Boden und führe die Knie Richtung Brust.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000039",
+        "name": "Reverse Curl (Band)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Brachialis",
+        "secondaryMuscles": [
+            "Biceps",
+            "Forearms"
+        ],
+        "equipment": "Band",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Greife im Obergriff und curle gegen das Band. Handgelenke stabil halten.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000040",
+        "name": "Reverse Curl (Barbell)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Brachialis",
+        "secondaryMuscles": [
+            "Biceps",
+            "Forearms"
+        ],
+        "equipment": "Barbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Greife die Hantel im Obergriff und curle kontrolliert. Ellenbogen bleiben am Körper.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000041",
+        "name": "Reverse Curl (Dumbbell)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Brachialis",
+        "secondaryMuscles": [
+            "Biceps",
+            "Forearms"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Curle die Kurzhanteln im Obergriff, ohne die Handgelenke abzuknicken.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000032",
+        "name": "Reverse Fly (Cable)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Rear Delts",
+        "secondaryMuscles": [
+            "Rhomboids",
+            "Middle Traps"
+        ],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Kreuze die Kabel oder nutze einzelne Griffe und ziehe die Arme seitlich nach hinten. Schulterblätter kontrolliert bewegen.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000033",
+        "name": "Reverse Fly (Dumbbell)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Rear Delts",
+        "secondaryMuscles": [
+            "Rhomboids",
+            "Middle Traps"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Beuge den Oberkörper vor und hebe die Kurzhanteln seitlich nach außen. Fokus auf hintere Schulter.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000065",
+        "name": "Reverse Lunges",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quads",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Unilateral",
+        "category": "Strength",
+        "instructions": "Mache Ausfallschritte mit Kurzhanteln.",
+        "imageName": "reverse_lunges"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000057",
+        "name": "Reverse Pec Deck",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Rear Delts",
+        "secondaryMuscles": [
+            "Rhomboids"
+        ],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Ziehe die Griffe der Maschine seitlich nach hinten.",
+        "imageName": "reverse_fly_machine"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009004",
+        "name": "Romanian Deadlift (Barbell)",
+        "muscleGroup": "Hamstrings",
+        "primaryMuscle": "Hamstrings",
+        "secondaryMuscles": [
+            "Glutes",
+            "Lower Back"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Romanian Deadlift (Barbell) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000016",
+        "name": "Romanian Deadlift (Dumbbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Hamstrings",
+        "secondaryMuscles": [
+            "Glutes"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Senke die Kurzhanteln mit gestreckten Beinen kontrolliert ab.",
+        "imageName": "rdl_dumbbell"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009062",
+        "name": "RowErg",
+        "muscleGroup": "Cardio",
+        "primaryMuscle": "Cardio",
+        "secondaryMuscles": [
+            "Back",
+            "Legs"
+        ],
+        "equipment": "Machine",
+        "classification": "Cardio",
+        "category": "Activity",
+        "instructions": "Perform RowErg with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000037",
+        "name": "Rowing Machine",
+        "muscleGroup": "Full Body",
+        "primaryMuscle": "Back",
+        "secondaryMuscles": [
+            "Legs",
+            "Heart"
+        ],
+        "equipment": "Machine",
+        "classification": "Cardio",
+        "category": "Cardio",
+        "instructions": "Pull the handle to the torso under control and return it.",
+        "imageName": "rowing_machine"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000035",
+        "name": "Running (Treadmill)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Heart",
+        "secondaryMuscles": [
+            "Calves",
+            "Quads"
+        ],
+        "equipment": "Machine",
+        "classification": "Cardio",
+        "category": "Cardio",
+        "instructions": "Run on the treadmill at an even pace.",
+        "imageName": "running_treadmill"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000062",
+        "name": "Russian Twist",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Obliques",
+        "secondaryMuscles": [
+            "Abs"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Drehe den Oberkörper im Sitzen von Seite zu Seite.",
+        "imageName": "russian_twist"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009016",
+        "name": "Seated Cable Row",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Mid Back",
+        "secondaryMuscles": [
+            "Lats",
+            "Biceps"
+        ],
+        "equipment": "Cable",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Seated Cable Row with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000052",
+        "name": "Seated Calf Raise",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Calves",
+        "secondaryMuscles": [],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Sitzen, Polster auf Oberschenkel. Fersen anheben.",
+        "imageName": "seated_calf_raise"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009012",
+        "name": "Seated Calf Raise (Machine)",
+        "muscleGroup": "Calves",
+        "primaryMuscle": "Soleus",
+        "secondaryMuscles": [
+            "Calves"
+        ],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Seated Calf Raise (Machine) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009009",
+        "name": "Seated Leg Curl (Machine)",
+        "muscleGroup": "Hamstrings",
+        "primaryMuscle": "Hamstrings",
+        "secondaryMuscles": [],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Seated Leg Curl (Machine) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000021",
+        "name": "Seated Row (Cable)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Rhomboids",
+        "secondaryMuscles": [
+            "Lats",
+            "Biceps"
+        ],
+        "equipment": "Cable",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Ziehe das Kabel sitzend zur Körpermitte.",
+        "imageName": "seated_row"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000200",
+        "name": "Seated Wide-Grip Row (Cable)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Upper Back",
+        "secondaryMuscles": [
+            "Latissimus Dorsi",
+            "Rhomboids",
+            "Middle Traps",
+            "Rear Delts",
+            "Biceps"
+        ],
+        "equipment": "Cable",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Sitze aufrecht am Kabelzug, greife breit und ziehe die Stange Richtung Brust. Schulterblätter bewusst nach hinten führen.",
+        "imageName": "seated_cable_row"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000025",
+        "name": "Shoulder Press (Dumbbell)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Deltoids",
+        "secondaryMuscles": [
+            "Triceps"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Drücke die Kurzhanteln über Kopf.",
+        "imageName": "shoulder_press_dumbbell"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009037",
+        "name": "Shoulder Press (Machine)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Deltoids",
+        "secondaryMuscles": [
+            "Triceps"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Shoulder Press (Machine) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000034",
+        "name": "Shoulder Press (Plate Loaded)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Front Delts",
+        "secondaryMuscles": [
+            "Side Delts",
+            "Triceps"
+        ],
+        "equipment": "Plate Loaded Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Drücke die plattenbeladene Maschine kontrolliert über Kopf und senke sie langsam ab.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009043",
+        "name": "Shrug (Barbell)",
+        "muscleGroup": "Traps",
+        "primaryMuscle": "Traps",
+        "secondaryMuscles": [],
+        "equipment": "Barbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Shrug (Barbell) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009042",
+        "name": "Shrug (Dumbbell)",
+        "muscleGroup": "Traps",
+        "primaryMuscle": "Traps",
+        "secondaryMuscles": [],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Shrug (Dumbbell) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000015",
+        "name": "Shrug (Machine)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Upper Traps",
+        "secondaryMuscles": [
+            "Levator Scapulae"
+        ],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Halte die Griffe, ziehe die Schultern gerade nach oben und senke sie kontrolliert ab. Arme bleiben lang.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000016",
+        "name": "Shrug (Smith Machine)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Upper Traps",
+        "secondaryMuscles": [
+            "Levator Scapulae"
+        ],
+        "equipment": "Smith Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Greife die Smith-Stange und ziehe die Schultern vertikal hoch. Kurz halten, langsam absenken.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000083",
+        "name": "Side Bend (Band)",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Obliques",
+        "secondaryMuscles": [
+            "Quadratus Lumborum"
+        ],
+        "equipment": "Band",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Halte das Band seitlich und beuge den Oberkörper kontrolliert gegen den Widerstand.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000084",
+        "name": "Side Bend (Cable)",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Obliques",
+        "secondaryMuscles": [
+            "Quadratus Lumborum"
+        ],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Greife den Kabelgriff seitlich und neige den Oberkörper kontrolliert zur Seite.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000085",
+        "name": "Side Bend (Dumbbell)",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Obliques",
+        "secondaryMuscles": [
+            "Quadratus Lumborum"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Halte eine Kurzhantel seitlich und beuge dich kontrolliert zur Seite.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000079",
+        "name": "Side Plank",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Obliques",
+        "secondaryMuscles": [
+            "Shoulders"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Isometric",
+        "category": "Strength",
+        "instructions": "Seitlich auf Stützarm halten. Körper gerade.",
+        "imageName": "side_plank"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009045",
+        "name": "Side Plank Hip Dip",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Obliques",
+        "secondaryMuscles": [
+            "Abs"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Isometric",
+        "category": "Strength",
+        "instructions": "Perform Side Plank Hip Dip with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000061",
+        "name": "Single Leg Bridge",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Glutes",
+        "secondaryMuscles": [
+            "Hamstrings",
+            "Core"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Liege auf dem Rücken, strecke ein Bein und hebe die Hüfte über das Standbein.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000047",
+        "name": "Single-Arm Dumbbell Row",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Lats",
+        "secondaryMuscles": [
+            "Biceps",
+            "Rear Delts"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Unilateral",
+        "category": "Strength",
+        "instructions": "Knie auf Bank. Ziehe die Hantel zur Hüfte.",
+        "imageName": "single_arm_row"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000086",
+        "name": "Sit Up",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Abs",
+        "secondaryMuscles": [
+            "Hip Flexors"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Rolle den Oberkörper kontrolliert auf und senke ihn langsam wieder ab.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000109",
+        "name": "Skating",
+        "muscleGroup": "Cardio",
+        "primaryMuscle": "Cardio",
+        "secondaryMuscles": [
+            "Legs",
+            "Glutes"
+        ],
+        "equipment": "Outdoor",
+        "classification": "Cardio",
+        "category": "Activity",
+        "instructions": "Erfasse Dauer, Strecke oder Kalorien für Skating-Einheiten.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009063",
+        "name": "SkiErg",
+        "muscleGroup": "Cardio",
+        "primaryMuscle": "Cardio",
+        "secondaryMuscles": [
+            "Lats",
+            "Core"
+        ],
+        "equipment": "Machine",
+        "classification": "Cardio",
+        "category": "Activity",
+        "instructions": "Perform SkiErg with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000105",
+        "name": "Skiing",
+        "muscleGroup": "Cardio",
+        "primaryMuscle": "Cardio",
+        "secondaryMuscles": [
+            "Legs",
+            "Core"
+        ],
+        "equipment": "Outdoor",
+        "classification": "Cardio",
+        "category": "Activity",
+        "instructions": "Erfasse Dauer, Strecke oder Kalorien für Ski-Einheiten.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009029",
+        "name": "Skull Crusher (EZ Bar)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [],
+        "equipment": "EZ Bar",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Skull Crusher (EZ Bar) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000044",
+        "name": "Skullcrusher (Barbell)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Forearms"
+        ],
+        "equipment": "Barbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Liege auf der Bank, senke die Hantel Richtung Stirn und strecke die Ellenbogen wieder. Oberarme bleiben ruhig.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000045",
+        "name": "Skullcrusher (Dumbbell)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Forearms"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Senke die Kurzhanteln kontrolliert neben den Kopf und strecke die Ellenbogen ohne Schwung.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000031",
+        "name": "Skullcrusher (Ez-Bar)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [],
+        "equipment": "Barbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Trizepsstrecken im Liegen (Stirndrücken).",
+        "imageName": "skullcrusher"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009059",
+        "name": "Sled Push",
+        "muscleGroup": "Full Body",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Calves"
+        ],
+        "equipment": "Sled",
+        "classification": "Conditioning",
+        "category": "Strength",
+        "instructions": "Perform Sled Push with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000096",
+        "name": "Snatch (Barbell)",
+        "muscleGroup": "Olympic",
+        "primaryMuscle": "Full Body",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings",
+            "Shoulders",
+            "Traps",
+            "Core"
+        ],
+        "equipment": "Barbell",
+        "classification": "Olympic",
+        "category": "Strength",
+        "instructions": "Ziehe die Hantel vom Boden explosiv über Kopf und fange sie stabil in der Kniebeuge.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000097",
+        "name": "Snatch Pull (Barbell)",
+        "muscleGroup": "Olympic",
+        "primaryMuscle": "Full Body",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings",
+            "Traps",
+            "Back"
+        ],
+        "equipment": "Barbell",
+        "classification": "Olympic",
+        "category": "Strength",
+        "instructions": "Führe den Zugteil des Snatch explosiv aus, ohne unter die Hantel zu gehen.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000106",
+        "name": "Snowboarding",
+        "muscleGroup": "Cardio",
+        "primaryMuscle": "Cardio",
+        "secondaryMuscles": [
+            "Legs",
+            "Core"
+        ],
+        "equipment": "Outdoor",
+        "classification": "Cardio",
+        "category": "Activity",
+        "instructions": "Erfasse Dauer, Strecke oder Kalorien für Snowboard-Einheiten.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000014",
+        "name": "Spider Curls",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Biceps",
+        "secondaryMuscles": [
+            "Brachialis",
+            "Forearms"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Lege die Brust auf eine schräge Bank und curle die Gewichte ohne Schwung. Oberarme bleiben ruhig.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000098",
+        "name": "Split Jerk (Barbell)",
+        "muscleGroup": "Olympic",
+        "primaryMuscle": "Shoulders",
+        "secondaryMuscles": [
+            "Triceps",
+            "Quads",
+            "Glutes",
+            "Core"
+        ],
+        "equipment": "Barbell",
+        "classification": "Olympic",
+        "category": "Strength",
+        "instructions": "Dip und Drive aus den Beinen, fange die Hantel im Ausfallschritt über Kopf.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000067",
+        "name": "Squat - Belt",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Belt Squat",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Befestige den Gürtel, halte den Oberkörper aufrecht und führe Kniebeugen ohne Rückenlast aus.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000062",
+        "name": "Squat (Band)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Band",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Stelle dich auf oder in das Band und führe Kniebeugen mit kontrollierter Knie- und Hüftbewegung aus.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000010",
+        "name": "Squat (Barbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quads",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings",
+            "Lower Back"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Do back squats with a barbell.",
+        "imageName": "squat_barbell"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000063",
+        "name": "Squat (Bodyweight)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings",
+            "Core"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Füße stabil, Hüfte nach hinten und unten führen. Knie folgen den Fußspitzen.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000064",
+        "name": "Squat (Dumbbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings",
+            "Core"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Halte eine oder zwei Kurzhanteln und führe kontrollierte Kniebeugen aus.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000065",
+        "name": "Squat (Machine)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Stelle die Maschine ein, senke dich kontrolliert und drücke über den ganzen Fuß nach oben.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000066",
+        "name": "Squat (Smith Machine)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Smith Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Positioniere dich unter der Smith-Stange und führe kontrollierte Kniebeugen mit stabilem Rumpf aus.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000071",
+        "name": "Stair Climber",
+        "muscleGroup": "Cardio",
+        "primaryMuscle": "Heart",
+        "secondaryMuscles": [
+            "Quads",
+            "Glutes",
+            "Calves"
+        ],
+        "equipment": "Machine",
+        "classification": "Cardio",
+        "category": "Cardio",
+        "instructions": "Stufen steigen.",
+        "imageName": "stair_climber"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000068",
+        "name": "Standing Calf Raise (Barbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Calves",
+        "secondaryMuscles": [
+            "Soleus"
+        ],
+        "equipment": "Barbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Halte die Hantel stabil und drücke dich über die Fußballen nach oben. Langsam absenken.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000069",
+        "name": "Standing Calf Raise (Bodyweight)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Calves",
+        "secondaryMuscles": [
+            "Soleus"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Drücke dich auf die Zehenspitzen und senke die Fersen langsam ab.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000070",
+        "name": "Standing Calf Raise (Dumbbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Calves",
+        "secondaryMuscles": [
+            "Soleus"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Halte Kurzhanteln seitlich und führe Wadenheben mit voller Kontrolle aus.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009011",
+        "name": "Standing Calf Raise (Machine)",
+        "muscleGroup": "Calves",
+        "primaryMuscle": "Calves",
+        "secondaryMuscles": [],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Standing Calf Raise (Machine) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000071",
+        "name": "Standing Calf Raise (Smith Machine)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Calves",
+        "secondaryMuscles": [
+            "Soleus"
+        ],
+        "equipment": "Smith Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Nutze die Smith-Stange für Stabilität und führe kontrolliertes Wadenheben aus.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000067",
+        "name": "Step Ups",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quads",
+        "secondaryMuscles": [
+            "Glutes"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Unilateral",
+        "category": "Strength",
+        "instructions": "Steige mit einem Bein auf eine Plattform und ziehe das andere nach.",
+        "imageName": "step_ups"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000072",
+        "name": "Step-up",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Steige kontrolliert auf eine Box oder Bank und drücke dich über das vordere Bein hoch.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000018",
+        "name": "Stiff Leg Deadlift (Barbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Hamstrings",
+        "secondaryMuscles": [
+            "Glutes",
+            "Erector Spinae"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Halte die Beine fast gestreckt, schiebe die Hüfte nach hinten und führe die Hantel nah am Körper.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000073",
+        "name": "Stiff Leg Deadlift (Dumbbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Hamstrings",
+        "secondaryMuscles": [
+            "Glutes",
+            "Erector Spinae"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Halte Kurzhanteln nah am Körper, schiebe die Hüfte zurück und spüre die Dehnung in den Hamstrings.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000074",
+        "name": "Straight Leg Deadlift (Band)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Hamstrings",
+        "secondaryMuscles": [
+            "Glutes",
+            "Erector Spinae"
+        ],
+        "equipment": "Band",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Stehe auf dem Band, halte die Beine fast gestreckt und strecke die Hüfte gegen den Widerstand.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009020",
+        "name": "Straight-Arm Pulldown (Cable)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus",
+        "secondaryMuscles": [],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Perform Straight-Arm Pulldown (Cable) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000040",
+        "name": "Stretching",
+        "muscleGroup": "Full Body",
+        "primaryMuscle": "Full Body",
+        "secondaryMuscles": [],
+        "equipment": "Bodyweight",
+        "classification": "Mobility",
+        "category": "Activity",
+        "instructions": "Dehne die Muskeln.",
+        "imageName": "stretching"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000035",
+        "name": "Strict Military Press (Barbell)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Front Delts",
+        "secondaryMuscles": [
+            "Side Delts",
+            "Triceps",
+            "Core"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Stehe eng und stabil, drücke die Hantel ohne Beinimpuls über Kopf und senke kontrolliert ab.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000051",
+        "name": "Sumo Deadlift",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Glutes",
+        "secondaryMuscles": [
+            "Quads",
+            "Adductors",
+            "Lower Back"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Breiter Stand. Griff innerhalb der Knie. Heben.",
+        "imageName": "sumo_deadlift"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000201",
+        "name": "Sumo Deadlift (Barbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Glutes",
+        "secondaryMuscles": [
+            "Hamstrings",
+            "Quadriceps",
+            "Erector Spinae",
+            "Adductors"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Stelle dich breit, greife die Hantel innerhalb der Knie und strecke Hüfte und Knie gleichzeitig. Rücken bleibt neutral.",
+        "imageName": "sumo_deadlift"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000101",
+        "name": "Sumo Deadlift High Pull (Barbell)",
+        "muscleGroup": "Olympic",
+        "primaryMuscle": "Full Body",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings",
+            "Traps",
+            "Shoulders"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Breiter Stand, ziehe die Hantel aus der Hüfte bis Brusthöhe. Ellenbogen führen nach oben.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000087",
+        "name": "Superman",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Erector Spinae",
+        "secondaryMuscles": [
+            "Glutes",
+            "Rear Delts"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Liege auf dem Bauch und hebe Arme und Beine gleichzeitig leicht an. Kurz halten.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000023",
+        "name": "Supine Press",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major",
+        "secondaryMuscles": [
+            "Triceps",
+            "Front Delts"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Liege stabil in der Maschine und drücke die Griffe kontrolliert nach oben bzw. nach vorn.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000107",
+        "name": "Swimming",
+        "muscleGroup": "Cardio",
+        "primaryMuscle": "Cardio",
+        "secondaryMuscles": [
+            "Shoulders",
+            "Back",
+            "Core"
+        ],
+        "equipment": "Pool",
+        "classification": "Cardio",
+        "category": "Activity",
+        "instructions": "Erfasse Dauer, Distanz oder Kalorien für Schwimmeinheiten.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000042",
+        "name": "SZ Curl",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Biceps",
+        "secondaryMuscles": [
+            "Brachialis",
+            "Forearms"
+        ],
+        "equipment": "EZ Bar",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Greife die SZ-Stange bequem und curle kontrolliert bis zur Schulterhöhe. Ellenbogen ruhig halten.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000045",
+        "name": "T-Bar Row",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Lats",
+        "secondaryMuscles": [
+            "Traps",
+            "Biceps",
+            "Posterior Chain"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Stelle dich über die Hantel, Brust gestützt oder vorgebeugt. Ziehe das Gewicht zur Brust.",
+        "imageName": "tbar_row"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000094",
+        "name": "T-Bar Row (Machine)",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Rhomboids",
+            "Middle Traps",
+            "Rear Delts",
+            "Biceps"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Positioniere die Brust am Polster, halte den Rücken ruhig und ziehe die Griffe Richtung Oberkörper. Senke das Gewicht kontrolliert ab.",
+        "imageName": "tbar_row"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000013",
+        "name": "TG Upper Back",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Upper Back",
+        "secondaryMuscles": [
+            "Rhomboids",
+            "Middle Traps",
+            "Rear Delts"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Positioniere die Brust am Polster und ziehe die Griffe mit Fokus auf Schulterblätter nach hinten. Kontrolliert lösen.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000099",
+        "name": "Thruster (Barbell)",
+        "muscleGroup": "Olympic",
+        "primaryMuscle": "Full Body",
+        "secondaryMuscles": [
+            "Quadriceps",
+            "Glutes",
+            "Shoulders",
+            "Triceps"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Kombiniere Front Squat und Overhead Press in einer flüssigen Bewegung.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000100",
+        "name": "Thruster (Kettlebell)",
+        "muscleGroup": "Olympic",
+        "primaryMuscle": "Full Body",
+        "secondaryMuscles": [
+            "Quadriceps",
+            "Glutes",
+            "Shoulders",
+            "Triceps"
+        ],
+        "equipment": "Kettlebell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Führe eine Kniebeuge mit Kettlebells aus und drücke sie direkt über Kopf.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000088",
+        "name": "Toes To Bar",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Abs",
+        "secondaryMuscles": [
+            "Hip Flexors",
+            "Lats"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Hänge an der Stange und führe die Füße kontrolliert oder dynamisch zur Stange.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000089",
+        "name": "Torso Rotation (Machine)",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Obliques",
+        "secondaryMuscles": [
+            "Abs"
+        ],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Stelle Sitz und Polster ein und rotiere den Oberkörper kontrolliert gegen den Widerstand.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000075",
+        "name": "Trap Bar Deadlift",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Glutes",
+        "secondaryMuscles": [
+            "Quadriceps",
+            "Hamstrings",
+            "Erector Spinae"
+        ],
+        "equipment": "Trap Bar",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Stehe mittig in der Trap Bar, halte Rücken neutral und strecke Knie und Hüfte gleichzeitig.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009064",
+        "name": "Treadmill Run",
+        "muscleGroup": "Cardio",
+        "primaryMuscle": "Cardio",
+        "secondaryMuscles": [
+            "Legs"
+        ],
+        "equipment": "Machine",
+        "classification": "Cardio",
+        "category": "Activity",
+        "instructions": "Perform Treadmill Run with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000046",
+        "name": "Tricep Pushdown Single Handed",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Forearms"
+        ],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Nutze einen einzelnen Griff und strecke den Arm am Kabel nach unten. Ellenbogen bleibt am Körper.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000047",
+        "name": "Triceps Dip",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Chest",
+            "Front Delts"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Stütze dich auf Barren, senke dich kontrolliert und drücke dich über die Arme wieder hoch.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000048",
+        "name": "Triceps Dip (Assisted)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Chest",
+            "Front Delts"
+        ],
+        "equipment": "Machine",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Stelle Unterstützung ein, senke dich kontrolliert und drücke dich aus den Armen hoch.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000049",
+        "name": "Triceps Extension",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Forearms"
+        ],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Strecke die Ellenbogen gegen Widerstand und halte die Oberarme ruhig. Kontrolliert zurück.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000050",
+        "name": "Triceps Extension (Barbell)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Forearms"
+        ],
+        "equipment": "Barbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Führe die Hantel über oder hinter dem Kopf, strecke die Ellenbogen und senke kontrolliert.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000051",
+        "name": "Triceps Extension (Cable)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Forearms"
+        ],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Stelle das Kabel passend ein und strecke die Arme kontrolliert. Ellenbogen bleiben fixiert.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000052",
+        "name": "Triceps Extension (Dumbbell)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Forearms"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Halte eine Kurzhantel über Kopf, senke sie hinter den Kopf und strecke die Arme wieder.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000053",
+        "name": "Triceps Extension (Machine)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Forearms"
+        ],
+        "equipment": "Machine",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Stelle Sitz und Polster ein und strecke die Ellenbogen kontrolliert gegen den Widerstand.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000054",
+        "name": "Triceps Extension Mit Komischen Griff",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Forearms"
+        ],
+        "equipment": "Cable Attachment",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Nutze den gewählten Spezialgriff am Kabelzug und strecke die Ellenbogen kontrolliert. Oberarme bleiben ruhig.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000060",
+        "name": "Triceps Extension Overhead",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Hantel über Kopf halten. Hinter den Kopf absenken und strecken.",
+        "imageName": "triceps_extension_overhead"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000055",
+        "name": "Triceps Pushdown (Cable - Straight Bar)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Forearms"
+        ],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Greife die gerade Stange und drücke sie aus dem Ellenbogen nach unten. Kurz strecken, langsam zurück.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000030",
+        "name": "Triceps Pushdown (Cable)",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [],
+        "equipment": "Cable",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Drücke das Kabel nach unten.",
+        "imageName": "triceps_pushdown"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000056",
+        "name": "Triceps Pushdown Not Straight Bar",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Triceps",
+        "secondaryMuscles": [
+            "Forearms"
+        ],
+        "equipment": "Cable Attachment",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Nutze Seil, V-Griff oder gebogene Stange und drücke kontrolliert nach unten. Ellenbogen nah am Körper.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000024",
+        "name": "TRX Push Up",
+        "muscleGroup": "Chest",
+        "primaryMuscle": "Pectoralis Major",
+        "secondaryMuscles": [
+            "Triceps",
+            "Front Delts",
+            "Core"
+        ],
+        "equipment": "Suspension Trainer",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Greife die TRX-Griffe, halte Spannung im Körper und führe Liegestütze mit kontrollierter Tiefe aus.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000074",
+        "name": "Turkish Get Up",
+        "muscleGroup": "Full Body",
+        "primaryMuscle": "Full Body",
+        "secondaryMuscles": [
+            "Core",
+            "Shoulders"
+        ],
+        "equipment": "Kettlebell",
+        "classification": "Functional",
+        "category": "Strength",
+        "instructions": "Stehe kontrolliert mit einer Kettlebell über Kopf auf.",
+        "imageName": "turkish_getup"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000055",
+        "name": "Upright Row",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Side Delts",
+        "secondaryMuscles": [
+            "Traps"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Ziehe die Stange bis zur Brusthöhe, Ellbogen führen.",
+        "imageName": "upright_row"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000017",
+        "name": "Upright Row (Barbell)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Side Delts",
+        "secondaryMuscles": [
+            "Upper Traps",
+            "Biceps"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Ziehe die Hantel nah am Körper bis etwa Brusthöhe. Ellenbogen führen, Handgelenke neutral halten.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009041",
+        "name": "Upright Row (Cable)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Side Delts",
+        "secondaryMuscles": [
+            "Traps"
+        ],
+        "equipment": "Cable",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Upright Row (Cable) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000036",
+        "name": "Upright Row (Dumbbell)",
+        "muscleGroup": "Shoulders",
+        "primaryMuscle": "Side Delts",
+        "secondaryMuscles": [
+            "Upper Traps",
+            "Biceps"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Ziehe die Kurzhanteln nah am Körper nach oben, Ellenbogen führen. Bewegung kontrolliert halten.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000090",
+        "name": "V Up",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Abs",
+        "secondaryMuscles": [
+            "Hip Flexors"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Hebe Oberkörper und Beine gleichzeitig an, bis Hände und Füße sich annähern.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000108",
+        "name": "Walking",
+        "muscleGroup": "Cardio",
+        "primaryMuscle": "Cardio",
+        "secondaryMuscles": [
+            "Legs"
+        ],
+        "equipment": "Outdoor",
+        "classification": "Cardio",
+        "category": "Activity",
+        "instructions": "Erfasse Schritte, Dauer, Strecke oder Kalorien für Geheinheiten.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009008",
+        "name": "Walking Lunge (Dumbbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Perform Walking Lunge (Dumbbell) with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000066",
+        "name": "Walking Lunges",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quads",
+        "secondaryMuscles": [
+            "Glutes",
+            "Hamstrings"
+        ],
+        "equipment": "Dumbbell",
+        "classification": "Unilateral",
+        "category": "Strength",
+        "instructions": "Mache Ausfallschritte mit Kurzhanteln.",
+        "imageName": "walking_lunges"
+    },
+    {
+        "id": "E2F2E2F2-0002-0000-0000-000000009071",
+        "name": "Wall Sit",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Isometric",
+        "category": "Strength",
+        "instructions": "Perform Wall Sit with controlled technique and a full comfortable range of motion.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000009",
+        "name": "Wide Pull Up",
+        "muscleGroup": "Back",
+        "primaryMuscle": "Latissimus Dorsi",
+        "secondaryMuscles": [
+            "Teres Major",
+            "Biceps",
+            "Rear Delts"
+        ],
+        "equipment": "Bodyweight",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Greife weiter als schulterbreit und ziehe die Brust Richtung Stange. Ohne Schwung absenken.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000061",
+        "name": "Woodchopper",
+        "muscleGroup": "Core",
+        "primaryMuscle": "Obliques",
+        "secondaryMuscles": [
+            "Abs"
+        ],
+        "equipment": "Cable",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Rotiere den Oberkörper und ziehe das Kabel diagonal.",
+        "imageName": "woodchopper"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000075",
+        "name": "Wrist Curl",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Forearms",
+        "secondaryMuscles": [],
+        "equipment": "Dumbbell",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Unterarme auf Bank ablegen. Handgelenke beugen.",
+        "imageName": "wrist_curl"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000043",
+        "name": "Wrist Roller",
+        "muscleGroup": "Arms",
+        "primaryMuscle": "Forearms",
+        "secondaryMuscles": [
+            "Grip"
+        ],
+        "equipment": "Wrist Roller",
+        "classification": "Isolation",
+        "category": "Strength",
+        "instructions": "Rolle das Gewicht mit gestreckten Armen kontrolliert auf und ab. Handgelenke arbeiten gleichmäßig.",
+        "imageName": "default_muscle"
+    },
+    {
+        "id": "E1F1E1F1-0001-0000-0000-000000000039",
+        "name": "Yoga",
+        "muscleGroup": "Full Body",
+        "primaryMuscle": "Full Body",
+        "secondaryMuscles": [],
+        "equipment": "Bodyweight",
+        "classification": "Mobility",
+        "category": "Activity",
+        "instructions": "Führe Yoga-Posen aus.",
+        "imageName": "yoga"
+    },
+    {
+        "id": "E3F3E3F3-0003-0000-0000-100000000076",
+        "name": "Zercher Squat (Barbell)",
+        "muscleGroup": "Legs",
+        "primaryMuscle": "Quadriceps",
+        "secondaryMuscles": [
+            "Glutes",
+            "Core",
+            "Upper Back"
+        ],
+        "equipment": "Barbell",
+        "classification": "Compound",
+        "category": "Strength",
+        "instructions": "Halte die Hantel in den Ellenbeugen, bleibe aufrecht und führe tiefe kontrollierte Kniebeugen aus.",
+        "imageName": "default_muscle"
+    }
+]

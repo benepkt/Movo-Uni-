@@ -64,10 +64,11 @@ struct CaloriesDetailView: View {
                             Picker(appSettings.localized("common.range"), selection: $daysBack) {
                                 Text(String(format: appSettings.localized("range.days"), 7)).tag(7)
                                 Text(String(format: appSettings.localized("range.days"), 30)).tag(30)
+                                Text(String(format: appSettings.localized("range.days"), 90)).tag(90)
                             }
                             .pickerStyle(.segmented)
                             .labelsHidden()
-                            .frame(width: 180)
+                            .frame(width: 200)
                         }
                         .padding(.horizontal)
                         
@@ -163,6 +164,7 @@ struct CaloriesDetailView: View {
                                     }
                                 }
                                 .padding()
+                                .accessibilityElement(children: .combine)
                                 Divider()
                             }
                         }
@@ -210,11 +212,11 @@ struct CaloriesDetailView: View {
     private func axisStride(for daysBack: Int) -> Int {
         switch daysBack {
         case ...7:
-            // 7 Tage -> jeden Tag ein Label
             return 1
+        case 8...30:
+            return 5
         default:
-            // 30 Tage -> z.B. jeden 3. oder 5. Tag
-            return 3   // oder 5, wenn du es noch luftiger willst
+            return 15
         }
     }
 
@@ -224,11 +226,11 @@ struct CaloriesDetailView: View {
         f.locale = locale
 
         if daysBack <= 7 {
-            // „Mo“, „Di“, …
             f.dateFormat = "E"
-        } else {
-            // „1.“, „4.“, „7.“, …
+        } else if daysBack <= 30 {
             f.dateFormat = "d."
+        } else {
+            f.dateFormat = "MMM"
         }
 
         return f.string(from: date)

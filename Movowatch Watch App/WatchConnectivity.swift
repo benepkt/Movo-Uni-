@@ -4,6 +4,8 @@ import Combine
 
 #if os(watchOS)
 import HealthKit
+import UserNotifications
+import WatchKit
 #endif
 
 @MainActor
@@ -16,14 +18,18 @@ final class WatchConnectivity: NSObject, ObservableObject {
     @Published var pendingCount: Int = 0
     @Published var companionInstalled: Bool = false
     @Published var reachable: Bool = false
+    @Published var startOptions = WatchStartOptionsPayload()
+    @Published var showRestFinishedPopup = false
 
     // Heart Rate (Watch -> iPhone)
     @Published var watchHeartRateBPM: Double = 0
 
     private let activeWorkoutKey = "activeWorkoutPayloadJSON"
+    private let watchStartOptionsKey = "watchStartOptionsJSON"
 
     private var cancellables = Set<AnyCancellable>()
     private var hrStreamingStarted = false
+    private var lastRestWasActive = false
 
     #if os(watchOS)
     private let healthStore = HKHealthStore()
@@ -53,6 +59,10 @@ final class WatchConnectivity: NSObject, ObservableObject {
         if !ctx.isEmpty {
             handleApplicationContext(ctx)
         }
+
+        #if os(watchOS)
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+        #endif
     }
 
     func refreshFlags() {
@@ -65,12 +75,23 @@ final class WatchConnectivity: NSObject, ObservableObject {
 
     // MARK: - iPhone -> Watch
     func handleApplicationContext(_ ctx: [String: Any]) {
-        guard (ctx["type"] as? String) == "activeWorkoutState" else { return }
+        if ctx[watchStartOptionsKey] != nil {
+            handleWatchStartOptions(ctx)
+        }
+
+        guard ctx[activeWorkoutKey] != nil else { return }
         guard let json = ctx[activeWorkoutKey] as? String,
               let data = json.data(using: .utf8) else { return }
 
         do {
             let payload = try JSONDecoder().decode(ActiveWorkoutPayload.self, from: data)
+            handleRestTimerFeedback(previous: self.activeWorkout.restTimer, next: payload.restTimer)
+            
+            // ✅ Benachrichtigung senden, wenn Training startet
+            if payload.isActive && !self.activeWorkout.isActive {
+                sendTrainingStartNotification(workoutName: payload.workoutName ?? "Training")
+            }
+            
             self.activeWorkout = payload
             self.lastStatus = payload.isActive ? "📲 Training aktiv" : "⏳ Warten"
 
@@ -85,6 +106,17 @@ final class WatchConnectivity: NSObject, ObservableObject {
 
         } catch {
             print("❌ decode ActiveWorkoutPayload failed:", error.localizedDescription)
+        }
+    }
+
+    private func handleWatchStartOptions(_ ctx: [String: Any]) {
+        guard let json = ctx[watchStartOptionsKey] as? String,
+              let data = json.data(using: .utf8) else { return }
+        do {
+            startOptions = try JSONDecoder().decode(WatchStartOptionsPayload.self, from: data)
+            lastStatus = "Bereit"
+        } catch {
+            print("❌ decode WatchStartOptions failed:", error.localizedDescription)
         }
     }
 
@@ -145,6 +177,31 @@ final class WatchConnectivity: NSObject, ObservableObject {
             lastStatus = "➡️ queued"
         }
     }
+
+    func requestStart(_ item: WatchStartItem) {
+        refreshFlags()
+        let payload: [String: Any] = [
+            "type": item.source == .plan ? "start_plan_template_from_watch" : "start_template_from_watch",
+            "templateId": item.id,
+            "timestamp": Date().timeIntervalSince1970,
+            "eventId": UUID().uuidString,
+            "deviceId": "watch"
+        ]
+        let session = WCSession.default
+        if session.isReachable {
+            session.sendMessage(payload, replyHandler: nil, errorHandler: { error in
+                print("start request error:", error.localizedDescription)
+            })
+            lastStatus = "Starte \(item.title)"
+        } else {
+            session.transferUserInfo(payload)
+            lastStatus = "Start queued"
+        }
+        #if os(watchOS)
+        WKInterfaceDevice.current().play(.start)
+        #endif
+    }
+
 }
 
 // MARK: - WCSessionDelegate
@@ -172,7 +229,14 @@ extension WatchConnectivity: WCSessionDelegate {
     nonisolated func session(_ session: WCSession,
                              didReceiveMessage message: [String : Any]) {
         if let type = message["type"] as? String, type == "activeWorkoutStatePing" {
-            Task { @MainActor in WatchConnectivity.shared.lastStatus = "📩 ping" }
+            Task { @MainActor in
+                WatchConnectivity.shared.lastStatus = "📩 ping"
+                WatchConnectivity.shared.handleApplicationContext(WCSession.default.receivedApplicationContext)
+            }
+        } else if let type = message["type"] as? String, type == "watchStartOptionsPing" {
+            Task { @MainActor in
+                WatchConnectivity.shared.handleApplicationContext(WCSession.default.receivedApplicationContext)
+            }
         }
     }
 
@@ -191,6 +255,58 @@ extension WatchConnectivity: WCSessionDelegate {
 // MARK: - HR: Start/Stop & Send
 
 private extension WatchConnectivity {
+    func handleRestTimerFeedback(previous: ActiveWorkoutPayload.RestTimerState?, next: ActiveWorkoutPayload.RestTimerState?) {
+        #if os(watchOS)
+        let nextActive = next?.isActive == true
+        let nextRemaining = next?.remaining ?? 1
+        let nextFinished = lastRestWasActive && nextRemaining <= 0.5
+
+        if nextActive && !lastRestWasActive {
+            WKInterfaceDevice.current().play(.start)
+            scheduleRestFinishedNotification(after: max(1, nextRemaining))
+        } else if nextFinished {
+            cancelRestFinishedNotification()
+            playStrongRestFinishedFeedback()
+            showRestFinishedPopup = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) { [weak self] in
+                self?.showRestFinishedPopup = false
+            }
+        } else if lastRestWasActive && !nextActive {
+            cancelRestFinishedNotification()
+        }
+
+        lastRestWasActive = nextActive
+        #endif
+    }
+
+    #if os(watchOS)
+    func scheduleRestFinishedNotification(after seconds: TimeInterval) {
+        cancelRestFinishedNotification()
+        let content = UNMutableNotificationContent()
+        content.title = "Pause fertig"
+        content.body = "Weiter geht's."
+        content.sound = .default
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, seconds), repeats: false)
+        let request = UNNotificationRequest(identifier: "movo.rest.finished", content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    func cancelRestFinishedNotification() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["movo.rest.finished"])
+    }
+
+    func playStrongRestFinishedFeedback() {
+        let device = WKInterfaceDevice.current()
+        device.play(.success)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+            device.play(.notification)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.38) {
+            device.play(.directionUp)
+        }
+    }
+    #endif
+
     func startObservingActiveWorkoutForHR() {
         guard !hrStreamingStarted else { return }
         hrStreamingStarted = true
@@ -213,76 +329,9 @@ private extension WatchConnectivity {
 
     func startWatchHeartRateWorkoutIfNeeded() async {
         #if os(watchOS)
-        guard hkSession == nil, hkBuilder == nil else { return }
-
-        guard HKHealthStore.isHealthDataAvailable(),
-              let hrType = HKQuantityType.quantityType(forIdentifier: .heartRate)
-        else {
-            lastStatus = "❌ HR not available"
-            return
-        }
-
-        // Für HKWorkoutSession MUSS Schreibrecht für Workout angefragt werden
-        let workoutType = HKObjectType.workoutType()
-
-        do {
-            // Debug: Plist-Text prüfen
-            print("HK Share usage:",
-                  Bundle.main.object(forInfoDictionaryKey: "NSHealthShareUsageDescription") as? String ?? "nil")
-            print("HK Update usage:",
-                  Bundle.main.object(forInfoDictionaryKey: "NSHealthUpdateUsageDescription") as? String ?? "nil")
-
-            try await healthStore.requestAuthorization(
-                toShare: [workoutType],     // ← wichtig!
-                read: [hrType]
-            )
-        } catch {
-            lastStatus = "❌ HK auth"
-            print("❌ HK auth failed:", error)
-            return
-        }
-
-        // Optional: prüfen, ob wirklich autorisiert wurde
-        if #available(watchOS 6.0, *) {
-            let status = healthStore.authorizationStatus(for: workoutType)
-            guard status == .sharingAuthorized else {
-                lastStatus = "❌ Workout write denied"
-                print("❌ Workout sharing not authorized (status: \(status.rawValue))")
-                return
-            }
-        }
-
-        let config = HKWorkoutConfiguration()
-        config.activityType = .traditionalStrengthTraining
-        config.locationType = .indoor
-
-        do {
-            let s = try HKWorkoutSession(healthStore: healthStore, configuration: config)
-            let b = s.associatedWorkoutBuilder()
-
-            s.delegate = self
-            b.delegate = self
-            b.dataSource = HKLiveWorkoutDataSource(healthStore: healthStore, workoutConfiguration: config)
-
-            hkSession = s
-            hkBuilder = b
-
-            let start = Date()
-            s.startActivity(with: start)
-
-            try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
-                b.beginCollection(withStart: start) { _, error in
-                    if let error { cont.resume(throwing: error) } else { cont.resume(returning: ()) }
-                }
-            }
-
-            lastStatus = "⌚️ HR on"
-        } catch {
-            lastStatus = "❌ HR start"
-            print("❌ startWatchHeartRateWorkout failed:", error)
-            hkSession = nil
-            hkBuilder = nil
-        }
+        // Do not start HKWorkoutSession here. Even discarded sessions can appear
+        // as 0:00 Movo workouts in Apple Fitness if watchOS terminates the app.
+        lastStatus = "⌚️ HR session disabled"
         #endif
     }
 

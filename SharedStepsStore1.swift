@@ -114,13 +114,15 @@ public struct StepsSnapshot: Codable {
     public let goal: Int
     public let lastDays: [StepsDayCompact]?
     public var premiumUnlocked: Bool
+    public let hourlyHistory: [Double]?
 
-    public init(date: Date, stepsToday: Int, goal: Int, lastDays: [StepsDayCompact]? = nil, premiumUnlocked: Bool = false) {
+    public init(date: Date, stepsToday: Int, goal: Int, lastDays: [StepsDayCompact]? = nil, premiumUnlocked: Bool = false, hourlyHistory: [Double]? = nil) {
         self.date = date; self.stepsToday = stepsToday; self.goal = goal
         self.lastDays = lastDays; self.premiumUnlocked = premiumUnlocked
+        self.hourlyHistory = hourlyHistory
     }
 
-    enum CodingKeys: String, CodingKey { case date, stepsToday, goal, lastDays, premiumUnlocked }
+    enum CodingKeys: String, CodingKey { case date, stepsToday, goal, lastDays, premiumUnlocked, hourlyHistory }
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         date = try c.decode(Date.self, forKey: .date)
@@ -128,6 +130,7 @@ public struct StepsSnapshot: Codable {
         goal = try c.decode(Int.self, forKey: .goal)
         lastDays = try c.decodeIfPresent([StepsDayCompact].self, forKey: .lastDays)
         premiumUnlocked = try c.decodeIfPresent(Bool.self, forKey: .premiumUnlocked) ?? false
+        hourlyHistory = try c.decodeIfPresent([Double].self, forKey: .hourlyHistory)
     }
 }
 
@@ -139,14 +142,15 @@ public enum StepsShared {
     
     
     /// Heutige Schritte + Ziel speichern und Widgets sofort aktualisieren.
-    public static func updateToday(steps: Int, goal: Int, date: Date = Date()) {
+    public static func updateToday(steps: Int, goal: Int, hourlyHistory: [Double]? = nil, date: Date = Date()) {
         let old = load()
         let snap = StepsSnapshot(
             date: date,
             stepsToday: steps,
             goal: goal,
             lastDays: old?.lastDays,
-            premiumUnlocked: old?.premiumUnlocked ?? false
+            premiumUnlocked: old?.premiumUnlocked ?? false,
+            hourlyHistory: hourlyHistory
         )
         save(snap)
         // nur die betroffenen Widgets refreshen
@@ -176,7 +180,8 @@ public enum StepsShared {
                                  stepsToday: stepsToday,
                                  goal: goal,
                                  lastDays: old?.lastDays,
-                                 premiumUnlocked: old?.premiumUnlocked ?? false)
+                                 premiumUnlocked: old?.premiumUnlocked ?? false,
+                                 hourlyHistory: old?.hourlyHistory)
         save(snap)
     }
 
@@ -186,12 +191,13 @@ public enum StepsShared {
                                  stepsToday: old?.stepsToday ?? 0,
                                  goal: goal,
                                  lastDays: days,
-                                 premiumUnlocked: old?.premiumUnlocked ?? false)
+                                 premiumUnlocked: old?.premiumUnlocked ?? false,
+                                 hourlyHistory: old?.hourlyHistory)
         save(snap)
     }
 
     public static func setPremium(_ unlocked: Bool) {
-        var snap = load() ?? StepsSnapshot(date: .now, stepsToday: 0, goal: 8000)
+        var snap = load() ?? StepsSnapshot(date: .now, stepsToday: 0, goal: 8000, hourlyHistory: nil)
         snap.premiumUnlocked = unlocked
         save(snap)
         WidgetCenter.shared.reloadAllTimelines()

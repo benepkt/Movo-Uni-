@@ -76,10 +76,8 @@ struct ManualTrainingView: View {
         
         trainingStore.add(entry: entry)
         
-        // Add XP reward
-        gm.addXP(10)
+        gm.addXP(GamificationManager.xpReward(for: entry))
 
         dismiss()
     }
 }
-

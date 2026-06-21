@@ -153,10 +153,10 @@ final class NotificationManager {
                     }
                 }()
 
-                if isAuth, appSettings.notificationsEnabled {
-                    self.scheduleDailyReminder(language: appSettings.language)
-                } else {
+                if !isAuth || !appSettings.notificationsEnabled {
                     self.cancelAll()
+                } else {
+                    self.cancel(ids: [self.dailyId])
                 }
             }
         }
@@ -177,17 +177,7 @@ final class NotificationManager {
 
     // Nach Sprachwechsel etc.
     func rescheduleIfNeeded(appSettings: AppSettings) {
-        guard appSettings.notificationsEnabled else { return }
-        UNUserNotificationCenter.current().getNotificationSettings { s in
-            let isAuth = (s.authorizationStatus == .authorized
-                          || s.authorizationStatus == .provisional
-                          || s.authorizationStatus == .ephemeral)
-            guard isAuth else { return }
-            DispatchQueue.main.async {
-                self.cancel(ids: [self.dailyId])
-                self.scheduleDailyReminder(language: appSettings.language)
-            }
-        }
+        cancel(ids: [dailyId])
     }
 
     // Onboarding-CTA: hiermit explizit anfragen (zeigt Prompt nur wenn nötig)
@@ -199,9 +189,6 @@ final class NotificationManager {
             switch s.authorizationStatus {
             case .authorized, .provisional, .ephemeral:
                 DispatchQueue.main.async {
-                    if appSettings.notificationsEnabled {
-                        self.scheduleDailyReminder(language: appSettings.language)
-                    }
                     completion?(true)
                 }
 
@@ -209,7 +196,6 @@ final class NotificationManager {
                 center.requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
                     DispatchQueue.main.async {
                         appSettings.notificationsEnabled = granted
-                        if granted { self.scheduleDailyReminder(language: appSettings.language) }
                         completion?(granted)
                     }
                 }
@@ -237,34 +223,7 @@ final class NotificationManager {
 
     // Tägliche Erinnerung (20:00) – Sprache via AppSettings.language (String)
     func scheduleDailyReminder(language: String = "de", hour: Int = 20, minute: Int = 0) {
-        let c = UNMutableNotificationContent()
-        
-        // Variety of motivational messages
-        let titles_de = [
-            "{name}Challenges warten! 🎯",
-            "{name}Bereit für deine Ziele? 💪",
-            "{name}Zeit durchzustarten! 🔥"
-        ]
-        let titles_en = [
-            "{name}Challenges await! 🎯",
-            "{name}Ready for your goals? 💪",
-            "{name}Time to get going! 🔥"
-        ]
-        
-        let title = (language == "de") ? titles_de.randomElement()! : titles_en.randomElement()!
-        let body  = (language == "de")
-            ? LocalizedStrings.de["notifications.challengesBody"] ?? "Kleiner Reminder für heute. 💪"
-            : LocalizedStrings.en["notifications.challengesBody"] ?? "Quick reminder for today. 💪"
-
-        c.title = personalize(title)
-        c.body  = body
-        c.sound = .default
-
-        var dc = DateComponents(); dc.hour = hour; dc.minute = minute
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dc, repeats: true)
-
         cancel(ids: [dailyId])
-        UNUserNotificationCenter.current().add(.init(identifier: dailyId, content: c, trigger: trigger))
     }
 
     // MARK: - Convenience notifications used in ChallengeStore
@@ -314,6 +273,10 @@ final class ChallengeStore: ObservableObject {
     @Published var challenges: [Challenge] = []
     @Published var trainingUnits: [TrainingUnit] = []
     @Published var challengeTemplatesStore: [Challenge] = []
+    
+    // MARK: - Smart Programmes (New)
+    @Published var activeProgram: ActiveProgram? = nil
+    @Published var availablePrograms: [TrainingProgram] = []
 
     // Logs
     @Published private(set) var liftLog: [LiftEntry] = []                // für weeklyVolume
@@ -321,6 +284,8 @@ final class ChallengeStore: ObservableObject {
 
     private let defaults = UserDefaults.standard
     private let activeChallengesKey = "activeChallengesData"
+    private let activeProgramKey = "activeProgramData" // NEW
+    private let availableProgramsKey = "availableTrainingProgramsData"
     private let templatesKey = "challengeTemplatesData"
     private let unitsKey = "trainingUnitsData"
     private let liftLogKey = "liftLogData"
@@ -415,6 +380,10 @@ final class ChallengeStore: ObservableObject {
            let d = try? JSONDecoder().decode([String: Int].self, from: s) {
             self.stepsLog = d
         }
+        
+        // --- Smart Programs ---
+        loadActiveProgram()
+        setupMockPrograms()
     }
 
     /// Safety-Net: Falls Templates mal leer in den UserDefaults landen.
@@ -422,6 +391,189 @@ final class ChallengeStore: ObservableObject {
         if challengeTemplatesStore.isEmpty {
             challengeTemplatesStore = Self.defaultTemplates(appSettings: appSettings)
             saveTemplates()
+        }
+    }
+
+
+    
+    // MARK: - Smart Program Logic
+    
+    func todaysScheduledTemplate() -> TrainingTemplate? {
+        guard let active = activeProgram else { return nil }
+        guard let program = availablePrograms.first(where: { $0.id == active.programId }) else { return nil }
+        
+        let weekday = Calendar.current.component(.weekday, from: Date()) // 1=Sun, 2=Mon...
+        
+        // Check schedule for today
+        if let templateId = program.schedule[weekday],
+           let template = program.routines.first(where: { $0.id == templateId }) {
+            return template
+        }
+        return nil
+    }
+
+    func activeTrainingProgram() -> TrainingProgram? {
+        guard let active = activeProgram else { return nil }
+        return availablePrograms.first(where: { $0.id == active.programId })
+    }
+
+    func recommendedTemplate(from history: [TrainingEntry]) -> TrainingTemplate? {
+        guard let program = activeTrainingProgram() else { return nil }
+        guard program.smartOrderingEnabled else {
+            return todaysScheduledTemplate()
+        }
+
+        let orderedTemplateIds = program.schedule
+            .sorted { $0.key < $1.key }
+            .map(\.value)
+            .reduce(into: [String]()) { result, id in
+                if !result.contains(id) { result.append(id) }
+            }
+        let orderedTemplates = orderedTemplateIds.compactMap { id in
+            program.routines.first(where: { $0.id == id })
+        }
+        guard !orderedTemplates.isEmpty else { return todaysScheduledTemplate() }
+
+        let recent = history
+            .sorted { $0.date > $1.date }
+            .first { entry in
+                orderedTemplates.contains { template in
+                    entry.title.localizedCaseInsensitiveContains(template.name)
+                    || template.name.localizedCaseInsensitiveContains(entry.title)
+                }
+            }
+
+        guard let recent else {
+            return todaysScheduledTemplate() ?? orderedTemplates.first
+        }
+
+        guard let recentIndex = orderedTemplates.firstIndex(where: { template in
+            recent.title.localizedCaseInsensitiveContains(template.name)
+            || template.name.localizedCaseInsensitiveContains(recent.title)
+        }) else {
+            return todaysScheduledTemplate() ?? orderedTemplates.first
+        }
+
+        return orderedTemplates[(recentIndex + 1) % orderedTemplates.count]
+    }
+    
+    func startProgram(_ program: TrainingProgram) {
+        upsertProgram(program)
+        let active = ActiveProgram(programId: program.id, startDate: Date())
+        self.activeProgram = active
+        saveActiveProgram()
+    }
+
+    func upsertProgram(_ program: TrainingProgram) {
+        if let index = availablePrograms.firstIndex(where: { $0.id == program.id }) {
+            availablePrograms[index] = program
+        } else {
+            availablePrograms.insert(program, at: 0)
+        }
+        saveAvailablePrograms()
+    }
+
+    func deleteProgram(_ program: TrainingProgram) {
+        availablePrograms.removeAll { $0.id == program.id }
+        if activeProgram?.programId == program.id {
+            leaveCurrentProgram()
+        }
+        saveAvailablePrograms()
+    }
+    
+    func leaveCurrentProgram() {
+        self.activeProgram = nil
+        defaults.removeObject(forKey: activeProgramKey)
+    }
+    
+    private func loadActiveProgram() {
+        if let data = defaults.data(forKey: activeProgramKey),
+           let decoded = try? JSONDecoder().decode(ActiveProgram.self, from: data) {
+            self.activeProgram = decoded
+        }
+    }
+    
+    private func saveActiveProgram() {
+        if let data = try? JSONEncoder().encode(activeProgram) {
+            defaults.set(data, forKey: activeProgramKey)
+        }
+    }
+
+    private func saveAvailablePrograms() {
+        if let data = try? JSONEncoder().encode(availablePrograms) {
+            defaults.set(data, forKey: availableProgramsKey)
+        }
+    }
+    
+    private func setupMockPrograms() {
+        // Create templates first
+        let fullBodyA = TrainingTemplate(id: "fb_a", name: "Full Body A", exercises: ["Kniebeugen (Langhantel)", "Bankdrücken (Langhantel)", "Rudern (Langhantel)"], ownerId: "builtin")
+        let fullBodyB = TrainingTemplate(id: "fb_b", name: "Full Body B", exercises: ["Kreuzheben", "Schulterdrücken", "Klimmzüge"], ownerId: "builtin")
+        
+        let upper = TrainingTemplate(id: "ul_upper", name: "Upper Body Power", exercises: ["Bankdrücken", "Rudern", "Overhead Press"], ownerId: "builtin")
+        let lower = TrainingTemplate(id: "ul_lower", name: "Lower Body Power", exercises: ["Squat", "Deadlift", "Lunges"], ownerId: "builtin")
+
+        // 1. Beginner
+        let beginnerSplit = TrainingProgram(
+            id: "beginner_split",
+            title: "Beginner Full Body",
+            description: "Perfect for starting out. 3 days a week covering all major muscle groups.",
+            difficulty: .beginner,
+            durationWeeks: 8,
+            routines: [fullBodyA, fullBodyB],
+            schedule: [
+                2: "fb_a", // Mon
+                4: "fb_b", // Wed
+                6: "fb_a"  // Fri
+            ]
+        )
+        
+        // 2. Intermediate Upper/Lower
+        let intermediateSplit = TrainingProgram(
+            id: "inter_ul",
+            title: "Upper / Lower Split",
+            description: "Balanced 4-day split for muscle growth and recovery.",
+            difficulty: .intermediate,
+            durationWeeks: 12,
+            routines: [upper, lower],
+            schedule: [
+                2: "ul_upper", // Mon
+                3: "ul_lower", // Tue
+                5: "ul_upper", // Thu
+                6: "ul_lower"  // Fri
+            ]
+        )
+        
+        // 3. Advanced PPL (Placeholder)
+        let pplPush = TrainingTemplate(id: "ppl_push", name: "Push Day", exercises: ["Incline Bench", "Dips", "Lateral Raise"], ownerId: "builtin")
+        let pplPull = TrainingTemplate(id: "ppl_pull", name: "Pull Day", exercises: ["Pullups", "Rows", "Curls"], ownerId: "builtin")
+        let pplLegs = TrainingTemplate(id: "ppl_legs", name: "Leg Day", exercises: ["Squat", "RDL", "Calves"], ownerId: "builtin")
+        
+        let advancedPPL = TrainingProgram(
+            id: "adv_ppl",
+            title: "Push Pull Legs",
+            description: "High volume 6-day split for advanced lifters.",
+            difficulty: .advanced,
+            durationWeeks: 16,
+            routines: [pplPush, pplPull, pplLegs],
+            schedule: [
+                2: "ppl_push", 3: "ppl_pull", 4: "ppl_legs",
+                5: "ppl_push", 6: "ppl_pull", 7: "ppl_legs"
+            ]
+        )
+        
+        let defaultPrograms = [beginnerSplit, intermediateSplit, advancedPPL]
+
+        if let data = defaults.data(forKey: availableProgramsKey),
+           let stored = try? JSONDecoder().decode([TrainingProgram].self, from: data) {
+            var merged = stored
+            for program in defaultPrograms where !merged.contains(where: { $0.id == program.id }) {
+                merged.append(program)
+            }
+            self.availablePrograms = merged
+        } else {
+            self.availablePrograms = defaultPrograms
+            saveAvailablePrograms()
         }
     }
 
@@ -811,158 +963,6 @@ extension ChallengeStore {
 // MARK: - Challenges Dashboard mit Coachmark
 
 
-// MARK: - Challenges Dashboard (Design-System)
-struct ChallengesDashboardView: View {
-    @EnvironmentObject var challengeStore: ChallengeStore
-    @EnvironmentObject var trainingStore: TrainingStore
-    @EnvironmentObject var healthKit: HealthKitManager
-    @EnvironmentObject var gm: GamificationManager
-    @EnvironmentObject var appSettings: AppSettings
-    @Environment(\.designTokens) private var t
-
-    @AppStorage("challengeCoachmarkLaunches") private var coachmarkLaunches = 0
-    @AppStorage("challengeCoachmarkDismissed") private var coachmarkDismissed = false
-
-    @State private var showCoachmark = false
-    @State private var challengeToSwap: Challenge?
-
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                ScrollView {
-                    VStack(spacing: 16) {
-
-                        // Hero (kleiner App-Header im Movo-Look)
-                        HStack(spacing: 12) {
-                            ZStack {
-                                Circle().fill(.white.opacity(0.18))
-                                Image(systemName: "target")
-                                    .font(.system(size: 28, weight: .bold))
-                                    .foregroundStyle(.white)
-                            }
-                            .frame(width: 56, height: 56)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(appSettings.localized("challenges.title"))
-                                    .font(.title2.bold())
-                                    .foregroundStyle(.white)
-                               
-                            }
-                            Spacer()
-                        }
-                        .appHeroCard()
-
-                        // Aktive Challenges
-                        VStack(spacing: 10) { // vorher 12
-                            ForEach(challengeStore.challenges, id: \.id) { ch in
-                                let isFirst = (challengeStore.challenges.first?.id == ch.id)
-                                ChallengeCard(
-                                    challenge: ch,
-                                    onLongPress: {
-                                        if showCoachmark { withAnimation(.spring()) { showCoachmark = false } }
-                                        challengeToSwap = ch
-                                    },
-                                    compact: true   // ⬅️ kompakte Variante aktiv
-                                )
-                                .overlay(alignment: .leading) {
-                                    if isFirst && showCoachmark { HoldPulseIndicator().allowsHitTesting(false) }
-                                }
-                            }
-                        }
-
-
-                        // Einheiten-Header
-                        HStack {
-                            Label(appSettings.localized("training.units"), systemImage: "square.grid.2x2")
-                                .font(.title3.bold())
-                            Spacer()
-                        }
-                        .padding(.top, 8)
-
-                        // Einheiten (horizontal)
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 14) {
-                                ForEach(challengeStore.trainingUnits) { unit in
-                                    NavigationLink {
-                                        TrainingUnitDetailView(unit: unit)
-                                    } label: {
-                                        TrainingUnitCard(unit: unit)
-                                            .frame(width: 260, height: 160)
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                            .padding(.vertical, 6)
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 24)
-                }
-
-                // Coachmark separat über dem ScrollView
-                if showCoachmark {
-                    CoachmarkBubble(
-                        text: appSettings.localized("challenges.hint.longpress"),
-                        onDismiss: {
-                            coachmarkDismissed = true
-                            withAnimation(.spring()) { showCoachmark = false }
-                        }
-                    )
-                    .padding(.top, 8)
-                    .padding(.leading, 16)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                    .zIndex(10)
-                }
-            }
-            .navigationTitle(appSettings.localized("challenges.title"))
-            .navigationBarTitleDisplayMode(.inline)
-           
-            .sheet(item: $challengeToSwap) { current in
-                ChallengeSwapSheet(
-                    current: current,
-                    templates: challengeStore.challengeTemplatesStore,
-                    onSelect: { tpl, _ in
-                        challengeStore.swapChallenge(
-                            currentId: current.id,
-                            with: tpl,
-                            trainingStore: trainingStore,
-                            healthKit: healthKit
-                        )
-                    }
-                )
-                .presentationDetents([.medium, .large])
-            }
-            .onAppear {
-                // Coachmark nur kurz zeigen
-                coachmarkLaunches += 1
-                if !coachmarkDismissed && coachmarkLaunches <= 5 {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        withAnimation(.spring()) { showCoachmark = true }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                            withAnimation(.spring()) { showCoachmark = false }
-                        }
-                    }
-                }
-                // bestehende Updates
-                challengeStore.updateWeeklyVolume(from: trainingStore)
-                challengeStore.updateWorkoutProgress(from: trainingStore)
-                challengeStore.updateSteps(from: healthKit)
-                challengeStore.updateStreak(from: trainingStore)
-                challengeStore.updateWeeklySessions(from: trainingStore)
-            }
-            .onChange(of: trainingStore.history) { _ in
-                challengeStore.updateWorkoutProgress(from: trainingStore)
-                challengeStore.updateWeeklyVolume(from: trainingStore)
-                challengeStore.updateStreak(from: trainingStore)
-                challengeStore.updateWeeklySessions(from: trainingStore)
-            }
-            .onChange(of: healthKit.todaySteps) { _ in
-                challengeStore.updateSteps(from: healthKit)
-            }
-        }
-    }
-}
-
 // MARK: - Icon-Auswahl für ChallengeType (failsafe)
 @inline(__always)
 func safeIcon(for type: ChallengeType) -> String {
@@ -1262,111 +1262,7 @@ struct CoachmarkBubble: View {
     }
 }
 
-// MARK: - Training Unit Detail (kompakter, DS-Karten)
-struct TrainingUnitDetailView: View {
-    @State var unit: TrainingUnit
-    @EnvironmentObject var appSettings: AppSettings
-    @EnvironmentObject var challengeStore: ChallengeStore
-    @Environment(\.colorScheme) private var scheme
-    @Environment(\.designTokens) private var t
 
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-
-                // Kopf: Icon + Titel
-                HStack(spacing: 12) {
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(LinearGradient(colors: unitGradientColors(for: unit.title(using: appSettings), scheme: scheme),
-                                             startPoint: .topLeading, endPoint: .bottomTrailing))
-                        .frame(width: 56, height: 56)
-                        .overlay(Image(systemName: unit.icon).font(.system(size: 24, weight: .bold)).foregroundStyle(.white))
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(unit.title(using: appSettings)).font(.title2.bold())
-                        Text(unit.subtitle(using: appSettings)).foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                }
-                .appElevatedCard()
-
-                // Wochenliste
-                VStack(spacing: 10) {
-                    ForEach(unit.weeks) { week in
-                        NavigationLink {
-                            WeekWorkoutView(week: binding(for: week), unitId: unit.id)
-                        } label: {
-                            WeekMiniCard(
-                                title: String(format: appSettings.localized("week.number"), week.number),
-                                progress: weekProgress(week),
-                                completedText: String(format: appSettings.localized("sets.completed"),
-                                                      completedSets(week), totalSets(week)),
-                                isCompleted: week.isCompleted
-                            )
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-
-                // Fortschritt zurücksetzen
-                Button {
-                    for idx in unit.weeks.indices {
-                        challengeStore.resetWeekProgress(unit.weeks[idx], unitId: unit.id)
-                        resetWeekLocally(index: idx)
-                    }
-                } label: {
-                    Text("🔄 \(appSettings.localized("reset.progress"))")
-                        .bold().frame(maxWidth: .infinity).padding()
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.red)
-            }
-            .padding(16)
-        }
-        .navigationTitle(unit.title(using: appSettings))
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            for i in unit.weeks.indices { challengeStore.loadWeekProgress(&unit.weeks[i], unitId: unit.id) }
-        }
-    }
-
-    // helpers (unverändert inhaltlich)
-    private func binding(for week: Week) -> Binding<Week> {
-        let index = unit.weeks.firstIndex(where: { $0.number == week.number })!
-        return $unit.weeks[index]
-    }
-    private func resetWeekLocally(index: Int) {
-        func reset(_ list: inout [Exercise]) {
-            for i in list.indices { for j in list[i].sets.indices { list[i].sets[j].isCompleted = false } }
-        }
-        reset(&unit.weeks[index].warmUp); reset(&unit.weeks[index].exercises); reset(&unit.weeks[index].coolDown)
-    }
-    private func totalSets(_ w: Week) -> Int {
-        w.warmUp.reduce(0){$0+$1.sets.count}+w.exercises.reduce(0){$0+$1.sets.count}+w.coolDown.reduce(0){$0+$1.sets.count}
-    }
-    private func completedSets(_ w: Week) -> Int {
-        w.warmUp.reduce(0){$0+$1.sets.filter{$0.isCompleted}.count}
-        + w.exercises.reduce(0){$0+$1.sets.filter{$0.isCompleted}.count}
-        + w.coolDown.reduce(0){$0+$1.sets.filter{$0.isCompleted}.count}
-    }
-    private func weekProgress(_ w: Week) -> Double {
-        let total = Double(totalSets(w)); return total == 0 ? 0 : Double(completedSets(w))/total
-    }
-    @inline(__always)
-    private func unitGradientColors(for title: String, scheme: ColorScheme) -> [Color] {
-        let neutralStart = scheme == .dark ? Color.white.opacity(0.18) : Color.black.opacity(0.08)
-        let neutralEnd   = scheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.03)
-        let t = title.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        switch t {
-        case "shred & sculpt": return [Color.red.opacity(0.7), Color.orange.opacity(0.5)]
-        case "full body blast": return [Color.blue.opacity(0.6), Color.purple.opacity(0.5)]
-        case "core mastery","core crusher","bauch fokus","core focus": return [Color.gray.opacity(0.30), Color.gray.opacity(0.15)]
-        case "hiit hero": return [Color.pink.opacity(0.7), Color.purple.opacity(0.5)]
-        case "flex & flow","stretch & mobility","mobility flow","beweglichkeit","stretching": return [Color.cyan.opacity(0.55), Color.teal.opacity(0.45)]
-        case "meditation","mindful minutes","meditation basics","achtsamkeit": return [Color.indigo.opacity(0.55), Color.blue.opacity(0.35)]
-        default: return [neutralStart, neutralEnd]
-        }
-    }
-}
 
 // MARK: - Week Card (neutral, DS)
 
@@ -1955,413 +1851,28 @@ private struct EmptyState: View {
 
 
 
-// MARK: - Trainings­einheit-Karte
-struct TrainingUnitCard: View {
-    let unit: TrainingUnit
-    @EnvironmentObject var appSettings: AppSettings
-    @Environment(\.colorScheme) private var scheme
 
-    @inline(__always)
-    func unitGradientColors(for title: String, scheme: ColorScheme) -> [Color] {
-        let neutralStart = scheme == .dark ? Color.white.opacity(0.18) : Color.black.opacity(0.08)
-        let neutralEnd   = scheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.03)
 
-        let t = title.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
 
-        switch t {
-        case "shred & sculpt":
-            return [Color.red.opacity(0.7), Color.orange.opacity(0.5)]
-        case "full body blast":
-            return [Color.blue.opacity(0.6), Color.purple.opacity(0.5)]
-        case "core mastery", "core crusher", "bauch fokus", "core focus":
-            return [Color.gray.opacity(0.30), Color.gray.opacity(0.15)]
-        case "hiit hero":
-            return [Color.pink.opacity(0.7), Color.purple.opacity(0.5)]
-        case "flex & flow", "stretch & mobility", "mobility flow", "beweglichkeit", "stretching":
-            return [Color.cyan.opacity(0.55), Color.teal.opacity(0.45)]
 
-        // 🔮 Meditation & Fokus – Twilight/Calm
-        case "meditation", "meditation & fokus", "fokus", "focus", "mindfulness",
-             "achtsamkeit", "mindful minutes", "focus & breathe":
-            if scheme == .dark {
-                // tiefer, satter im Dark Mode
-                return [Color.indigo.opacity(0.65), Color.blue.opacity(0.45)]
-            } else {
-                // etwas heller im Light Mode
-                return [Color.indigo.opacity(0.55), Color.blue.opacity(0.35)]
-            }
 
-        default:
-            return [neutralStart, neutralEnd]
-        }
-    }
-
-    
-    
-    
-    var body: some View {
-        ZStack {
-            
-            
-            
-            let colors = unitGradientColors(for: unit.title(using: appSettings), scheme: scheme)
-
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing))
-                // zarter Rand
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(Color.white.opacity(scheme == .dark ? 0.08 : 0.12), lineWidth: 1)
-                )
-                // inneres Top-Highlight
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .fill(LinearGradient(colors: [Color.white.opacity(0.06), .clear],
-                                             startPoint: .top, endPoint: .center))
-                        .blendMode(.softLight)
-                )
-                .shadow(color: .black.opacity(0.10), radius: 10, x: 0, y: 6)
-
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Image(systemName: unit.icon)
-                        .resizable().scaledToFit()
-                        .frame(width: 26, height: 26)
-                        .foregroundColor(.white.opacity(0.95))
-                    Spacer()
-                }
-                Text(unit.title(using: appSettings))
-                    .font(.headline)
-                    .foregroundColor(.white)
-                Text(unit.subtitle(using: appSettings))
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.85))
-                Spacer(minLength: 6)
-                HStack {
-                    Label(unit.duration(using: appSettings), systemImage: "clock")
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.9))
-                    Spacer()
-                    Text(unit.level(using: appSettings))
-                        .font(.caption)
-                        .padding(.horizontal, 8).padding(.vertical, 4)
-                        .background(Color.white.opacity(0.28))
-                        .clipShape(Capsule())
-                        .foregroundColor(.white)
-                }
-            }
-            .padding()
-        }
-    }
-}
-
-struct WeekDetailView: View {
-    @Binding var week: Week
-    @EnvironmentObject var appSettings: AppSettings
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                ForEach($week.exercises) { $exercise in
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(exercise.name).font(.headline).padding(.horizontal)
-                        ForEach($exercise.sets) { $set in
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Gewicht: \(set.weight)").font(.subheadline)
-                                    Text("Wiederholungen: \(set.reps)").font(.subheadline)
-                                }
-                                Spacer()
-                                Button { set.isCompleted.toggle() } label: {
-                                    Image(systemName: set.isCompleted ? "checkmark.circle.fill" : "circle")
-                                        .resizable().frame(width: 24, height: 24)
-                                        .foregroundColor(set.isCompleted ? .green : .gray)
-                                }
-                            }
-                            .padding()
-                            .background(RoundedRectangle(cornerRadius: 12).fill(set.isCompleted ? Color.green.opacity(0.2) : Color.gray.opacity(0.1)))
-                        }
-                    }
-                }
-            }
-            .padding(.vertical)
-        }
-        .navigationTitle("\(appSettings.localized("week")) \(week.number)")
-    }
-}
-
-struct WeekWorkoutView: View {
-    @Binding var week: Week
-    @EnvironmentObject var appSettings: AppSettings
-    @State private var workoutStarted = false
-    let unitId: UUID
-
-    var body: some View {
-        VStack(spacing: 0) {
-            if workoutStarted {
-                SessionView(week: $week, unitId: unitId)
-            } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-
-                        Text(String(format: appSettings.localized("week.number"), week.number))
-                            .font(.largeTitle).bold()
-                            .padding(.horizontal)
-
-                        // ⬇️ Plan berechnen (liefert u. a. rounds)
-                        let plan = plannedTiming(for: week)
-
-                        HStack {
-                            InfoBox(title: "~\(Int(round(Double(plan.totalSeconds) / 60.0))) min",
-                                    subtitle: appSettings.localized("duration"))
-                            InfoBox(title: "~\(plan.kcal) kcal",
-                                    subtitle: appSettings.localized("calories"))
-                            InfoBox(title: focusArea(for: week),
-                                    subtitle: appSettings.localized("focus"))
-                        }
-                        .padding(.horizontal)
-
-                        Divider().padding(.horizontal)
-
-                        if !week.warmUp.isEmpty {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Warm-up").font(.headline)
-                                ForEach(week.warmUp) { ExerciseRowMinimal(exercise: $0, rounds: plan.rounds) }
-                            }
-                            .padding(.horizontal)
-                        }
-
-                        if !week.exercises.isEmpty {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Exercises").font(.headline)
-                                ForEach(week.exercises) { ExerciseRowMinimal(exercise: $0, rounds: plan.rounds) }
-                            }
-                            .padding(.horizontal)
-                        }
-
-                        if !week.coolDown.isEmpty {
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Cool-down").font(.headline)
-                                ForEach(week.coolDown) { ExerciseRowMinimal(exercise: $0, rounds: plan.rounds) }
-                            }
-                            .padding(.horizontal)
-                        }
-
-                        Spacer(minLength: 30)
-
-                        Button { workoutStarted = true } label: {
-                            Text(appSettings.localized("start"))
-                                .bold()
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.accentColor)
-                                .foregroundColor(.white)
-                                .cornerRadius(14)
-                                .shadow(radius: 6)
-                        }
-                        .padding(.horizontal)
-                    }
-                    .padding(.top)
-                }
-            }
-        }
-        .navigationTitle("Woche \(week.number)")
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-    private func focusArea(for week: Week) -> String {
-        if week.exercises.contains(where: { $0.name.contains("Liegestütze") }) { return "Brust" }
-        if week.exercises.contains(where: { $0.name.contains("Kniebeugen") }) { return "Beine" }
-        return "Ganzkörper"
-    }
-}
 
 // MARK: - Plan (gleiche Konstanten wie Timer)
-private enum Plan {
-    static let targetTotalSeconds = 900         // Ziel ≈ 15 min
-    static let exerciseSeconds = 35             // je Übung
-    static let restBetweenExercisesSeconds = 20 // kurze Pause zw. Übungen
-    static let restBetweenRoundsSeconds = 45    // längere Pause zw. Runden
-}
 
-private func plannedTiming(for week: Week) -> (rounds: Int, totalSeconds: Int, kcal: Int) {
-    let exCount = max((week.warmUp + week.exercises + week.coolDown).count, 1)
-
-    // Dauer einer Runde (ohne lange Rundenpause)
-    let perRound = exCount * Plan.exerciseSeconds
-                 + max(0, exCount - 1) * Plan.restBetweenExercisesSeconds
-
-    // Rundenzahl so wählen, dass wir das Ziel grob treffen
-    let approxPerRoundWithLongRest = perRound + Plan.restBetweenRoundsSeconds
-    let rounds = max(2, Int(ceil(Double(Plan.targetTotalSeconds + Plan.restBetweenRoundsSeconds)
-                                 / Double(max(1, approxPerRoundWithLongRest)))))
-
-    // Gesamtzeit: alle Runden + lange Pausen (nicht nach der letzten)
-    let totalSeconds = rounds * perRound + max(0, rounds - 1) * Plan.restBetweenRoundsSeconds
-
-    // Kalorien grob: 8 kcal/Minute als moderates Intervall
-    let kcal = Int(round((Double(totalSeconds) / 60.0) * 8.0))
-    return (rounds, totalSeconds, kcal)
-}
 
 // MARK: - Minimaler Exercise-Row
 /// Zeile für Wochen-Workouts: zeigt IMMER „35s × <rounds> Rdn“ + Runden-Dots
 // MARK: - Minimaler Exercise-Row (mit How-to Sheet)
-private struct ExerciseRowMinimal: View {
-    let exercise: Exercise
-    let rounds: Int
-    @State private var showHowTo = false
 
-    var body: some View {
-        // How-to einmal holen (inkl. Auto-Anreicherung)
-        let (howToTitle, howToBlocks) = HowToDB.blocks(for: exercise.name)
-
-        HStack(alignment: .center, spacing: 12) {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.gray.opacity(0.2))
-                .frame(width: 50, height: 50)
-                .overlay(
-                    Image(systemName: "figure.strengthtraining.traditional")
-                        .foregroundColor(.blue)
-                )
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text(exercise.name)
-                    .font(.subheadline.bold())
-                    .foregroundColor(.primary)
-
-                // Dots für Runden
-                HStack(spacing: 6) {
-                    ForEach(0..<max(1, rounds), id: \.self) { _ in
-                        Circle().fill(Color.accentColor).frame(width: 8, height: 8)
-                    }
-                }
-            }
-
-            Spacer()
-
-            // „35s × <rounds> Rdn“-Chip
-            Text("\(Plan.exerciseSeconds)s × \(rounds) Rdn")
-                .font(.footnote.weight(.semibold))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Capsule().fill(Color(.systemBackground)))
-                .overlay(Capsule().stroke(Color(.separator), lineWidth: 0.5))
-
-            // Info-Button nur, wenn es Inhalte gibt
-            if !howToBlocks.isEmpty {
-                Button {
-                    #if canImport(UIKit)
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    #endif
-                    showHowTo = true
-                } label: {
-                    Image(systemName: "info.circle")
-                        .imageScale(.large)
-                        .accessibilityLabel("Anleitung anzeigen")
-                }
-                .buttonStyle(.plain)
-                .sheet(isPresented: $showHowTo) {
-                    // Nutze entweder den Convenience-Init …
-                    // HowToSheet(exerciseName: exercise.name)
-
-                    // … oder explizit Titel + Blöcke:
-                    HowToSheet(title: howToTitle, blocks: howToBlocks)
-                }
-            }
-        }
-        .padding(.vertical, 6)
-    }
-}
 
 
 // MARK: - Kleine UI-Bausteine
-struct InfoBox: View {
-    let title: String
-    let subtitle: String
-    var body: some View {
-        VStack {
-            Text(title).font(.headline)
-            Text(subtitle).font(.caption).foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-    }
-}
 
-func gradientColors(for program: String) -> [Color] {
-    switch program {
-    case "Shred & Sculpt": return [Color.pink, Color.orange]
-    case "Full Body Blast": return [Color.blue, Color.purple]
-    case "Yoga Flow":       return [Color.green, Color.teal]
-    default:                return [Color.gray, Color.black]
-    }
-}
 
-struct WorkoutExecutionView: View {
-    @Binding var week: Week
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                ForEach($week.exercises) { $exercise in
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text(exercise.name).font(.headline).padding(.horizontal)
-                        ForEach($exercise.sets) { $set in
-                            HStack {
-                                VStack(alignment: .leading) { Text("Gewicht: \(set.weight)"); Text("Wiederholungen: \(set.reps)") }
-                                Spacer()
-                                Button { set.isCompleted.toggle() } label: {
-                                    Image(systemName: set.isCompleted ? "checkmark.circle.fill" : "circle")
-                                        .resizable().frame(width: 28, height: 28)
-                                        .foregroundColor(set.isCompleted ? .green : .gray)
-                                }
-                            }
-                            .padding()
-                            .background(RoundedRectangle(cornerRadius: 12).fill(set.isCompleted ? Color.green.opacity(0.2) : Color.gray.opacity(0.1)))
-                            .padding(.horizontal)
-                        }
-                    }
-                }
-                Spacer(minLength: 50)
-            }
-        }
-    }
-}
+
 
 // Week-List mini card
-struct WeekMiniCard: View {
-    let title: String
-    let progress: Double
-    let completedText: String
-    let isCompleted: Bool
-    @State private var animateCheck = false
 
-    var body: some View {
-        HStack(spacing: 16) {
-            ZStack {
-                ProgressRing(progress: progress, color: .accentColor).frame(width: 54, height: 54)
-                Text("\(Int(progress * 100))%").font(.caption2.bold()).foregroundColor(.secondary)
-            }
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(.headline).foregroundColor(.primary)
-                Text(completedText).font(.caption).foregroundColor(.secondary)
-            }
-            Spacer()
-            if isCompleted {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 28, weight: .semibold))
-                    .foregroundColor(.green)
-                    .scaleEffect(animateCheck ? 1.15 : 0.8)
-                    .opacity(animateCheck ? 1 : 0.6)
-                    .onAppear {
-                        withAnimation(.spring(response: 0.4, dampingFraction: 0.55, blendDuration: 0.1)) { animateCheck = true }
-                    }
-                    .accessibilityLabel("Woche abgeschlossen")
-            }
-        }
-        .padding(14)
-        .background(RoundedRectangle(cornerRadius: 16).fill(.thinMaterial))
-        .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
-    }
-}
 
 // MARK: - Units-Merge (neue Defaults ergänzen, bestehendes behalten)
 private func unitKey(_ u: TrainingUnit) -> String {
@@ -2737,14 +2248,3 @@ extension ChallengeStore {
     }
 }
 
-// MARK: - Preview
-struct ChallengesDashboardView_Previews: PreviewProvider {
-    static var previews: some View {
-        ChallengesDashboardView()
-            .environmentObject(ChallengeStore())
-            .environmentObject(TrainingStore())
-            .environmentObject(HealthKitManager())
-            .environmentObject(GamificationManager())
-            .environmentObject(AppSettings())
-    }
-}

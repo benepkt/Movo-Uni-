@@ -80,12 +80,59 @@ final class GamificationManager: ObservableObject {
     // MARK: - XP & Level
     func addXP(_ amount: Int) {
         xp += amount
-        let threshold = level * 100
-        if xp >= threshold {
+        while xp >= Self.xpRequired(for: level + 1) {
             level += 1
             unlockBadge(.level5) // Beispiel-Badge
         }
         save()
+    }
+
+    func addWorkoutXP(for entry: TrainingEntry) {
+        addXP(Self.xpReward(for: entry))
+    }
+
+    static func xpReward(for entry: TrainingEntry) -> Int {
+        let volume = entry.exercises.reduce(0.0) { $0 + $1.totalWeight }
+        let reps = entry.exercises.reduce(0) { partial, exercise in
+            partial + exercise.sets.reduce(0) { $0 + (Int($1.reps.filter(\.isNumber)) ?? 0) }
+        }
+        let activityMinutes = entry.activities.reduce(0.0) { $0 + $1.duration / 60.0 }
+        let activityDistance = entry.activities.reduce(0.0) { $0 + ($1.distanceKm ?? 0) }
+        let standaloneActivityMinutes = entry.exercises.isEmpty ? entry.duration / 60.0 : 0
+        let standaloneActivityDistance = entry.loggedDistanceKm ?? 0
+
+        let strengthXP = Int((volume / 90.0).rounded()) + Int(Double(reps) * 0.18)
+        let activityXP = Int((activityMinutes + standaloneActivityMinutes) * 0.65) + Int((activityDistance + standaloneActivityDistance) * 3)
+        return max(12, min(180, strengthXP + activityXP))
+    }
+
+    static func xpRequired(for level: Int) -> Int {
+        guard level > 1 else { return 0 }
+        let step = Double(level - 1)
+        return Int(step * 240.0 + pow(step, 1.72) * 150.0)
+    }
+
+    static func level(forXP xp: Int) -> Int {
+        var level = 1
+        while xp >= xpRequired(for: level + 1), level < 250 {
+            level += 1
+        }
+        return level
+    }
+
+    static func progressSnapshot(xp: Int, level: Int) -> LevelProgressSnapshot {
+        let normalizedLevel = max(level, Self.level(forXP: xp))
+        let previous = xpRequired(for: normalizedLevel)
+        let next = xpRequired(for: normalizedLevel + 1)
+        let current = max(0, xp - previous)
+        let needed = max(1, next - previous)
+        return LevelProgressSnapshot(
+            level: normalizedLevel,
+            xpInLevel: current,
+            xpNeededForLevel: needed,
+            xpToNextLevel: max(0, next - xp),
+            progress: min(Double(current) / Double(needed), 1)
+        )
     }
 
     // MARK: - Coins
@@ -144,6 +191,8 @@ final class GamificationManager: ObservableObject {
             self.streak = decoded.streak
             self.badges = decoded.badges
         }
+
+        self.level = Self.level(forXP: self.xp)
     }
 
     func reloadForCurrentUser() {
@@ -167,119 +216,17 @@ struct GamificationData: Codable {
     let badges: [BadgeItem]
 }
 
+struct LevelProgressSnapshot {
+    let level: Int
+    let xpInLevel: Int
+    let xpNeededForLevel: Int
+    let xpToNextLevel: Int
+    let progress: Double
+}
+
 // MARK: - Farben
 extension Color {
     static let gold = Color(red: 212/255, green: 175/255, blue: 55/255)
 }
 
-// MARK: - Detail-View (optional lokalisiert)
-struct GamificationDetailView: View {
-    @EnvironmentObject var gm: GamificationManager
-    @EnvironmentObject var appSettings: AppSettings   // ⬅️ für Übersetzungen
-
-    private var levelThreshold: Int { max(1, gm.level * 100) }
-    private var xpInThisLevel: Int { gm.xp % levelThreshold }
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                // Level & XP
-                VStack(spacing: 8) {
-                    Text(String(format: appSettings.localized("profile.level"), gm.level))
-                        .font(.largeTitle.bold())
-
-                    ProgressView(value: Double(xpInThisLevel), total: Double(levelThreshold))
-                        .progressViewStyle(LinearProgressViewStyle(tint: .blue))
-                        .padding(.horizontal)
-
-                    Text("\(xpInThisLevel)/\(levelThreshold) \(appSettings.localized("profile.xp"))")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .padding()
-                .background(RoundedRectangle(cornerRadius: 16).fill(.thinMaterial))
-
-                // Coins & Streak
-                HStack(spacing: 20) {
-                    GamificationStatCard(
-                        title: appSettings.localized("profile.coins"),
-                        value: "\(gm.coins)",
-                        icon: "dollarsign.circle.fill",
-                        color: .gold
-                    )
-
-                    GamificationStatCard(
-                        title: "Streak", // falls gewünscht: eigenen Key anlegen, z. B. gamification.streak
-                        value: "\(gm.streak)🔥",
-                        icon: "flame.fill",
-                        color: .orange
-                    )
-                }
-                .padding(.horizontal)
-
-                // Badges
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(appSettings.localized("profile.badges"))
-                        .font(.title2.bold())
-                        .padding(.horizontal)
-
-                    if gm.badges.isEmpty {
-                        Text(appSettings.localized("gamification.badges.empty"))
-                            .foregroundColor(.secondary)
-                            .padding()
-                    } else {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 20) {
-                            ForEach(gm.badges) { badge in
-                                VStack(spacing: 8) {
-                                    Image(systemName: badge.icon)
-                                        .font(.system(size: 36))
-                                        .foregroundColor(badge.color)
-                                    // ⬇️ lokalisiert mit Fallback
-                                    Text(localizedBadgeTitle(badge))
-                                        .font(.caption)
-                                        .multilineTextAlignment(.center)
-                                }
-                                .padding()
-                                .background(RoundedRectangle(cornerRadius: 12).fill(.ultraThinMaterial))
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                }
-            }
-            .padding(.vertical)
-        }
-        .navigationTitle(appSettings.localized("gamification.title"))
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-    private func localizedBadgeTitle(_ badge: BadgeItem) -> String {
-        let key = badge.titleKey
-        let value = appSettings.localized(key)
-        return (value == key) ? badge.displayName : value
-    }
-}
-
 // Kleine Stat-Karte (Coins, Streak etc.)
-struct GamificationStatCard: View {
-    let title: String
-    let value: String
-    let icon: String
-    let color: Color
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(color)
-            Text(value)
-                .font(.title2.bold())
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 16).fill(.thinMaterial))
-    }
-}

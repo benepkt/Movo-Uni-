@@ -120,6 +120,7 @@ struct ProfileView: View {
     @State private var usernameError: String?
     @State private var showSettingsSheet = false
     @State private var showQR = false
+    @State private var showStreakSheet = false // Streak Detail Sheet
 
     // 👉 Nur Upload wenn im Edit-Sheet wirklich ein neues Bild gewählt wurde
     @State private var didPickNewImage = false
@@ -145,276 +146,461 @@ struct ProfileView: View {
     }
 
     var body: some View {
+        mainContent
+            .navigationTitle("") // Hide title as requested (since we have custom header)
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                 ToolbarItem(placement: .navigationBarLeading) {
+                     Button(appSettings.localized("common.back")) { dismiss() }
+                 }
+            }
+            .onAppear {
+                loadInitials()
+                loadProfileFromFirestore()
+                if customProfileImageData == nil, let saved = storedProfileImageData {
+                    customProfileImageData = saved
+                }
+            }
+            .onChange(of: customProfileImageData) { storedProfileImageData = $0 }
+            // Group 1: Sheets
+            .sheet(isPresented: $showSettingsSheet) { settingsSheetContent }
+            .sheet(isPresented: $showEditMetrics) { editMetricsSheetContent }
+            .sheet(isPresented: $showEditMetrics) { editMetricsSheetContent }
+            .sheet(isPresented: $showEditProfileSheet) { editProfileSheetContent }
+            .sheet(isPresented: $showStreakSheet) {
+                StreakDetailView()
+                    .environmentObject(trainingStore)
+                    .environmentObject(appSettings)
+            }
+            // Group 2: Alerts
+            .alert(appSettings.localized("statistics.unlock.restore"), isPresented: $showRestoreAlert) {
+                Button(appSettings.localized("settings.done"), role: .cancel) { }
+            } message: { Text(appSettings.localized("iap.restore.started") ?? "Wiederherstellung gestartet.") }
+            .alert(appSettings.localized("settings.logout"), isPresented: $confirmLogout) {
+                Button(appSettings.localized("settings.logout"), role: .destructive) { authService.signOut() }
+                Button(appSettings.localized("settings.done"), role: .cancel) { }
+            } message: { Text(appSettings.localized("settings.logout.confirm") ?? "Abmelden?") }
+            .alert(appSettings.localized("profile.metrics.healthImport.title") ?? "Health-Import", isPresented: $showHealthAlert) {
+                Button(appSettings.localized("settings.done"), role: .cancel) { metricsError = nil }
+            } message: { Text(metricsError ?? "") }
+    }
+
+    // MARK: - Subviews & Sheets
+
+    private var mainContent: some View {
         ScrollView {
             VStack(spacing: UI.Spacing.lg) {
-
-                headerCard()
-                quickActionsRow()
-
-                sectionHeader(appSettings.localized("settings.general"))
-                HStack(spacing: UI.Spacing.sm) {
-                    statCard(title: appSettings.localized("profile.xp"), value: "\(gm.xp)")
-                    statCard(title: appSettings.localized("profile.coins"), value: "\(gm.coins)")
-                }
-
-                sectionHeader(appSettings.localized("profile.streakHeader") ?? "Streak")
-                streakCard()
-
-                sectionHeader(appSettings.localized("profile.badges"))
-                badgesCard()
-
-                sectionHeader(appSettings.localized("profile.metrics.title"))
-                metricsGrid()
-
+                newProfileHeader()
+                weekOverviewCard()
+                levelProgressCard()
                 Spacer(minLength: UI.Spacing.lg)
             }
             .padding(.horizontal, UI.Spacing.md)
             .padding(.top, UI.Spacing.sm)
         }
-        .navigationTitle(appSettings.localized("profile.title"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(appSettings.localized("profile.close")) { dismiss() }
-            }
-        }
-        .onAppear {
-            loadInitials()
-            loadProfileFromFirestore()
-            if customProfileImageData == nil, let saved = storedProfileImageData {
-                customProfileImageData = saved
-            }
-        }
-        .onChange(of: customProfileImageData) { storedProfileImageData = $0 }
-
-        // Settings
-        .sheet(isPresented: $showSettingsSheet) {
-            NavigationStack {
-                SettingsView()
-                    .environmentObject(appSettings)
-                    .environmentObject(authService)
-                    .navigationTitle(appSettings.localized("settings.title"))
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button(appSettings.localized("settings.done")) { showSettingsSheet = false }
-                        }
-                    }
-            }
-            .preferredColorScheme(appSettings.themeMode.colorScheme)
-        }
-
-        // Metrics bearbeiten
-        .sheet(isPresented: $showEditMetrics) {
-            EditMetricsSheet(
-                weightKg: $weightKg,
-                heightCm: $heightCm,
-                bodyFatPct: $bodyFatPct,
-                restingHR: $restingHR,
-                importFromHealth: { await importFromHealth() },
-                error: $metricsError,
-                accent: t.palette.primary,
-                title: appSettings.localized("profile.metrics.edit")
-            )
-        }
-        
-        // Profil bearbeiten Sheet (modern, inkl. Remove)
-        .sheet(isPresented: $showEditProfileSheet) {
-            EditProfileSheet(
-                username: $username,
-                displayName: $displayName,
-                customProfileImageData: $customProfileImageData,
-                onSave: { await saveProfileChanges() },
-                accent: t.palette.primary,
-                didPickNewImage: $didPickNewImage,
-                onDeleteImage: {
-                    guard let uid = authService.user?.uid else { return }
-                    do { try await deleteInlineAvatar(uid: uid) }
-                    catch { usernameError = "Profilbild löschen fehlgeschlagen: \(error.localizedDescription)" }
-                }
-            )
-        }
-
-        // Alerts
-        .alert(appSettings.localized("statistics.unlock.restore"),
-               isPresented: $showRestoreAlert) {
-            Button(appSettings.localized("settings.done"), role: .cancel) { }
-        } message: {
-            Text(appSettings.localized("iap.restore.started") ?? "Wiederherstellung gestartet – später IAP-Manager einbinden.")
-        }
-
-        .alert(appSettings.localized("settings.logout"), isPresented: $confirmLogout) {
-            Button(appSettings.localized("settings.logout"), role: .destructive) { authService.signOut() }
-            Button(appSettings.localized("settings.done"), role: .cancel) { }
-        } message: {
-            Text(appSettings.localized("settings.logout.confirm") ?? "Möchtest du dich wirklich abmelden?")
-        }
-
-        .alert(appSettings.localized("profile.metrics.healthImport.title") ?? "Health-Import",
-               isPresented: $showHealthAlert) {
-            Button(appSettings.localized("settings.done"), role: .cancel) { metricsError = nil }
-        } message: {
-            Text(metricsError ?? "")
-        }
     }
 
-    // MARK: - Header (dein ursprünglicher Hero)
-    @ViewBuilder private func headerCard() -> some View {
-        VStack(spacing: UI.Spacing.sm) {
-            // 🔹 Profilbild + Kamera-Button
-            ZStack(alignment: .bottomTrailing) {
-                profileImageView
-                    .frame(width: 96, height: 96)
-                    .overlay(Circle().stroke(.white.opacity(0.9), lineWidth: 3))
-                    .shadow(radius: 4)
-
-                PhotosPicker(selection: $selectedItem, matching: .images) {
-                    IconBadge(systemName: "camera.fill", size: 32, tint: .white)
-                }
-                .onChange(of: selectedItem) { newItem in
-                    Task {
-                        guard let item = newItem,
-                              let raw = try? await item.loadTransferable(type: Data.self),
-                              let uid = authService.user?.uid, !authService.isGuest
-                        else { return }
-
-                        // 1) Lokal anzeigen/cachen
-                        let optimized = optimizeImageDataIfNeeded(raw, maxBytes: MAX_INLINE_AVATAR_BYTES)
-                        customProfileImageData = optimized
-                        storedProfileImageData = optimized
-
-                        // 2) **Firestore**: Base64 in /users/{uid}/state/profile.imageB64 (+ /users.photoInline)
-                        do {
-                            try await setInlineAvatar(uid: uid, jpegData: optimized)
-                            print("[PROFILE] ✅ imageB64 geschrieben (state/profile)")
-                        } catch {
-                            print("[PROFILE] ❌ Firestore write:", error.localizedDescription)
-                            usernameError = "Profilbild speichern fehlgeschlagen: \(error.localizedDescription)"
-                        }
+    private var settingsSheetContent: some View {
+        NavigationStack {
+            SettingsView()
+                .environmentObject(appSettings)
+                .environmentObject(authService)
+                .navigationTitle(appSettings.localized("settings.title.short"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(appSettings.localized("settings.done")) { showSettingsSheet = false }
                     }
                 }
-                .accessibilityLabel(appSettings.localized("profile.photo.change") ?? "Profilbild ändern")
-            }
+        }
+        .preferredColorScheme(appSettings.themeMode.colorScheme)
+    }
 
-            // 🔹 E-Mail/Anzeigename + Username
-            VStack(spacing: 2) {
-                Text(displayName.isEmpty ? (authService.user?.email ?? appSettings.localized("profile.guest")) : displayName)
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+    private var editMetricsSheetContent: some View {
+        EditMetricsSheet(
+            weightKg: $weightKg,
+            heightCm: $heightCm,
+            bodyFatPct: $bodyFatPct,
+            restingHR: $restingHR,
+            error: $metricsError,
+            accent: t.palette.primary,
+            title: appSettings.localized("profile.metrics.edit")
+        )
+    }
+
+    private var editProfileSheetContent: some View {
+        EditProfileSheet(
+            username: $username,
+            displayName: $displayName,
+            customProfileImageData: $customProfileImageData,
+            onSave: { await saveProfileChanges() },
+            accent: t.palette.primary,
+            didPickNewImage: $didPickNewImage,
+            onDeleteImage: {
+                guard let uid = authService.user?.uid else { return }
+                do { try await deleteInlineAvatar(uid: uid) }
+                catch { usernameError = "Profilbild löschen fehlgeschlagen: \(error.localizedDescription)" }
+            }
+        )
+    }
+
+    // MARK: - New Redesigned Header
+    @ViewBuilder private func newProfileHeader() -> some View {
+        VStack(spacing: 20) {
+            // 1. Top Row: Streak (Left) & Settings (Right)
+            HStack {
+                // Streak Bubble -> Button to open Streak Detail
+                Button {
+                    showStreakSheet = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("\(trainingStore.currentStreakDays())")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(.primary)
+                        Image(systemName: "flame.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(.orange)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Capsule().fill(Color.primary.opacity(0.1)))
+                }
                 
-                if !username.isEmpty {
-                    Text("@\(username)")
-                        .font(.footnote)
-                        .foregroundStyle(.white.opacity(0.7))
-                        .lineLimit(1)
+                Spacer()
+                
+                // Settings Button
+                Button {
+                    showSettingsSheet = true
+                } label: {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 20))
+                        .foregroundStyle(.primary)
+                        .padding(10)
+                        .background(Circle().fill(Color.primary.opacity(0.1)))
                 }
             }
+            .padding(.horizontal, 4)
 
-            // 🔹 Buttons
-            HStack(spacing: 8) {
-                if let _ = authService.user?.uid, !authService.isGuest {
+            // 2. Center: Profile Image (Clean & Modern)
+            VStack(spacing: 16) {
+                // Profile Image & Edit Badge
+                ZStack(alignment: .bottomTrailing) {
+                     // Main Circle Border (Restored) - REMOVED AS REQUESTED
+                    // Circle()
+                    //    .stroke(t.palette.primary.opacity(0.8), lineWidth: 3)
+                    //    .frame(width: 118, height: 118)
+                    
+                    profileImageView
+                        .frame(width: 110, height: 110)
+                        .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+                    
+                    // Edit Badge
+                    Image(systemName: "pencil")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(.white)
+                        .padding(8)
+                        .background(Circle().fill(t.palette.primary))
+                        .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 2))
+                        .offset(x: 0, y: 0)
+                }
+                .onTapGesture {
+                    // Trigger photo picker programmatically if possible or show sheet?
+                    // For now, simpler to just use the picker overlay logic or button below.
+                }
+                .overlay {
+                     PhotosPicker(selection: $selectedItem, matching: .images) {
+                        Color.clear.frame(width: 118, height: 118)
+                    }
+                    .clipShape(Circle())
+                    .onChange(of: selectedItem) { newItem in
+                        handleImageSelection(newItem)
+                    }
+                }
+
+                
+                // Username & Level Badge
+                VStack(spacing: 6) {
+                    Text("@\(username.isEmpty ? (authService.user?.email?.split(separator: "@").first.map(String.init) ?? "guest") : username)")
+                        .font(.title2.bold())
+                        .foregroundStyle(.primary)
+                    
+                    // Level Badge
+                    HStack(spacing: 6) {
+                        Image(systemName: "star.fill")
+                            .font(.caption2)
+                            .foregroundStyle(.yellow)
+                        Text("Level \(gm.level)")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(Color.secondary.opacity(0.1)))
+                    
+                    // Edit Button (Text only)
                     Button {
                         showEditProfileSheet = true
                     } label: {
-                        Label(appSettings.localized("profile.edit") ?? "Profil bearbeiten", systemImage: "pencil")
-                            .font(.subheadline.bold())
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Capsule().fill(Color.white.opacity(0.15)))
+                        Text(appSettings.localized("profile.edit") ?? "Edit Profile")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(t.palette.primary)
+                            .padding(.top, 4)
                     }
-                    .buttonStyle(.plain)
-                    .foregroundColor(.white)
                 }
             }
-            .padding(.top, 2)
 
-            // 🔹 Level-Info + Gauge (systemiger)
-            let target = max(100, gm.level * 100)
-            VStack(spacing: 8) {
-                Text(String(format: appSettings.localized("profile.level"), gm.level))
-                    .font(.subheadline.bold())
-                    .foregroundStyle(.white)
-
-                Gauge(value: Double(gm.xp % target), in: 0...Double(target)) { }
-                    .gaugeStyle(.accessoryLinearCapacity)
-                    .tint(Gradient(colors: [.white, .white.opacity(0.5)]))
-                    .frame(height: 10)
-                    .clipShape(Capsule())
-
-                Text(
-                    String(
-                        format: appSettings.localized("profile.xpProgress"),
-                        gm.xp % target,
-                        target,
-                        gm.level + 1
-                    )
-                )
-                .font(.caption)
-                .foregroundStyle(.white.opacity(0.85))
-            }
-            .padding(.top, 2)
-        }
-        .appHeroCard()
-        .padding(.top, 4)
-    }
-
-    // MARK: - Quick Actions
-    @ViewBuilder private func quickActionsRow() -> some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: UI.Spacing.sm) {
-                Button { showSettingsSheet = true } label: { InfoChip(title: appSettings.localized("settings.title")) }
-
-                if authService.user != nil {
-                    Button { confirmLogout = true } label: { InfoChip(title: appSettings.localized("settings.logout")) }
+            // 3. Stats Row (Clean & Spacious)
+            HStack(spacing: 0) {
+                // Time
+                let totalSeconds = trainingStore.history.reduce(0) { $0 + $1.duration }
+                let hours = Int(totalSeconds / 3600)
+                let mins = Int((totalSeconds.truncatingRemainder(dividingBy: 3600)) / 60)
+                let timeString = hours > 0 ? "\(hours)h" : "\(mins)m"
+                
+                StatColumn(icon: "clock.fill", value: timeString, label: appSettings.localized("profile.stats.time"))
+                
+                Spacer()
+                
+                // Total Weight (Kg/Lbs)
+                let totalVolKg = trainingStore.history.reduce(0.0) { sum, entry in
+                    sum + entry.exercises.reduce(0.0) { $0 + $1.totalWeight }
                 }
+                let weightUnitStr = UserDefaults.standard.string(forKey: "units.weight") ?? "kg"
+                let isLbs = weightUnitStr == "lbs"
+                let displayVal = isLbs ? (totalVolKg * 2.20462) : totalVolKg
+                let unitLabel = isLbs ? "lbs" : "kg"
+                
+                let volString = formatVolume(displayVal)
+                StatColumn(icon: "dumbbell.fill", value: volString, label: unitLabel)
+                
+                Spacer()
+                
+                // Workouts
+                StatColumn(icon: "figure.run", value: "\(trainingStore.history.count)", label: appSettings.localized("profile.stats.workouts"))
             }
-            .padding(.horizontal, 2)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(.secondarySystemGroupedBackground))
+                    .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.primary.opacity(0.05), lineWidth: 1)
+            )
+            .padding(.top, 10)
+            
         }
+        .padding(.bottom, 20)
+        .padding(.horizontal, 4) // Align with header padding logic if needed
     }
 
-    // MARK: - Cards
-    @ViewBuilder private func statCard(title: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(value).font(.title2.bold()).foregroundStyle(t.palette.primary)
-            Text(title).font(.subheadline).foregroundStyle(.secondary)
+    private func handleImageSelection(_ newItem: PhotosPickerItem?) {
+         Task {
+            guard let item = newItem,
+                  let raw = try? await item.loadTransferable(type: Data.self),
+                  let uid = authService.user?.uid, !authService.isGuest
+            else { return }
+
+            let optimized = optimizeImageDataIfNeeded(raw, maxBytes: MAX_INLINE_AVATAR_BYTES)
+            customProfileImageData = optimized
+            storedProfileImageData = optimized
+            didPickNewImage = true 
+            
+            do {
+                try await setInlineAvatar(uid: uid, jpegData: optimized)
+            } catch {
+                usernameError = "Error: \(error.localizedDescription)"
+            }
         }
-        .frame(maxWidth: .infinity, minHeight: 96)
-        .appElevatedCard()
+    }
+    
+    private func formatVolume(_ vol: Double) -> String {
+        if vol >= 1_000_000 {
+             return String(format: "%.1fm", vol/1_000_000)
+        }
+        if vol >= 1000 {
+            return String(format: "%.1fk", vol/1000)
+        }
+        return String(format: "%.0f", vol)
     }
 
-    @ViewBuilder private func streakCard() -> some View {
-        let streak = trainingStore.currentStreakDays()
-        HStack(spacing: UI.Spacing.md) {
-            IconBadge(systemName: "flame.fill", size: 44)
-            VStack(alignment: .leading, spacing: 6) {
-                Text(String(format: appSettings.localized("profile.streak"), streak))
+    private func localizedOrDefault(_ key: String, de: String, en: String) -> String {
+        if appSettings.language == "de" { return de }
+        return en
+    }
+
+    private struct StatColumn: View {
+        let icon: String
+        let value: String
+        let label: String
+        
+        var body: some View {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .opacity(0.7)
+                Text(value)
                     .font(.headline)
-                Text(appSettings.localized("profile.streakHint"))
-                    .font(.subheadline).foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
+                Text(label)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
-            Spacer()
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    // MARK: - New Cards
+
+    @ViewBuilder private func weekOverviewCard() -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(appSettings.localized("profile.weekOverview") ?? "Wochenübersicht")
+                .font(.headline)
+            
+            HStack(spacing: 0) {
+                // Generate current week days
+                let weekDays = currentWeekDays()
+                ForEach(weekDays, id: \.date) { day in
+                    VStack(spacing: 8) {
+                        // Day bubble
+                        ZStack {
+                            Circle()
+                                .fill(day.hasWorkout ? t.palette.primary.opacity(0.2) : Color.clear)
+                                .frame(width: 36, height: 36)
+                            
+                            if day.hasWorkout {
+                                Image(systemName: "checkmark")
+                                    .font(.caption.bold())
+                                    .foregroundStyle(t.palette.primary)
+                            } else if day.isToday {
+                                Circle()
+                                    .fill(Color.primary)
+                                    .frame(width: 6, height: 6)
+                            }
+                        }
+                        
+                        Text(day.dayName)
+                            .font(.caption.bold())
+                            .foregroundStyle(day.isToday ? .primary : .secondary)
+                            
+                        Text("\(day.dayNumber)")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+            .padding(.vertical, 8)
+            .background(Color(.secondarySystemGroupedBackground))
+            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.primary.opacity(0.05), lineWidth: 1)
+            )
         }
         .appElevatedCard()
     }
 
-    @ViewBuilder private func badgesCard() -> some View {
-        VStack(alignment: .leading, spacing: UI.Spacing.sm) {
-            LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: UI.Spacing.md) {
-                ForEach(gm.badges) { badge in
-                    VStack(spacing: 8) {
-                        IconBadge(systemName: badge.icon, size: 40, tint: badge.color)
-                        Text(localizedBadgeTitle(badge))
-                            .font(.caption)
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(.primary)
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 72)
+    @ViewBuilder private func levelProgressCard() -> some View {
+        let snapshot = GamificationManager.progressSnapshot(xp: gm.xp, level: gm.level)
+        
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(appSettings.localized("profile.levelProgress") ?? "Level Progress")
+                    .font(.headline)
+                Spacer()
+                Image(systemName: "trophy.fill")
+                    .foregroundStyle(t.palette.primary)
+            }
+            
+            HStack {
+                Text("Lvl \(snapshot.level)")
+                    .font(.subheadline.bold())
+                Spacer()
+                Text("Lvl \(snapshot.level + 1)")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.secondary)
+            }
+            
+            // Progress Bar
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.secondary.opacity(0.2))
+                    
+                    Capsule()
+                        .fill(t.palette.primary)
+                        .frame(width: geo.size.width * snapshot.progress)
                 }
             }
+            .frame(height: 12)
+            
+            HStack {
+                Text("\(snapshot.xpInLevel) / \(snapshot.xpNeededForLevel) XP")
+                Spacer()
+                Text("\(snapshot.xpToNextLevel) XP fehlen")
+            }
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
+        
         .appElevatedCard()
+        .background(Color(.secondarySystemGroupedBackground))
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.primary.opacity(0.05), lineWidth: 1)
+        )
+    }
+
+    // MARK: - Helpers
+    private struct DayStatus {
+        let date: Date
+        let dayName: String
+        let dayNumber: String
+        let isToday: Bool
+        let hasWorkout: Bool
+    }
+    
+    private func currentWeekDays() -> [DayStatus] {
+        let cal = Calendar.current
+        let today = Date()
+        // Get start of week (Monday) based on user locale or default
+        var components = cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)
+        components.weekday = 2 // Monday
+        let startOfWeek = cal.date(from: components)!
+        
+        var days: [DayStatus] = []
+        let f = DateFormatter()
+        f.dateFormat = "EE" // Mo, Di, ...
+        f.locale = Locale(identifier: appSettings.language)
+        
+        for i in 0..<7 {
+            if let date = cal.date(byAdding: .day, value: i, to: startOfWeek) {
+                let isToday = cal.isDateInToday(date)
+                // Check workout in history
+                let hasWorkout = trainingStore.history.contains {
+                    cal.isDate($0.date, inSameDayAs: date)
+                }
+                let dayNum = cal.component(.day, from: date)
+                
+                days.append(DayStatus(
+                    date: date,
+                    dayName: String(f.string(from: date).prefix(1)), // M, D, M...
+                    dayNumber: "\(dayNum)",
+                    isToday: isToday,
+                    hasWorkout: hasWorkout
+                ))
+            }
+        }
+        return days
     }
 
     // =====================================================
@@ -501,7 +687,30 @@ struct ProfileView: View {
 
                 await MainActor.run {
                     // Textfelder
-                    self.username    = (userData["username"] as? String) ?? ""
+                    let firestoreUsername = (userData["username"] as? String) ?? ""
+                    
+                    // Check if we should use the onboarding name
+                    if firestoreUsername.isEmpty {
+                        // Try to load from onboarding
+                        if let onboardingName = UserDefaults.standard.string(forKey: "profile.userName"),
+                           !onboardingName.isEmpty {
+                            self.username = onboardingName
+                            // Save to Firestore
+                            Task {
+                                try? await self.persistProfile(updates: [
+                                    "username": onboardingName,
+                                    "username_lower": onboardingName.lowercased()
+                                ])
+                                // Clear the onboarding name after saving
+                                UserDefaults.standard.removeObject(forKey: "profile.userName")
+                            }
+                        } else {
+                            self.username = ""
+                        }
+                    } else {
+                        self.username = firestoreUsername
+                    }
+                    
                     self.displayName = (userData["displayName"] as? String) ?? ""
 
                     // Bild: bevorzugt Base64 aus state/profile, sonst /users.photoInline
@@ -513,6 +722,7 @@ struct ProfileView: View {
                         self.customProfileImageData = bytes
                         self.storedProfileImageData = bytes   // @AppStorage-Cache
                     }
+
                 }
 
                 print("[PROFILE] ℹ️ loaded profile for \(uid)")
@@ -719,52 +929,6 @@ struct ProfileView: View {
         return (value == key) ? badge.displayName : value
     }
 
-    // MARK: - Health Import
-    private func importFromHealth() async {
-        guard HKHealthStore.isHealthDataAvailable() else {
-            metricsError = appSettings.localized("profile.metrics.health.unavailable") ?? "Health nicht verfügbar."
-            showHealthAlert = true
-            return
-        }
-        let readTypes: Set = [
-            HKObjectType.quantityType(forIdentifier: .bodyMass)!,
-            HKObjectType.quantityType(forIdentifier: .height)!,
-            HKObjectType.quantityType(forIdentifier: .bodyFatPercentage)!,
-            HKObjectType.quantityType(forIdentifier: .restingHeartRate)!
-        ]
-        do {
-            try await healthStore.requestAuthorization(toShare: [], read: readTypes)
-            async let w = fetchLatestQuantity(.bodyMass, unit: .gramUnit(with: .kilo))
-            async let h = fetchLatestQuantity(.height, unit: .meterUnit(with: .centi))
-            async let bf = fetchLatestQuantity(.bodyFatPercentage, unit: HKUnit.percent())
-            async let rhr = fetchLatestQuantity(.restingHeartRate, unit: HKUnit.count().unitDivided(by: HKUnit.minute()))
-            let (kg, cm, fat, bpm) = try await (w, h, bf, rhr)
-            if let kg { weightKg = kg }
-            if let cm { heightCm = cm }
-            if let fat { bodyFatPct = max(0, min(100, fat * 100)) }
-            if let bpm { restingHR = Int(round(bpm)) }
-        } catch {
-            metricsError = (appSettings.localized("profile.metrics.health.authFailed") ?? "Health-Zugriff fehlgeschlagen") + ": \(error.localizedDescription)"
-            showHealthAlert = true
-        }
-    }
-
-    private func fetchLatestQuantity(_ id: HKQuantityTypeIdentifier, unit: HKUnit) async throws -> Double? {
-        guard let qType = HKQuantityType.quantityType(forIdentifier: id) else { return nil }
-        let sort = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
-        let predicate = HKQuery.predicateForSamples(withStart: .distantPast, end: Date(), options: [])
-        return try await withCheckedThrowingContinuation { cont in
-            let query = HKSampleQuery(sampleType: qType, predicate: predicate, limit: 1, sortDescriptors: [sort]) { _, samples, error in
-                if let error { cont.resume(throwing: error); return }
-                guard let sample = samples?.first as? HKQuantitySample else {
-                    cont.resume(returning: nil); return
-                }
-                cont.resume(returning: sample.quantity.doubleValue(for: unit))
-            }
-            healthStore.execute(query)
-        }
-    }
-
     /// Komprimiert Bilddaten falls größer als `maxBytes`
     private func optimizeImageDataIfNeeded(_ data: Data, maxBytes: Int) -> Data {
         guard data.count > maxBytes,
@@ -808,14 +972,13 @@ private struct EditMetricsSheet: View {
     @Binding var heightCm: Double
     @Binding var bodyFatPct: Double
     @Binding var restingHR: Int
-
-    var importFromHealth: () async -> Void
     @Binding var error: String?
 
     let accent: Color
     let title: String
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var appSettings: AppSettings
+    @EnvironmentObject var healthKit: HealthKitManager
 
     var body: some View {
         NavigationStack {
@@ -829,7 +992,21 @@ private struct EditMetricsSheet: View {
 
                 Section {
                     Button {
-                        Task { await importFromHealth() }
+                        // Use safe wrapper in HealthKitManager
+                        Task {
+                            let (kg, cm, fat, hr) = await healthKit.fetchLatestProfileMetrics()
+                            await MainActor.run {
+                                if let kg { weightKg = kg }
+                                if let cm { heightCm = cm }
+                                if let fat { bodyFatPct = fat }
+                                if let hr { restingHR = Int(hr) }
+                                
+                                if kg == nil && cm == nil && fat == nil && hr == nil {
+                                     // Feedback if no data found/auth denied
+                                     // Optional: Handle error or just do nothing (silent fail is safer than crash)
+                                }
+                            }
+                        }
                     } label: {
                         Label(appSettings.localized("profile.metrics.importHealth"), systemImage: "heart.fill")
                     }
@@ -851,16 +1028,23 @@ private struct EditProfileSheet: View {
     @Binding var customProfileImageData: Data?
     var onSave: () async -> Void
     let accent: Color
-
-    // 👉 Flag, ob in DIESEM Sheet ein neues Bild gewählt wurde
     @Binding var didPickNewImage: Bool
-
-    // 👉 Callback zum kompletten Entfernen des Profilbilds
     var onDeleteImage: () async -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var selectedItem: PhotosPickerItem?
     @EnvironmentObject var appSettings: AppSettings
+    
+    // Onboarding Data State
+    @State private var onboardingData = OnboardingData.load()
+    // Local state for picker bindings
+    @State private var selectedGoal: FitnessGoal = .buildMuscle
+    @State private var selectedLevel: ExperienceLevel = .beginner
+    @State private var equipmentSelection: Set<Equipment> = []
+    
+    // Metrics directly from AppStorage (passed via bindings if possible, or loaded here)
+    // To simplify, we'll read/write directly to AppStorage via wrapper or access binding in parent?
+    // Parent provided bindings for username/displayName/image. Use OnboardingData for others.
 
     var body: some View {
         NavigationStack {
@@ -902,7 +1086,7 @@ private struct EditProfileSheet: View {
                     }
                 }
 
-                // MARK: - Profilinformationen
+                // MARK: - Basic Info
                 Section(appSettings.localized("profile.info.title") ?? "Profilinformationen") {
                     TextField(appSettings.localized("profile.displayName") ?? "Anzeigename", text: $displayName)
                         .textInputAutocapitalization(.words)
@@ -911,6 +1095,82 @@ private struct EditProfileSheet: View {
                     TextField(appSettings.localized("profile.username") ?? "Benutzername", text: $username)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled(true)
+                }
+                
+                // MARK: - Personal Stats (Onboarding)
+                Section("Personal Details") {
+                    Picker("Gender", selection: Binding(get: { onboardingData.gender ?? .preferNotToSay }, set: { onboardingData.gender = $0 })) {
+                        ForEach(Gender.allCases) { gender in
+                            Text(gender.localizedTitle(appSettings)).tag(gender)
+                        }
+                    }
+                    
+                    HStack {
+                        Text("Age")
+                        Spacer()
+                        TextField("Age", value: Binding(get: { onboardingData.age ?? 0 }, set: { onboardingData.age = $0 }), formatter: NumberFormatter())
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                    }
+                }
+                
+                // MARK: - Training Goals (Onboarding)
+                Section("Training Goal") {
+                     Picker("Goal", selection: $selectedGoal) {
+                        ForEach(FitnessGoal.allCases) { goal in
+                            Text(goal.localizedTitle(appSettings)).tag(goal)
+                        }
+                    }
+                    .onChange(of: selectedGoal) { val in
+                        onboardingData.fitnessGoals = [val] // Single selection for simplicity in UI, though model supports Set
+                    }
+                }
+                
+                // MARK: - Experience Level
+                 Section("Fitness Level") {
+                     Picker("Level", selection: $selectedLevel) {
+                        ForEach(ExperienceLevel.allCases) { level in
+                            Text(level.localizedTitle(appSettings)).tag(level)
+                        }
+                    }
+                    .onChange(of: selectedLevel) { val in
+                        onboardingData.experienceLevel = val
+                    }
+                }
+                
+                // MARK: - Training Frequency
+                Section("Workouts per Week") {
+                    Stepper(value: $onboardingData.trainingFrequency, in: 1...7) {
+                        HStack {
+                            Text("Frequency")
+                            Spacer()
+                            Text("\(onboardingData.trainingFrequency)x / week")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                
+                // MARK: - Equipment (Multi-Select)
+                Section("Available Equipment") {
+                    ForEach(Equipment.allCases) { item in
+                        Button {
+                            if equipmentSelection.contains(item) {
+                                equipmentSelection.remove(item)
+                            } else {
+                                equipmentSelection.insert(item)
+                            }
+                            onboardingData.equipment = equipmentSelection
+                        } label: {
+                            HStack {
+                                Label(item.localizedTitle(appSettings), systemImage: item.icon)
+                                Spacer()
+                                if equipmentSelection.contains(item) {
+                                    Image(systemName: "checkmark").foregroundStyle(accent)
+                                }
+                            }
+                        }
+                        .foregroundStyle(.primary)
+                    }
                 }
 
                 Section(appSettings.localized("profile.info.note.title") ?? "Hinweis") {
@@ -934,13 +1194,23 @@ private struct EditProfileSheet: View {
             .tint(accent)
             .navigationTitle(appSettings.localized("profile.edit.title") ?? "Profil bearbeiten")
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear { didPickNewImage = false }
+            .onAppear {
+                didPickNewImage = false
+                // Init local state from OnboardingData
+                if let firstGoal = onboardingData.fitnessGoals.first {
+                    selectedGoal = firstGoal
+                }
+                selectedLevel = onboardingData.experienceLevel
+                equipmentSelection = onboardingData.equipment
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(appSettings.localized("training.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(appSettings.localized("training.save")) {
+                        // Save Onboarding Data
+                        onboardingData.save()
                         Task { await onSave(); dismiss() }
                     }
                 }
@@ -1010,4 +1280,3 @@ private struct StepperField: View {
         }
     }
 }
-

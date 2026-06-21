@@ -20,6 +20,15 @@ struct WeightDetailView: View {
         guard !history.isEmpty else { return 0 }
         return history.map(\.value).reduce(0, +) / Double(history.count)
     }
+
+    private var trendText: String {
+        guard let latest = history.last?.value,
+              let previous = history.dropLast().last?.value else { return "—" }
+        let delta = latest - previous
+        if abs(delta) < 0.15 { return appSettings.language.lowercased().hasPrefix("de") ? "Stabil" : "Stable" }
+        let formatted = formatWeight(abs(delta))
+        return delta > 0 ? "↑ \(formatted) kg" : "↓ \(formatted) kg"
+    }
     
     // Chart Y-Axis Range (dynamic with padding)
     private var yAxisRange: ClosedRange<Double> {
@@ -38,24 +47,37 @@ struct WeightDetailView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 24) {
-                    headerSection
-                    chartSection
-                    statsSection
-                    historySection
+            ZStack {
+                Color.black.ignoresSafeArea()
+                RadialGradient(
+                    colors: [Color.pink.opacity(0.25), t.palette.primary.opacity(0.18), .clear],
+                    center: .topLeading,
+                    startRadius: 30,
+                    endRadius: 420
+                )
+                .ignoresSafeArea()
+
+                ScrollView {
+                    VStack(spacing: 24) {
+                        headerSection
+                        chartSection
+                        statsSection
+                        historySection
+                    }
+                    .padding(.top, 10)
+                    .padding(.bottom, 30)
                 }
-                .padding(.bottom, 30)
             }
-            .background(Color(.systemGroupedBackground))
             .navigationTitle(appSettings.localized("weight.details.title"))
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(appSettings.localized("settings.done")) { dismiss() }
                 }
             }
         }
+        .preferredColorScheme(.dark)
         .onAppear { loadData() }
         .onChange(of: daysBack) { _ in loadData() }
     }
@@ -66,18 +88,26 @@ struct WeightDetailView: View {
         VStack(spacing: 8) {
             Text(appSettings.localized("common.weight"))
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.60))
             
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(currentWeight > 0 ? String(format: "%.1f", currentWeight) : "—")
                     .font(.system(size: 42, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.white)
                 Text("kg")
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.60))
             }
         }
-        .padding(.top, 20)
+        .frame(maxWidth: .infinity)
+        .padding(22)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(.white.opacity(0.16), lineWidth: 1)
+        )
+        .padding(.horizontal)
     }
     
     private var chartSection: some View {
@@ -85,6 +115,7 @@ struct WeightDetailView: View {
             HStack {
                 Text(appSettings.localized("weight.chart.trend"))
                     .font(.headline)
+                    .foregroundStyle(.white)
                 Spacer()
                 Picker("", selection: $daysBack) {
                     Text(appSettings.localized("range.7days")).tag(7)
@@ -111,7 +142,7 @@ struct WeightDetailView: View {
                             x: .value("Date", entry.date),
                             y: .value("Weight", entry.value)
                         )
-                        .foregroundStyle(Color.blue)
+                        .foregroundStyle(Color.pink)
                         .symbol(Circle())
                         .symbolSize(30)
                         .interpolationMethod(.catmullRom)
@@ -123,7 +154,7 @@ struct WeightDetailView: View {
                         )
                         .foregroundStyle(
                             LinearGradient(
-                                colors: [Color.blue.opacity(0.2), Color.blue.opacity(0.0)],
+                                colors: [Color.pink.opacity(0.24), Color.pink.opacity(0.0)],
                                 startPoint: .top,
                                 endPoint: .bottom
                             )
@@ -147,35 +178,49 @@ struct WeightDetailView: View {
                 .padding(.horizontal)
             }
         }
+        .padding(.vertical, 16)
+        .background(.white.opacity(0.09))
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(.white.opacity(0.12), lineWidth: 1)
+        )
+        .padding(.horizontal)
     }
     
     private var statsSection: some View {
         LazyVGrid(columns: [GridItem(.flexible()),
                             GridItem(.flexible())],
                   spacing: 16) {
-            StatBox(
+            WeightStatBox(
                 title: appSettings.localized("weight.stat.average"),
                 value: String(format: "%.1f kg", avgWeight),
                 icon: "scalemass",
                 color: .purple
             )
-            StatBox(
+            WeightStatBox(
                 title: appSettings.localized("weight.stat.minimum"),
                 value: String(format: "%.1f kg", minWeight),
                 icon: "arrow.down",
                 color: .green
             )
-            StatBox(
+            WeightStatBox(
                 title: appSettings.localized("weight.stat.maximum"),
                 value: String(format: "%.1f kg", maxWeight),
                 icon: "arrow.up",
                 color: .red
             )
-            StatBox(
+            WeightStatBox(
                 title: appSettings.localized("weight.stat.entries"),
                 value: "\(history.count)",
                 icon: "list.bullet",
                 color: .orange
+            )
+            WeightStatBox(
+                title: appSettings.language.lowercased().hasPrefix("de") ? "Trend" : "Trend",
+                value: trendText,
+                icon: "chart.line.uptrend.xyaxis",
+                color: .pink
             )
         }
         .padding(.horizontal)
@@ -185,12 +230,12 @@ struct WeightDetailView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text(appSettings.localized("weight.history.title"))
                 .font(.headline)
+                .foregroundStyle(.white)
                 .padding(.horizontal)
             
             let recent = Array(
                 history
                     .sorted { $0.date > $1.date }
-                    .prefix(10)
             )
             
             VStack(spacing: 0) {
@@ -198,17 +243,23 @@ struct WeightDetailView: View {
                     HStack {
                         Text(historyDateString(entry.date))
                             .font(.body)
+                            .foregroundStyle(.white)
                         Spacer()
                         Text(String(format: "%.1f kg", entry.value))
                             .font(.body.weight(.semibold))
+                            .foregroundStyle(.white)
                             .monospacedDigit()
                     }
                     .padding()
                     Divider()
                 }
             }
-            .background(Color(.secondarySystemGroupedBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .background(.white.opacity(0.09))
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(.white.opacity(0.12), lineWidth: 1)
+            )
             .padding(.horizontal)
         }
     }
@@ -256,6 +307,14 @@ struct WeightDetailView: View {
         df.timeStyle = .none
         return df.string(from: date)
     }
+
+    private func formatWeight(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.locale = appLocale
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 1
+        return formatter.string(from: NSNumber(value: value)) ?? String(format: "%.1f", value)
+    }
     
     // MARK: - Data
     
@@ -270,8 +329,7 @@ struct WeightDetailView: View {
     }
 }
 
-// Helper View for Stats
-struct StatBox: View {
+private struct WeightStatBox: View {
     let title: String
     let value: String
     let icon: String
@@ -285,6 +343,40 @@ struct StatBox: View {
                 Spacer()
             }
             
+            VStack(alignment: .leading, spacing: 4) {
+                Text(value)
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.58))
+            }
+        }
+        .padding()
+        .background(.white.opacity(0.09))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(.white.opacity(0.12), lineWidth: 1)
+        )
+    }
+}
+
+// Helper View for shared light-mode detail stats
+struct StatBox: View {
+    let title: String
+    let value: String
+    let icon: String
+    let color: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundStyle(color)
+                Spacer()
+            }
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(value)
                     .font(.system(size: 18, weight: .bold, design: .rounded))

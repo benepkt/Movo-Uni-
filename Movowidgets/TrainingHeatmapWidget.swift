@@ -13,7 +13,7 @@ struct HeatmapEntry: TimelineEntry {
 struct HeatmapProvider: TimelineProvider {
     func placeholder(in context: Context) -> HeatmapEntry {
         let snap = HeatmapShared.load()
-        let premium = StepsShared.load()?.premiumUnlocked ?? false
+        let premium = true
         let base = snap?.days ?? []
         return HeatmapEntry(date: Date(), days: base, premiumUnlocked: premium)
     }
@@ -30,7 +30,7 @@ struct HeatmapProvider: TimelineProvider {
 
     private func makeEntry() -> HeatmapEntry {
         let snap = HeatmapShared.load()
-        let premium = StepsShared.load()?.premiumUnlocked ?? false
+        let premium = true
         let base = snap?.days ?? []
         return HeatmapEntry(date: Date(), days: base, premiumUnlocked: premium)
     }

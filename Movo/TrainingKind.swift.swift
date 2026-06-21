@@ -1,88 +1,66 @@
 import SwiftUI
 import UIKit
+import SwiftUI
+import UIKit
 
 struct TrainingStartMenu: View {
-    enum TrainingType {
-        case strength
-        case running
-        case manual
-    }
-    
+    enum TrainingType { case strength, manual }
     let onSelect: (TrainingType) -> Void
-    
+
     @EnvironmentObject var appSettings: AppSettings
     @Environment(\.dismiss) private var dismiss
     @Environment(\.designTokens) private var t
-    
+    @Environment(\.horizontalSizeClass) private var hSizeClass
+
+    private var isPad: Bool { hSizeClass == .regular }
+
     var body: some View {
-        VStack(spacing: 18) {
-            
-            // 👇 extra Freiraum oben im Sheet
-            Color.clear
-                .frame(height: 80)
-            
-            // — Titel ----------------------------------------------------
-            Text(appSettings.localized("startMenu.title"))
-                .font(.system(size: 22, weight: .bold, design: .rounded))
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity, alignment: .center)
-            
-            // — Menü-Items ----------------------------------------------
-            VStack(spacing: 12) {
-                // ✅ Strength: normal aktiv
-                menuItem(
-                    iconName: "dumbbell.fill",
-                    iconColor: .blue,
-                    title: appSettings.localized("startMenu.strength.title"),
-                    subtitle: appSettings.localized("startMenu.strength.subtitle"),
-                    locked: false
-                ) {
-                    onSelect(.strength)
+        ScrollView {
+            VStack(spacing: 18) {
+
+                // ✅ auf iPad deutlich kleiner (oder ganz weg)
+                Color.clear
+                    .frame(height: isPad ? 12 : 40)
+
+                Text(appSettings.localized("startMenu.title"))
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+
+                VStack(spacing: 12) {
+                    menuItem(
+                        iconName: "dumbbell.fill",
+                        iconColor: .blue,
+                        title: appSettings.localized("startMenu.strength.title"),
+                        subtitle: appSettings.localized("startMenu.strength.subtitle"),
+                        locked: false
+                    ) {
+                        onSelect(.strength)
+                        dismiss()
+                    }
+
+                    menuItem(
+                        iconName: "clipboard.fill",
+                        iconColor: .purple,
+                        title: appSettings.localized("startMenu.manual.title"),
+                        subtitle: appSettings.localized("startMenu.comingSoon"),
+                        locked: true
+                    ) { }
+                }
+
+                Button(appSettings.localized("startMenu.cancel")) {
                     dismiss()
                 }
-                
-                // 🟡 Running: COMING SOON + Lock
-                menuItem(
-                    iconName: "figure.run",
-                    iconColor: .orange,
-                    title: appSettings.localized("startMenu.running.title"),
-                    subtitle: appSettings.localized("startMenu.comingSoon"),
-                    locked: true
-                ) {
-                    // Aktion wird wegen locked NIE ausgeführt
-                    onSelect(.running)
-                    dismiss()
-                }
-                
-                // 🟡 Manual: COMING SOON + Lock
-                menuItem(
-                    iconName: "clipboard.fill",
-                    iconColor: .purple,
-                    title: appSettings.localized("startMenu.manual.title"),
-                    subtitle: appSettings.localized("startMenu.comingSoon"),
-                    locked: true
-                ) {
-                    // Aktion wird wegen locked NIE ausgeführt
-                    onSelect(.manual)
-                    dismiss()
-                }
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundColor(t.palette.primary)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
             }
-            
-            // — Cancel ---------------------------------------------------
-            Button(appSettings.localized("startMenu.cancel")) {
-                dismiss()
-            }
-            .font(.system(size: 17, weight: .semibold))
-            .foregroundColor(t.palette.primary)
-            .padding(.top, 8)
-            .padding(.bottom, 4)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 16)
         }
-        .padding(.horizontal, 16)
-        .padding(.bottom, 10)
+        .scrollIndicators(.hidden)
     }
-    
-    
-    // MARK: - Menu Item
 
     private func menuItem(
         iconName: String,
@@ -93,7 +71,6 @@ struct TrainingStartMenu: View {
         action: @escaping () -> Void
     ) -> some View {
         Button {
-            // Safety: nur ausführen, wenn NICHT gesperrt
             guard !locked else { return }
             action()
         } label: {
@@ -130,9 +107,14 @@ struct TrainingStartMenu: View {
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(Color(.secondarySystemGroupedBackground))
             )
-            .opacity(locked ? 0.6 : 1.0)   // leicht ausgegraut bei „Coming soon“
+            .opacity(locked ? 0.6 : 1.0)
         }
         .buttonStyle(.plain)
-        .disabled(locked)                  // System-weit als „disabled“ markiert
+        .disabled(locked)
     }
 }
+
+    
+    // MARK: - Menu Item
+
+ 

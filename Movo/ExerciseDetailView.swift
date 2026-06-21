@@ -107,73 +107,99 @@ struct ExerciseDetailView: View {
         let axisDateLabel  = appSettings.localized("statistics.date")
         let axisYLabel     = "\(appSettings.localized("statistics.avg.weight")) (\(weightUnit.symbol))"
 
-        ScrollView {
-            VStack(spacing: 16) {
+        ZStack {
+            detailBackground
 
-                HeroHeader(title: exerciseInfo.name, icon: "dumbbell.fill")
-                    .padding(.top, 8)
+            ScrollView {
+                VStack(spacing: 16) {
 
-                InfoCard(title: titleGroups, icon: "figure.strengthtraining.traditional") {
-                    FlexibleTagView(tags: exerciseInfo.muscleGroups)
-                }
+                    HeroHeader(title: exerciseInfo.localizedName(using: appSettings), icon: "dumbbell.fill")
+                        .padding(.top, 8)
 
-                InfoCard(title: titleHowTo, icon: "text.book.closed") {
-                    Text(exerciseInfo.localizedInstructions(using: appSettings))
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
+                    InfoCard(title: titleGroups, icon: "figure.strengthtraining.traditional") {
+                        FlexibleTagView(tags: exerciseInfo.muscleGroups.map { exerciseInfo.localizedMuscle($0, using: appSettings) })
+                    }
 
-                InfoCard(title: titleStats, icon: "chart.bar") {
-                    StatsGrid(statMaxWeight: statMaxWeight,
-                              statTrainings: statTrainings,
-                              statLast: statLast,
-                              statVol30: statVol30,
-                              bestSet: bestSet,
-                              trainingCount: trainingCount,
-                              lastTrainingDate: lastTrainingDate,
-                              totalVolumeKgLast30: totalVolumeKgLast30,
-                              weightUnit: weightUnit)
-                }
+                    InfoCard(title: titleHowTo, icon: "text.book.closed") {
+                        Text(exerciseInfo.localizedInstructions(using: appSettings))
+                            .foregroundStyle(.white.opacity(0.62))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
 
-                InfoCard(title: titleBadges, icon: "rosette") {
-                    HStack(spacing: 12) {
-                        BadgeView(name: appSettings.localized("exercise.badge.10trainings"),
-                                  achieved: trainingCount >= 10)
-                        BadgeView(name: appSettings.localized("exercise.badge.newMax"),
-                                  achieved: bestSet != nil)
+                    InfoCard(title: titleStats, icon: "chart.bar") {
+                        StatsGrid(statMaxWeight: statMaxWeight,
+                                  statTrainings: statTrainings,
+                                  statLast: statLast,
+                                  statVol30: statVol30,
+                                  bestSet: bestSet,
+                                  trainingCount: trainingCount,
+                                  lastTrainingDate: lastTrainingDate,
+                                  totalVolumeKgLast30: totalVolumeKgLast30,
+                                  weightUnit: weightUnit)
+                    }
+
+                    InfoCard(title: titleBadges, icon: "rosette") {
+                        HStack(spacing: 12) {
+                            BadgeView(name: appSettings.localized("exercise.badge.10trainings"),
+                                      achieved: trainingCount >= 10)
+                            BadgeView(name: appSettings.localized("exercise.badge.newMax"),
+                                      achieved: bestSet != nil)
+                        }
+                    }
+
+                    InfoCard(title: titleNotes, icon: "note.text") {
+                        ExerciseNotes(exerciseId: exerciseInfo.id)
+                            .environmentObject(appSettings)
+                    }
+
+                    InfoCard(title: titleProgress, icon: "chart.line.uptrend.xyaxis") {
+                        if chartPoints.isEmpty {
+                            EmptyPill(text: appSettings.localized("exercise.chart.empty"))
+                        } else if #available(iOS 16.0, *) {
+                            ExerciseWeightChart(points: chartPoints,
+                                                unit: weightUnit,
+                                                dateLabel: axisDateLabel,
+                                                yLabel: axisYLabel,
+                                                primary: t.palette.primary)
+                                .frame(height: 220)
+                        }
+                    }
+
+                    InfoCard(title: titleRecent, icon: "list.bullet.rectangle") {
+                        let rows = makeRecentRows(entries: Array(filteredEntries.prefix(5)),
+                                                  exerciseName: exerciseInfo.name)
+                        RecentSetsList(rows: rows,
+                                       outline: scheme == .dark ? Color.white.opacity(0.12) : t.palette.outline,
+                                       fill: cardFill)
                     }
                 }
-
-                InfoCard(title: titleNotes, icon: "note.text") {
-                    ExerciseNotes(exerciseId: exerciseInfo.id)
-                        .environmentObject(appSettings)
-                }
-
-                InfoCard(title: titleProgress, icon: "chart.line.uptrend.xyaxis") {
-                    if chartPoints.isEmpty {
-                        EmptyPill(text: appSettings.localized("exercise.chart.empty"))
-                    } else if #available(iOS 16.0, *) {
-                        ExerciseWeightChart(points: chartPoints,
-                                            unit: weightUnit,
-                                            dateLabel: axisDateLabel,
-                                            yLabel: axisYLabel,
-                                            primary: t.palette.primary)
-                            .frame(height: 220)
-                    }
-                }
-
-                InfoCard(title: titleRecent, icon: "list.bullet.rectangle") {
-                    let rows = makeRecentRows(entries: Array(filteredEntries.prefix(5)),
-                                              exerciseName: exerciseInfo.name)
-                    RecentSetsList(rows: rows,
-                                   outline: scheme == .dark ? Color.white.opacity(0.12) : t.palette.outline,
-                                   fill: cardFill)
-                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
         }
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarColorScheme(.dark, for: .navigationBar)
+        .preferredColorScheme(.dark)
+    }
+
+    private var detailBackground: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            RadialGradient(
+                colors: [t.palette.primary.opacity(0.34), Color.cyan.opacity(0.12), .clear],
+                center: .topLeading,
+                startRadius: 20,
+                endRadius: 440
+            )
+            .ignoresSafeArea()
+            RadialGradient(
+                colors: [Color.blue.opacity(0.16), .clear],
+                center: .bottomTrailing,
+                startRadius: 30,
+                endRadius: 340
+            )
+            .ignoresSafeArea()
+        }
     }
 
     // MARK: - Helpers
@@ -373,8 +399,10 @@ private struct InfoCard<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                Image(systemName: icon).foregroundStyle(.tint)
-                Text(title).font(.headline)
+                Image(systemName: icon).foregroundStyle(.blue)
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(.white)
                 Spacer()
             }
             content
@@ -389,8 +417,8 @@ private struct StatItem: View {
     let value: String
     var body: some View {
         VStack(spacing: 4) {
-            Text(value).font(.headline).foregroundStyle(.primary)
-            Text(title).font(.caption).foregroundStyle(.secondary)
+            Text(value).font(.headline).foregroundStyle(.white)
+            Text(title).font(.caption).foregroundStyle(.white.opacity(0.55))
         }
         .frame(maxWidth: .infinity)
     }
@@ -562,6 +590,7 @@ private struct NoteCard: View {
                 }
             } else {
                 Text(note.text.isEmpty ? "Leere Notiz" : note.text)
+                    .foregroundStyle(.white.opacity(0.72))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
                     .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(fill))
@@ -576,18 +605,16 @@ private struct NoteCard: View {
 private struct ElevatedCardModifier: ViewModifier {
     @Environment(\.colorScheme) private var scheme
     func body(content: Content) -> some View {
-        let bgLight = LinearGradient(colors: [Color.white, Color.white.opacity(0.96)],
-                                     startPoint: .topLeading, endPoint: .bottomTrailing)
         let bgDark  = LinearGradient(colors: [Color.white.opacity(0.07), Color.white.opacity(0.03)],
                                      startPoint: .topLeading, endPoint: .bottomTrailing)
-        let stroke: Color = scheme == .dark ? .white.opacity(0.12) : .black.opacity(0.06)
-        let shadow: Color = scheme == .dark ? .black.opacity(0.45) : .black.opacity(0.08)
+        let stroke: Color = .white.opacity(0.12)
+        let shadow: Color = .black.opacity(0.45)
 
         content
             .padding(16)
-            .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(scheme == .dark ? bgDark : bgLight))
+            .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(bgDark))
             .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(stroke, lineWidth: 1))
-            .shadow(color: shadow, radius: scheme == .dark ? 10 : 8, x: 0, y: scheme == .dark ? 6 : 4)
+            .shadow(color: shadow, radius: 10, x: 0, y: 6)
     }
 }
 

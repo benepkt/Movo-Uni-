@@ -18,9 +18,15 @@ final class LiveActivityManager {
     private var lastTotalKg: Double = 0
     private var lastUnitRaw: String = "kg"
     private var lastLangRaw: String = "de"
+    private var lastModeRaw: String = "strength"
+    private var lastActivityTitle: String = ""
+    private var lastDistanceKm: Double = 0
+    private var lastPaceOrSpeed: String = ""
+    private var lastActivityIcon: String = "figure.strengthtraining.traditional"
 
     private init() {
         Task { [weak self] in
+            await self?.keepOnlyOneActiveActivity()
             if let existing = Activity<WorkoutActivityAttributes>.activities.first {
                 self?.currentActivity = existing
             }
@@ -29,36 +35,72 @@ final class LiveActivityManager {
 
     // MARK: - Start
 
-    func startActivity(initialUnit: WeightUnit? = nil, initialLanguage: String? = nil) {
-        guard currentActivity == nil else { return }
+    func startActivity(
+        initialUnit: WeightUnit? = nil,
+        initialLanguage: String? = nil,
+        modeRaw: String = "strength",
+        activityTitle: String = "",
+        activityIcon: String = "figure.strengthtraining.traditional"
+    ) {
+        Task {
+            await keepOnlyOneActiveActivity()
 
-        let unitRaw = (initialUnit?.rawValue ?? readUnitRaw()).lowercased()
-        let langRaw = normalizeLang(initialLanguage ?? readLanguageRaw())
+            if let existing = currentActivity ?? Activity<WorkoutActivityAttributes>.activities.first {
+                currentActivity = existing
+                updateActivity(
+                    elapsedTime: lastElapsed,
+                    completedExercises: lastCompleted,
+                    totalWeightKg: lastTotalKg,
+                    unit: initialUnit,
+                    language: initialLanguage,
+                    modeRaw: modeRaw,
+                    activityTitle: activityTitle.isEmpty ? lastActivityTitle : activityTitle,
+                    distanceKm: lastDistanceKm,
+                    paceOrSpeed: lastPaceOrSpeed,
+                    activityIcon: activityIcon
+                )
+                return
+            }
 
-        lastElapsed = 0
-        lastCompleted = 0
-        lastTotalKg = 0
-        lastUnitRaw = unitRaw
-        lastLangRaw = langRaw
+            let unitRaw = (initialUnit?.rawValue ?? readUnitRaw()).lowercased()
+            let langRaw = normalizeLang(initialLanguage ?? readLanguageRaw())
 
-        let attributes = WorkoutActivityAttributes(workoutID: UUID(), startedAt: Date())
-        let initialState = WorkoutActivityAttributes.ContentState(
-            elapsedTime: 0,
-            completedExercises: 0,
-            totalWeight: 0,         // immer kg
-            weightUnitRaw: unitRaw,
-            languageRaw: langRaw
-        )
+            lastElapsed = 0
+            lastCompleted = 0
+            lastTotalKg = 0
+            lastUnitRaw = unitRaw
+            lastLangRaw = langRaw
+            lastModeRaw = modeRaw
+            lastActivityTitle = activityTitle
+            lastDistanceKm = 0
+            lastPaceOrSpeed = ""
+            lastActivityIcon = activityIcon
 
-        do {
-            let activity = try Activity<WorkoutActivityAttributes>.request(
-                attributes: attributes,
-                contentState: initialState,
-                pushType: nil
+            let attributes = WorkoutActivityAttributes(workoutID: UUID(), startedAt: Date())
+            let initialState = WorkoutActivityAttributes.ContentState(
+                elapsedTime: 0,
+                completedExercises: 0,
+                totalWeight: 0,         // immer kg
+                weightUnitRaw: unitRaw,
+                languageRaw: langRaw,
+                modeRaw: modeRaw,
+                activityTitle: activityTitle,
+                distanceKm: 0,
+                paceOrSpeed: "",
+                activityIcon: activityIcon
             )
-            currentActivity = activity
-        } catch {
-            print("LiveActivity start error:", error)
+
+            do {
+                let activity = try Activity<WorkoutActivityAttributes>.request(
+                    attributes: attributes,
+                    contentState: initialState,
+                    pushType: nil
+                )
+                currentActivity = activity
+                await keepOnlyOneActiveActivity()
+            } catch {
+                print("LiveActivity start error:", error)
+            }
         }
     }
 
@@ -72,9 +114,15 @@ final class LiveActivityManager {
         completedExercises: Int,
         totalWeightKg: Double,
         unit: WeightUnit? = nil,
-        language: String? = nil
+        language: String? = nil,
+        modeRaw: String? = nil,
+        activityTitle: String? = nil,
+        distanceKm: Double? = nil,
+        paceOrSpeed: String? = nil,
+        activityIcon: String? = nil
     ) {
         Task {
+            await keepOnlyOneActiveActivity()
             guard let activity = currentActivity ?? Activity<WorkoutActivityAttributes>.activities.first else { return }
 
             let unitRaw = (unit?.rawValue ?? readUnitRaw()).lowercased()
@@ -85,13 +133,23 @@ final class LiveActivityManager {
             lastTotalKg = totalWeightKg
             lastUnitRaw = unitRaw
             lastLangRaw = langRaw
+            lastModeRaw = modeRaw ?? lastModeRaw
+            lastActivityTitle = activityTitle ?? lastActivityTitle
+            lastDistanceKm = distanceKm ?? lastDistanceKm
+            lastPaceOrSpeed = paceOrSpeed ?? lastPaceOrSpeed
+            lastActivityIcon = activityIcon ?? lastActivityIcon
 
             let state = WorkoutActivityAttributes.ContentState(
                 elapsedTime: elapsedTime,
                 completedExercises: completedExercises,
                 totalWeight: totalWeightKg,
                 weightUnitRaw: unitRaw,
-                languageRaw: langRaw
+                languageRaw: langRaw,
+                modeRaw: lastModeRaw,
+                activityTitle: lastActivityTitle,
+                distanceKm: lastDistanceKm,
+                paceOrSpeed: lastPaceOrSpeed,
+                activityIcon: lastActivityIcon
             )
             await activity.update(using: state)
             currentActivity = activity
@@ -111,6 +169,7 @@ final class LiveActivityManager {
 
     func refreshUnit(_ unit: WeightUnit) {
         Task {
+            await keepOnlyOneActiveActivity()
             guard let activity = currentActivity ?? Activity<WorkoutActivityAttributes>.activities.first else { return }
             lastUnitRaw = unit.rawValue.lowercased()
             let state = WorkoutActivityAttributes.ContentState(
@@ -118,7 +177,12 @@ final class LiveActivityManager {
                 completedExercises: lastCompleted,
                 totalWeight: lastTotalKg,
                 weightUnitRaw: lastUnitRaw,
-                languageRaw: lastLangRaw
+                languageRaw: lastLangRaw,
+                modeRaw: lastModeRaw,
+                activityTitle: lastActivityTitle,
+                distanceKm: lastDistanceKm,
+                paceOrSpeed: lastPaceOrSpeed,
+                activityIcon: lastActivityIcon
             )
             await activity.update(using: state)
             currentActivity = activity
@@ -127,6 +191,7 @@ final class LiveActivityManager {
 
     func refreshLanguage(_ languageCode: String) {
         Task {
+            await keepOnlyOneActiveActivity()
             guard let activity = currentActivity ?? Activity<WorkoutActivityAttributes>.activities.first else { return }
             lastLangRaw = normalizeLang(languageCode)
             let state = WorkoutActivityAttributes.ContentState(
@@ -134,7 +199,12 @@ final class LiveActivityManager {
                 completedExercises: lastCompleted,
                 totalWeight: lastTotalKg,
                 weightUnitRaw: lastUnitRaw,
-                languageRaw: lastLangRaw
+                languageRaw: lastLangRaw,
+                modeRaw: lastModeRaw,
+                activityTitle: lastActivityTitle,
+                distanceKm: lastDistanceKm,
+                paceOrSpeed: lastPaceOrSpeed,
+                activityIcon: lastActivityIcon
             )
             await activity.update(using: state)
             currentActivity = activity
@@ -145,10 +215,29 @@ final class LiveActivityManager {
 
     func endActivity() {
         Task {
-            guard let activity = currentActivity ?? Activity<WorkoutActivityAttributes>.activities.first else { return }
-            await activity.end(dismissalPolicy: .immediate)
+            for activity in Activity<WorkoutActivityAttributes>.activities {
+                await activity.end(dismissalPolicy: .immediate)
+            }
             currentActivity = nil
         }
+    }
+
+    private func keepOnlyOneActiveActivity() async {
+        let activities = Activity<WorkoutActivityAttributes>.activities
+        guard !activities.isEmpty else {
+            currentActivity = nil
+            return
+        }
+
+        let keeper = currentActivity.flatMap { current in
+            activities.first(where: { $0.id == current.id })
+        } ?? activities.first
+
+        for activity in activities where activity.id != keeper?.id {
+            await activity.end(dismissalPolicy: .immediate)
+        }
+
+        currentActivity = keeper
     }
 
     // MARK: - Defaults (App + App-Group)

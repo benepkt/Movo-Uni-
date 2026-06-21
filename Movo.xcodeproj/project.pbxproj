@@ -25,9 +25,6 @@
 		42579C122F095A650038CF04 /* HeatmapShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42579C0C2F0956DF0038CF04 /* HeatmapShared.swift */; };
 		426091EF2EFE0CE5000EAFB9 /* ActiveWorkoutPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 426091EE2EFE0CE5000EAFB9 /* ActiveWorkoutPayload.swift */; };
 		426093262EFE0FE9000EAFB9 /* ActiveWorkoutPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 426091EE2EFE0CE5000EAFB9 /* ActiveWorkoutPayload.swift */; };
-		428F81242F02DF2B0081CCAD /* WeightUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F81232F02DF2B0081CCAD /* WeightUnit.swift */; };
-		428F81252F02DF2B0081CCAD /* WeightUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F81232F02DF2B0081CCAD /* WeightUnit.swift */; };
-		428F81262F02DF2B0081CCAD /* WeightUnit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F81232F02DF2B0081CCAD /* WeightUnit.swift */; };
 		428F81282F02DF300081CCAD /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F81272F02DF300081CCAD /* DesignTokens.swift */; };
 		428F81292F02DF300081CCAD /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F81272F02DF300081CCAD /* DesignTokens.swift */; };
 		428F812A2F02DF300081CCAD /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 428F81272F02DF300081CCAD /* DesignTokens.swift */; };
@@ -46,7 +43,11 @@
 		42C2CE522E97FCA8002DCFEB /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 42C2CE512E97FCA8002DCFEB /* FirebaseFirestore */; };
 		42C2D03E2E981854002DCFEB /* FirebaseFirestoreCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 42C2D03D2E981854002DCFEB /* FirebaseFirestoreCombine-Community */; };
 		42CD1BAD2EF3524700DA1094 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 42CD1BAC2EF3524700DA1094 /* StoreKit.framework */; };
+		42E4D5FE2F350FA600B1A71D /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 42E4D5FD2F350FA600B1A71D /* FirebaseMessaging */; };
 		42E6FB192E8C467D0079E384 /* DotLottie in Frameworks */ = {isa = PBXBuildFile; productRef = 42E6FB182E8C467D0079E384 /* DotLottie */; };
+		42E9ECFA2F300E9500959C4A /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 42E9ECF92F300E9500959C4A /* RevenueCat */; };
+		42E9ECFC2F300E9500959C4A /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 42E9ECFB2F300E9500959C4A /* RevenueCatUI */; };
+		42F0A0012F45AA0100C0D3C1 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = 42F0A0002F45AA0100C0D3C1 /* PostHog */; };
 		42FB42B82EFDF6A70002B0B2 /* MovoWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 42FB42AE2EFDF6A50002B0B2 /* MovoWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -121,7 +122,6 @@
 		42438E982E9EF0E2002F6906 /* SharedUnitPrefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedUnitPrefs.swift; sourceTree = "<group>"; };
 		42579C0C2F0956DF0038CF04 /* HeatmapShared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatmapShared.swift; sourceTree = "<group>"; };
 		426091EE2EFE0CE5000EAFB9 /* ActiveWorkoutPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveWorkoutPayload.swift; sourceTree = "<group>"; };
-		428F81232F02DF2B0081CCAD /* WeightUnit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightUnit.swift; sourceTree = "<group>"; };
 		428F81272F02DF300081CCAD /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
 		428F812B2F02DF340081CCAD /* View+AppElevatedCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+AppElevatedCard.swift"; sourceTree = "<group>"; };
 		428F812F2F02DF350081CCAD /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
@@ -184,9 +184,9 @@
 		4298AA6E2E440F8C00419E3D /* Exceptions for "Movo" folder in "Movo" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				.swift,
 				ExerciseMedia.bundle,
 				Info.plist,
-				"TrainingEntry+RunningMetrics.swift",
 			);
 			target = 429834282E3D700400FCD845 /* Movo */;
 		};
@@ -208,6 +208,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				"Movo - Gym Tracker & Planner.storekit",
+				WeightUnit.swift,
 			);
 			target = 4298AA482E43BB0D00419E3D /* MovoLiveActivityExtension */;
 		};
@@ -215,17 +216,18 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				"Movo - Gym Tracker & Planner.storekit",
+				WeightUnit.swift,
 			);
 			target = 423503982E9327DE00E01074 /* MovowidgetsExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		428A78EE2E50A22500864287 /* Exceptions for "Movo" folder in "Copy Bundle Resources" phase from "Movo" target */ = {
+		428192AE2F2ACF1B007933D8 /* Exceptions for "Movo" folder in "Compile Sources" phase from "Movo" target */ = {
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			buildPhase = 429834272E3D700400FCD845 /* Resources */;
+			buildPhase = 429834252E3D700400FCD845 /* Sources */;
 			membershipExceptions = (
-				"TrainingEntry+RunningMetrics.swift",
+				.swift,
 			);
 		};
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
@@ -243,7 +245,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				4298AA6E2E440F8C00419E3D /* Exceptions for "Movo" folder in "Movo" target */,
-				428A78EE2E50A22500864287 /* Exceptions for "Movo" folder in "Copy Bundle Resources" phase from "Movo" target */,
+				428192AE2F2ACF1B007933D8 /* Exceptions for "Movo" folder in "Compile Sources" phase from "Movo" target */,
 				42CD20552EF4B8B700DA1094 /* Exceptions for "Movo" folder in "MovoTests" target */,
 				42CD20562EF4B8B700DA1094 /* Exceptions for "Movo" folder in "MovoUITests" target */,
 				42CD20572EF4B8B700DA1094 /* Exceptions for "Movo" folder in "MovoLiveActivityExtension" target */,
@@ -301,12 +303,16 @@
 				424BBC132E42524200E9DE69 /* FirebaseDatabase in Frameworks */,
 				4244B9252EAACB2E00F087FC /* GoogleSignIn in Frameworks */,
 				42E6FB192E8C467D0079E384 /* DotLottie in Frameworks */,
+				42E9ECFA2F300E9500959C4A /* RevenueCat in Frameworks */,
 				424BBC0F2E42524200E9DE69 /* FirebaseAnalytics in Frameworks */,
 				42C2D03E2E981854002DCFEB /* FirebaseFirestoreCombine-Community in Frameworks */,
 				42438DA12E9B005A002F6906 /* FirebaseStorage in Frameworks */,
+				42E4D5FE2F350FA600B1A71D /* FirebaseMessaging in Frameworks */,
+				42E9ECFC2F300E9500959C4A /* RevenueCatUI in Frameworks */,
 				42CD1BAD2EF3524700DA1094 /* StoreKit.framework in Frameworks */,
 				42C2CE522E97FCA8002DCFEB /* FirebaseFirestore in Frameworks */,
 				424BBC112E42524200E9DE69 /* FirebaseAuth in Frameworks */,
+				42F0A0012F45AA0100C0D3C1 /* PostHog in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -370,7 +376,6 @@
 				42FB42AF2EFDF6A50002B0B2 /* MovoWatch Watch App */,
 				424BBC0D2E42524200E9DE69 /* Frameworks */,
 				4298342A2E3D700400FCD845 /* Products */,
-				428F81232F02DF2B0081CCAD /* WeightUnit.swift */,
 				428F81272F02DF300081CCAD /* DesignTokens.swift */,
 				428F812B2F02DF340081CCAD /* View+AppElevatedCard.swift */,
 				428F812F2F02DF350081CCAD /* Constants.swift */,
@@ -447,6 +452,10 @@
 				42438DA02E9B005A002F6906 /* FirebaseStorage */,
 				4244B9242EAACB2E00F087FC /* GoogleSignIn */,
 				4244B9262EAACB2E00F087FC /* GoogleSignInSwift */,
+				42E9ECF92F300E9500959C4A /* RevenueCat */,
+				42E9ECFB2F300E9500959C4A /* RevenueCatUI */,
+				42E4D5FD2F350FA600B1A71D /* FirebaseMessaging */,
+				42F0A0002F45AA0100C0D3C1 /* PostHog */,
 			);
 			productName = Movo;
 			productReference = 429834292E3D700400FCD845 /* Movo.app */;
@@ -580,6 +589,7 @@
 			knownRegions = (
 				en,
 				Base,
+				de,
 			);
 			mainGroup = 429834202E3D700400FCD845;
 			minimizedProjectReferenceProxies = 1;
@@ -588,6 +598,8 @@
 				42DE084D2E8C4283007DEC35 /* XCRemoteSwiftPackageReference "lottie-ios" */,
 				42E6FB172E8C467D0079E384 /* XCRemoteSwiftPackageReference "dotlottie-ios" */,
 				4244B9232EAACB2E00F087FC /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				42E9ECF82F300E9500959C4A /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+				42F0A0022F45AA0100C0D3C1 /* XCRemoteSwiftPackageReference "posthog-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4298342A2E3D700400FCD845 /* Products */;
@@ -654,7 +666,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				428F81242F02DF2B0081CCAD /* WeightUnit.swift in Sources */,
 				428F81342F02DF360081CCAD /* ChallengeStore.swift in Sources */,
 				42579C122F095A650038CF04 /* HeatmapShared.swift in Sources */,
 				428F812A2F02DF300081CCAD /* DesignTokens.swift in Sources */,
@@ -670,7 +681,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				428F81292F02DF300081CCAD /* DesignTokens.swift in Sources */,
-				428F81252F02DF2B0081CCAD /* WeightUnit.swift in Sources */,
 				428F812E2F02DF340081CCAD /* View+AppElevatedCard.swift in Sources */,
 				428F81322F02DF350081CCAD /* Constants.swift in Sources */,
 				428F81362F02DF360081CCAD /* ChallengeStore.swift in Sources */,
@@ -702,7 +712,6 @@
 				42438F932E9EF243002F6906 /* SharedUnitPrefs.swift in Sources */,
 				428F81302F02DF350081CCAD /* Constants.swift in Sources */,
 				428F81282F02DF300081CCAD /* DesignTokens.swift in Sources */,
-				428F81262F02DF2B0081CCAD /* WeightUnit.swift in Sources */,
 				428F81352F02DF360081CCAD /* ChallengeStore.swift in Sources */,
 				428F812D2F02DF340081CCAD /* View+AppElevatedCard.swift in Sources */,
 			);
@@ -755,7 +764,7 @@
 				CODE_SIGN_ENTITLEMENTS = MovowidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Movowidgets/Info.plist;
@@ -767,7 +776,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 2.6;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -789,7 +798,7 @@
 				CODE_SIGN_ENTITLEMENTS = MovowidgetsExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Movowidgets/Info.plist;
@@ -801,7 +810,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 2.6;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -944,14 +953,14 @@
 				CODE_SIGN_ENTITLEMENTS = Movo/Movo.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Movo/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "Movo reads your step count, heart rate and workouts from Health to show goals, stats, and widgets.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Movo can write workout data to Apple Health if you enable it.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Movo benötigt Zugriff auf deine Gesundheitsdaten, um deine Fitness-Fortschritte zu analysieren und dir personalisierte Einblicke zu geben.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Movo benötigt Schreibzugriff, um deine manuell eingetragenen Messwerte (z.B. Gewicht) in Apple Health zu speichern.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Dein Standort wird benötigt, um deine Joggingstrecke aufzuzeichnen.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -964,7 +973,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 2.6;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -986,14 +995,14 @@
 				CODE_SIGN_ENTITLEMENTS = Movo/Movo.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Movo/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "Movo reads your step count, heart rate and workouts from Health to show goals, stats, and widgets.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Movo can write workout data to Apple Health if you enable it.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Movo benötigt Zugriff auf deine Gesundheitsdaten, um deine Fitness-Fortschritte zu analysieren und dir personalisierte Einblicke zu geben.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Movo benötigt Schreibzugriff, um deine manuell eingetragenen Messwerte (z.B. Gewicht) in Apple Health zu speichern.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Dein Standort wird benötigt, um deine Joggingstrecke aufzuzeichnen.";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -1006,7 +1015,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 2.6;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1117,7 +1126,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = MovoLiveActivityExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MovoLiveActivity/Info.plist;
@@ -1129,7 +1138,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 2.6;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.MovoLiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1150,7 +1159,7 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = MovoLiveActivityExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MovoLiveActivity/Info.plist;
@@ -1162,7 +1171,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.2;
+				MARKETING_VERSION = 2.6;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.MovoLiveActivity;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1179,15 +1188,19 @@
 		42FB42BA2EFDF6A70002B0B2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = "MovoWatch Watch App/MovoWatch Watch App.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_EXPAND_BUILD_SETTINGS = YES;
 				INFOPLIST_FILE = "MovoWatch Watch App/info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Movo;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Movo reads your step count, heart rate and workouts from Health to show goals, stats, and widgets.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Movo can write workout data to Apple Health if you enable it.";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = benepkt.Movo;
@@ -1195,6 +1208,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 2.6;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.watch;
 				PRODUCT_NAME = "MovoWatch Watch App";
 				SDKROOT = watchos;
@@ -1205,22 +1219,26 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+				WATCHOS_DEPLOYMENT_TARGET = 11.6;
 			};
 			name = Debug;
 		};
 		42FB42BB2EFDF6A70002B0B2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = "MovoWatch Watch App/MovoWatch Watch App.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 99Q58AXFLW;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_EXPAND_BUILD_SETTINGS = YES;
 				INFOPLIST_FILE = "MovoWatch Watch App/info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Movo;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Movo reads your step count, heart rate and workouts from Health to show goals, stats, and widgets.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Movo can write workout data to Apple Health if you enable it.";
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = benepkt.Movo;
@@ -1228,6 +1246,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 2.6;
 				PRODUCT_BUNDLE_IDENTIFIER = benepkt.Movo.watch;
 				PRODUCT_NAME = "MovoWatch Watch App";
 				SDKROOT = watchos;
@@ -1238,7 +1257,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+				WATCHOS_DEPLOYMENT_TARGET = 11.6;
 			};
 			name = Release;
 		};
@@ -1343,6 +1362,22 @@
 				kind = branch;
 			};
 		};
+		42E9ECF82F300E9500959C4A /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.56.1;
+			};
+		};
+		42F0A0022F45AA0100C0D3C1 /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PostHog/posthog-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.56.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1386,10 +1421,30 @@
 			package = 424BBC0C2E42504F00E9DE69 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = "FirebaseFirestoreCombine-Community";
 		};
+		42E4D5FD2F350FA600B1A71D /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 424BBC0C2E42504F00E9DE69 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
 		42E6FB182E8C467D0079E384 /* DotLottie */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 42E6FB172E8C467D0079E384 /* XCRemoteSwiftPackageReference "dotlottie-ios" */;
 			productName = DotLottie;
+		};
+		42E9ECF92F300E9500959C4A /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 42E9ECF82F300E9500959C4A /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
+		42E9ECFB2F300E9500959C4A /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 42E9ECF82F300E9500959C4A /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCatUI;
+		};
+		42F0A0002F45AA0100C0D3C1 /* PostHog */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 42F0A0022F45AA0100C0D3C1 /* XCRemoteSwiftPackageReference "posthog-ios" */;
+			productName = PostHog;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -39,7 +39,7 @@
     "_disableDialogs" : false,
     "_failTransactionsEnabled" : false,
     "_lastSynchronizedDate" : 787858823.28739798,
-    "_locale" : "en_US",
+    "_locale" : "de_DE",
     "_renewalBillingIssuesEnabled" : false,
     "_storefront" : "DEU",
     "_storeKitErrors" : [
@@ -79,7 +79,7 @@
               "locale" : "de"
             }
           ],
-          "productID" : "com.benepkt.movo.premium.monthlyabo.v3",
+          "productID" : "com.benepkt.movo.premium.monthlyabo.v4",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Movo Monthly",
           "subscriptionGroupID" : "21863958",
@@ -107,7 +107,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.benepkt.movo.premium.yearly.v3",
+          "productID" : "com.benepkt.movo.premium.yearly.v4",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Movo Yearly ",
           "subscriptionGroupID" : "21863958",

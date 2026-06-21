@@ -68,6 +68,56 @@ struct Exercise: Identifiable, Codable, Equatable {
         sets.allSatisfy { $0.isCompleted }
     }
 }
+
+struct WorkoutActivityBlock: Identifiable, Codable, Equatable {
+    let id: UUID
+    var title: String
+    var kindRaw: String?
+    var emoji: String?
+    var duration: TimeInterval
+    var distanceKm: Double?
+    var resistanceLevel: Double?
+    var inclinePercent: Double?
+    var averageWatts: Double?
+    var activeCalories: Double?
+    var averageHeartRate: Double?
+    var elevationGainM: Double?
+    var perceivedEffort: Int?
+    var note: String?
+
+    init(
+        id: UUID = UUID(),
+        title: String,
+        kindRaw: String? = nil,
+        emoji: String? = nil,
+        duration: TimeInterval = 0,
+        distanceKm: Double? = nil,
+        resistanceLevel: Double? = nil,
+        inclinePercent: Double? = nil,
+        averageWatts: Double? = nil,
+        activeCalories: Double? = nil,
+        averageHeartRate: Double? = nil,
+        elevationGainM: Double? = nil,
+        perceivedEffort: Int? = nil,
+        note: String? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.kindRaw = kindRaw
+        self.emoji = emoji
+        self.duration = duration
+        self.distanceKm = distanceKm
+        self.resistanceLevel = resistanceLevel
+        self.inclinePercent = inclinePercent
+        self.averageWatts = averageWatts
+        self.activeCalories = activeCalories
+        self.averageHeartRate = averageHeartRate
+        self.elevationGainM = elevationGainM
+        self.perceivedEffort = perceivedEffort
+        self.note = note
+    }
+}
+
 struct TrainingEntry: Identifiable, Codable, Equatable {
     let id: UUID
     let date: Date
@@ -81,8 +131,19 @@ struct TrainingEntry: Identifiable, Codable, Equatable {
     var routePolyline: String?
     var cardioType: String?
 
-    // 👇 NEU: Distanz in Kilometern (optional, damit alte Daten weiter decodierbar sind)
-    var distanceKm: Double?
+    // Manuell erfasste Distanz in Kilometern. Die berechnete `distanceKm`
+    // aus Routen bleibt in TrainingEntry+RunningMetrics erhalten.
+    var loggedDistanceKm: Double?
+    var activeCalories: Double?
+    var averageHeartRate: Double?
+    var elevationGainM: Double?
+    var perceivedEffort: Int?
+    var activityNote: String?
+    var healthSourceName: String?
+    var healthDeviceName: String?
+    var healthWorkoutActivityRaw: UInt?
+    var isIndoorWorkout: Bool?
+    var activities: [WorkoutActivityBlock]
 
     init(
         id: UUID = UUID(),
@@ -95,7 +156,17 @@ struct TrainingEntry: Identifiable, Codable, Equatable {
         updatedAt: Date = Date(),
         routePolyline: String? = nil,
         cardioType: String? = nil,
-        distanceKm: Double? = nil          // 👈 NEU, Default = nil
+        distanceKm: Double? = nil,          // 👈 NEU, Default = nil
+        activeCalories: Double? = nil,
+        averageHeartRate: Double? = nil,
+        elevationGainM: Double? = nil,
+        perceivedEffort: Int? = nil,
+        activityNote: String? = nil,
+        healthSourceName: String? = nil,
+        healthDeviceName: String? = nil,
+        healthWorkoutActivityRaw: UInt? = nil,
+        isIndoorWorkout: Bool? = nil,
+        activities: [WorkoutActivityBlock] = []
     ) {
         self.id = id
         self.date = date
@@ -107,7 +178,17 @@ struct TrainingEntry: Identifiable, Codable, Equatable {
         self.updatedAt = updatedAt
         self.routePolyline = routePolyline
         self.cardioType = cardioType
-        self.distanceKm = distanceKm      // 👈 NEU
+        self.loggedDistanceKm = distanceKm
+        self.activeCalories = activeCalories
+        self.averageHeartRate = averageHeartRate
+        self.elevationGainM = elevationGainM
+        self.perceivedEffort = perceivedEffort
+        self.activityNote = activityNote
+        self.healthSourceName = healthSourceName
+        self.healthDeviceName = healthDeviceName
+        self.healthWorkoutActivityRaw = healthWorkoutActivityRaw
+        self.isIndoorWorkout = isIndoorWorkout
+        self.activities = activities
     }
 
     var isCompleted: Bool {

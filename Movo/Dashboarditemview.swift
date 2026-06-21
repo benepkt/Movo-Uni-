@@ -7,9 +7,22 @@ enum DashboardItem: String, CaseIterable, Identifiable, Codable {
     case water
     case weight
     case lastTraining
-    
+
     var id: String { rawValue }
-    
+
+    static var defaultHomeItems: [DashboardItem] {
+        [.steps, .calories, .weight, .lastTraining]
+    }
+
+    var isHomeVisible: Bool {
+        switch self {
+        case .water, .sleep:
+            return false
+        case .steps, .calories, .weight, .lastTraining:
+            return true
+        }
+    }
+
     func title(using settings: AppSettings) -> String {
         switch self {
         case .steps:       return settings.localized("steps.unit")
@@ -20,7 +33,7 @@ enum DashboardItem: String, CaseIterable, Identifiable, Codable {
         case .lastTraining:return settings.localized("dashboard.lastTraining")
         }
     }
-    
+
     var icon: String {
         switch self {
         case .steps:       return "figure.walk"
@@ -31,7 +44,7 @@ enum DashboardItem: String, CaseIterable, Identifiable, Codable {
         case .lastTraining:return "dumbbell.fill"
         }
     }
-    
+
     var color: Color {
         switch self {
         case .steps:       return .green
@@ -61,7 +74,7 @@ struct EditDashboardView: View {
 
     // Items, die NICHT aktiv sind
     private var availableItems: [DashboardItem] {
-        DashboardItem.allCases.filter { !activeItems.contains($0) }
+        DashboardItem.allCases.filter { $0.isHomeVisible && !activeItems.contains($0) }
     }
 
     private var appLocale: Locale {
@@ -126,6 +139,12 @@ struct EditDashboardView: View {
             .background(Color(.systemGroupedBackground))
             .navigationTitle(appSettings.localized("dashboard.editTitle"))
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                activeItems = activeItems.filter { $0.isHomeVisible }
+                if activeItems.isEmpty {
+                    activeItems = DashboardItem.defaultHomeItems
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(appSettings.localized("settings.done")) { dismiss() }
@@ -268,19 +287,19 @@ struct EditDashboardView: View {
 struct GoalSettingsView: View {
     @EnvironmentObject var appSettings: AppSettings
     @Environment(\.dismiss) private var dismiss
-    
+
     // Wochenziel (Workouts/Woche)
     @AppStorage("goals.workoutsPerWeek") private var workoutsPerWeek: Int = 3
-    
+
     // Gewichtsziele
     @AppStorage("profile.weightGoalKg") private var weightGoalKg: Double = 75
     @AppStorage("profile.weightKg") private var currentWeightKg: Double = 0
-    
+
     private var locale: Locale {
         let code = appSettings.language.lowercased().hasPrefix("de") ? "de_DE" : "en_US"
         return Locale(identifier: code)
     }
-    
+
     var body: some View {
         NavigationStack {
             Form {
@@ -297,12 +316,12 @@ struct GoalSettingsView: View {
                             )
                         )
                     }
-                    
+
                     Text(appSettings.localized("home.weeklyGoal.description"))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
-                
+
                 // WEIGHT GOAL
                 Section(header: Text(appSettings.localized("weight.goal.title"))) {
                     HStack {
@@ -311,7 +330,7 @@ struct GoalSettingsView: View {
                         Text(currentWeightKg > 0 ? "\(formatWeight(currentWeightKg)) kg" : "—")
                             .foregroundStyle(.secondary)
                     }
-                    
+
                     Stepper(
                         value: $weightGoalKg,
                         in: 30...250,
@@ -319,7 +338,7 @@ struct GoalSettingsView: View {
                     ) {
                         Text("\(formatWeight(weightGoalKg)) kg")
                     }
-                    
+
                     Text(appSettings.localized("weight.goal.hint"))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -335,7 +354,7 @@ struct GoalSettingsView: View {
             }
         }
     }
-    
+
     private func formatWeight(_ value: Double) -> String {
         let f = NumberFormatter()
         f.locale = locale
