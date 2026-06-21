@@ -129,6 +129,7 @@
 		429834292E3D700400FCD845 /* Movo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Movo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		429834362E3D700600FCD845 /* MovoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MovoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		429834402E3D700600FCD845 /* MovoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MovoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4298344A2F56A00100C0D3C1 /* Movo/Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Movo/Config.xcconfig; sourceTree = "<group>"; };
 		4298A9EF2E43B72D00419E3D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		4298A9F12E43B72D00419E3D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		4298AA492E43BB0D00419E3D /* MovoLiveActivityExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MovoLiveActivityExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -380,6 +381,7 @@
 				428F812B2F02DF340081CCAD /* View+AppElevatedCard.swift */,
 				428F812F2F02DF350081CCAD /* Constants.swift */,
 				428F81332F02DF360081CCAD /* ChallengeStore.swift */,
+				42E392682FE883CC0066C34E /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -394,6 +396,14 @@
 				42FB42AE2EFDF6A50002B0B2 /* MovoWatch Watch App.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		42E392682FE883CC0066C34E /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				4298344A2F56A00100C0D3C1 /* Movo/Config.xcconfig */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -947,6 +957,7 @@
 		};
 		4298344B2E3D700600FCD845 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4298344A2F56A00100C0D3C1 /* Movo/Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -989,6 +1000,7 @@
 		};
 		4298344C2E3D700600FCD845 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4298344A2F56A00100C0D3C1 /* Movo/Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

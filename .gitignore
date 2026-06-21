@@ -48,6 +48,7 @@ GoogleService-Info.plist
 *.local
 Secrets.plist
 Config.local.plist
+Movo/Secrets.xcconfig
 
 # Generated previews or scratch exports
 Screenshots/

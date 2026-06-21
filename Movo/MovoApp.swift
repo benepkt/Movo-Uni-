@@ -34,8 +34,15 @@ enum FirebaseBootstrap {
 
 enum PostHogBootstrap {
     static func configure() {
-        let projectToken = "POSTHOG_PROJECT_TOKEN_REMOVED"
-        let host = "https://eu.i.posthog.com"
+        guard let projectToken = Bundle.main.object(forInfoDictionaryKey: "POSTHOG_PROJECT_TOKEN") as? String,
+              !projectToken.isEmpty,
+              !projectToken.hasPrefix("$(") else {
+            print("[PostHogBootstrap] Analytics disabled: missing POSTHOG_PROJECT_TOKEN")
+            return
+        }
+
+        let host = (Bundle.main.object(forInfoDictionaryKey: "POSTHOG_HOST") as? String)
+            ?? "https://eu.i.posthog.com"
 
         let config = PostHogConfig(projectToken: projectToken, host: host)
 

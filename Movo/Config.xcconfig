@@ -1,0 +1,6 @@
+// Public build settings for Movo.
+// Local secrets can override these values in Secrets.xcconfig.
+
+POSTHOG_PROJECT_TOKEN =
+
+#include? "Secrets.xcconfig"
